@@ -36,7 +36,7 @@ Agregar comentarios internos que identifiquen cada sección:
 ## §1 Estilo y código
 ...
 
-<!-- CAPA: domain-pack:hardware-firmware-audio -->
+<!-- CAPA: domain-pack:firmware-esp32 -->
 ## §4.3 Reglas de firmware MicroPython
 ...
 
@@ -53,9 +53,9 @@ Agregar comentarios internos que identifiquen cada sección:
 | evaluar-agente-entrevoces | meta-framework | Renombrar a `evaluar-agente` |
 | probar-e2e-entrevoces | meta-framework | Renombrar a `probar-e2e` |
 | desarrollar-backend-entrevoces | domain-pack | Mantener sufijo, marcar como pack `web-backend` |
-| desarrollar-firmware-entrevoces | domain-pack | Mantener sufijo, marcar como pack `hardware-firmware-audio` |
-| diagnosticar-hardware-entrevoces | domain-pack | Mantener sufijo, marcar como pack `hardware-firmware-audio` |
-| validar-audio-dispositivo | domain-pack | Mantener sufijo, marcar como pack `hardware-firmware-audio` |
+| desarrollar-firmware-entrevoces | domain-pack | Mantener sufijo, marcar como pack `firmware-esp32` |
+| diagnosticar-hardware-entrevoces | domain-pack | Mantener sufijo, marcar como pack `firmware-esp32` |
+| validar-audio-dispositivo | domain-pack | Mantener sufijo, marcar como pack `firmware-esp32` |
 
 ### Paso 2.3 — Clasificar rules
 
@@ -85,8 +85,8 @@ Archivos a extraer (ya creados en `propuesta framework alfa/plantilla/`):
 - `.agents/skills/evaluar-agente/SKILL.md` → evaluación genérica
 - `.agents/skills/probar-e2e/SKILL.md` → testing genérico
 - `.agents/skills/delegar-entre-agentes/SKILL.md` → handoff entre agentes
-- `documentacion/prompts/PROMPT_SISTEMA_BASE.md` → prompt unificado parametrizado
-- `documentacion/prompts/PROMPT_DELTA_*.md` → deltas por agente
+- `documentacion/prompts/SYSTEM_PROMPT_BASE.md` → prompt unificado parametrizado
+- `documentacion/prompts/SYSTEM_PROMPT_DELTA_*.md` → deltas por agente
 
 ### Paso 3.2 — Crear script de inicialización
 
@@ -109,12 +109,12 @@ Test: ejecutar `inicializar_proyecto.sh miproyecto español` en directorio vací
 
 **Objetivo:** Encapsular conocimiento específico de dominio en packs intercambiables.
 
-### Paso 4.1 — Pack `hardware-firmware-audio`
+### Paso 4.1 — Pack `firmware-esp32`
 
-Crear `packs/hardware-firmware-audio/` conteniendo:
+Crear `stacks/firmware-esp32/` conteniendo:
 
 ```
-packs/hardware-firmware-audio/
+stacks/firmware-esp32/
 ├── PACK.md                          # Metadatos: nombre, descripción, dependencias
 ├── reglas/
 │   ├── reglas_firmware.md           # Extraído de desarrollar-firmware skill
@@ -131,10 +131,10 @@ packs/hardware-firmware-audio/
 
 ### Paso 4.2 — Pack `web-backend`
 
-Crear `packs/web-backend/` conteniendo:
+Crear `stacks/web-backend/` conteniendo:
 
 ```
-packs/web-backend/
+stacks/web-backend/
 ├── PACK.md
 ├── reglas/
 │   └── reglas_backend.md            # Extraído de desarrollar-backend skill
@@ -157,7 +157,7 @@ instalar_pack() {
 }
 ```
 
-**Criterio de éxito:** `instalar_pack hardware-firmware-audio` agrega las skills y reglas correctas. `desinstalar_pack` las remueve limpiamente.
+**Criterio de éxito:** `instalar_pack firmware-esp32` agrega las skills y reglas correctas. `desinstalar_pack` las remueve limpiamente.
 
 ---
 
@@ -176,8 +176,8 @@ La versión actual (362 líneas, 17 secciones) se reduce a ~120 líneas (9 secci
 
 ### Paso 5.2 — Adoptar prompt modular
 
-1. Reemplazar `PROMPT_SISTEMA_CLAUDE.md` (monolítico) por `PROMPT_SISTEMA_BASE.md` + `PROMPT_DELTA_CLAUDE.md`
-2. Reemplazar `PROMPT_SISTEMA_ANTIGRAVITY.md` (monolítico) por `PROMPT_SISTEMA_BASE.md` + `PROMPT_DELTA_ANTIGRAVITY.md`
+1. Reemplazar `PROMPT_SISTEMA_CLAUDE.md` (monolítico) por `SYSTEM_PROMPT_BASE.md` + `SYSTEM_PROMPT_DELTA_CLAUDE.md`
+2. Reemplazar `PROMPT_SISTEMA_ANTIGRAVITY.md` (monolítico) por `SYSTEM_PROMPT_BASE.md` + `SYSTEM_PROMPT_DELTA_ANTIGRAVITY.md`
 3. Actualizar `.agents/claude.yaml` para referenciar ambos archivos
 4. Actualizar `entrega_antigravity/` para usar la nueva estructura
 
@@ -247,7 +247,7 @@ git tag -a v0.1.0-framework-alfa -m "Primera versión del framework agéntico es
 | 1 — Correcciones | Nulo | `git revert` |
 | 2 — Clasificar | Nulo (solo comentarios) | Borrar comentarios |
 | 3 — Extraer plantilla | Bajo (archivos nuevos) | Borrar carpeta `plantilla/` |
-| 4 — Domain packs | Bajo (archivos nuevos) | Borrar carpeta `packs/` |
+| 4 — Domain packs | Bajo (archivos nuevos) | Borrar carpeta `stacks/` |
 | 5 — Integrar en instancia | Medio (modifica archivos activos) | `git revert` + restore de backup |
 | 6 — Validar | Nulo (solo verificación) | N/A |
 

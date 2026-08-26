@@ -2,10 +2,11 @@
 
 ## 1. Estilo de código y documentación
 
-- Todos los nombres creados para archivos, carpetas, módulos, clases, esquemas, modelos y routers deben escribirse obligatoriamente en {{IDIOMA_NOMBRES}}.
-- No se deben mezclar idiomas en nombres propios del proyecto.
-- `AGENTS.md`, `PROJECT_STATE.md`, `.agents/skills`, `.agents/rules`, `SKILL.md` y los nombres enumerados en `.agents/rules/excepciones_nominales.md` se conservan como excepciones técnicas documentadas.
-- Si una herramienta impone otro nombre técnico no configurable, se debe documentar la excepción antes de crearlo.
+- Todos los nombres creados para archivos, carpetas, módulos, clases, esquemas, modelos y routers deben escribirse en {{IDIOMA_NOMBRES}}, con dos excepciones:
+  - **Nombres impuestos por herramientas** (no configurables): `AGENTS.md`, `PROJECT_STATE.md`, `.agents/skills`, `.agents/rules`, `SKILL.md` y los demas enumerados en `.agents/rules/excepciones_nominales.md`.
+  - **Terminos tecnicos universales** reconocidos por la comunidad (ej: `endpoint`, `middleware`, `system_prompt`, `callback`): se conservan en ingles porque traducirlos dificulta busqueda y comunicacion. La lista completa y el criterio de inclusion estan en `.agents/rules/excepciones_nominales.md`.
+- Se permite composicion mixta: termino universal + palabra en {{IDIOMA_NOMBRES}} (ej: `middleware_autenticacion`, `handler_pedidos`).
+- Si una herramienta impone otro nombre tecnico no configurable, se debe documentar la excepcion antes de crearlo.
 - Todo código Python debe usar type hints explícitos.
 - Todo código TypeScript y Dart debe usar tipos explícitos; no se debe usar `any` o equivalentes sin una justificación documentada.
 - Todos los comentarios y docstrings deben escribirse en {{IDIOMA_NOMBRES}} y siempre en tercera persona del singular.
@@ -41,6 +42,7 @@ Un módulo solo se considera terminado cuando el código está implementado, las
 - Se debe leer completamente el `SKILL.md` seleccionado antes de actuar.
 - Se deben resolver scripts y referencias desde el directorio de la Skill correspondiente.
 - Se debe usar `$cerrar-modulo` después de completar y verificar un módulo.
+- Se debe usar `$iniciar-proyecto` al crear un proyecto nuevo desde la plantilla; el skill guía al usuario con preguntas y rellena los placeholders.
 
 ## 7. Operación con diferentes agentes
 
@@ -56,7 +58,7 @@ Un módulo solo se considera terminado cuando el código está implementado, las
 - Leer completamente `AGENTS.md` como contexto inicial
 - Consultar Skills en `.agents/skills/` como documentación (no como herramientas automáticas)
 - Seguir las reglas de `AGENTS.md` manualmente
-- Usar `documentacion/prompts/PROMPT_SISTEMA_BASE.md` + delta correspondiente
+- Usar `documentacion/prompts/SYSTEM_PROMPT_BASE.md` + delta correspondiente
 - Consultar `.agents/rules/claude.md` para reglas específicas
 
 ### Con Codex

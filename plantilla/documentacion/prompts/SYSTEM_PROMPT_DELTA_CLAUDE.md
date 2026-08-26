@@ -1,6 +1,6 @@
 # Delta para Claude — {{NOMBRE_PROYECTO}}
 
-**Aplica sobre:** `PROMPT_SISTEMA_BASE.md`
+**Aplica sobre:** `SYSTEM_PROMPT_BASE.md`
 **Agente:** Claude (Anthropic)
 
 ---

@@ -1,13 +1,13 @@
 # Delta para Codex — {{NOMBRE_PROYECTO}}
 
-**Aplica sobre:** `PROMPT_SISTEMA_BASE.md`
+**Aplica sobre:** `SYSTEM_PROMPT_BASE.md`
 **Agente:** Codex (OpenAI)
 
 ---
 
 ## Modo de operación
 
-Codex tiene acceso a terminal y puede ejecutar código de forma autónoma dentro de su sandbox. Aplica todas las reglas de `AGENTS.md` y la base de `PROMPT_SISTEMA_BASE.md`.
+Codex tiene acceso a terminal y puede ejecutar código de forma autónoma dentro de su sandbox. Aplica todas las reglas de `AGENTS.md` y la base de `SYSTEM_PROMPT_BASE.md`.
 
 ## Diferencias con Claude
 

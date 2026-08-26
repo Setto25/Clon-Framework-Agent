@@ -44,9 +44,9 @@ plantilla-framework-agentico/
 │       │   ├── SKILL.md
 │       │   └── agents/openai.yaml
 │       │
-│       └── packs/                               # Capa 2: paquetes intercambiables por dominio
+│       └── stacks/                               # Capa 2: paquetes intercambiables por dominio
 │           │
-│           ├── hardware-firmware-audio/          # Pack para proyectos IoT + audio embebido
+│           ├── firmware-esp32/          # Pack para proyectos IoT + audio embebido
 │           │   ├── LEEME.md                     # Qué contiene y cuándo usarlo
 │           │   ├── desarrollar-firmware/
 │           │   │   ├── SKILL.md
@@ -85,10 +85,10 @@ plantilla-framework-agentico/
 │   ├── DOCUMENTACION_TECNICA.md                # Capa 3: se llena por instancia (vacío)
 │   ├── GUIA_OPERACION.md                       # Capa 2: plantilla de secciones operativas
 │   └── prompts/
-│       ├── PROMPT_SISTEMA_BASE.md              # Capa 1+2: prompt unificado parametrizado
-│       ├── PROMPT_DELTA_CLAUDE.md              # Capa 1: solo limitaciones/modo Claude
-│       ├── PROMPT_DELTA_ANTIGRAVITY.md         # Capa 1: solo nota automatización
-│       └── PROMPT_DELTA_CODEX.md               # Capa 1: solo nota ejecución autónoma
+│       ├── SYSTEM_PROMPT_BASE.md              # Capa 1+2: prompt unificado parametrizado
+│       ├── SYSTEM_PROMPT_DELTA_CLAUDE.md              # Capa 1: solo limitaciones/modo Claude
+│       ├── SYSTEM_PROMPT_DELTA_ANTIGRAVITY.md         # Capa 1: solo nota automatización
+│       └── SYSTEM_PROMPT_DELTA_CODEX.md               # Capa 1: solo nota ejecución autónoma
 │
 └── scripts/
     └── inicializar_proyecto.sh                  # Reemplaza {{}} por valores concretos
@@ -104,7 +104,7 @@ plantilla-framework-agentico/
 | Subcarpeta de referencias | Siempre `referencias/` (español) |
 | Subcarpeta de scripts | Siempre `scripts/` (excepción técnica documentada) |
 | Metadatos Antigravity | Siempre `agents/openai.yaml` dentro de cada skill |
-| Packs de dominio | En `.agents/skills/packs/NOMBRE-PACK/` — se copian al nivel de skills al instanciar |
+| Packs de dominio | En `.agents/skills/stacks/NOMBRE-PACK/` — se copian al nivel de skills al instanciar |
 | Documentación base | Sin prefijo de agente (`GUIA_SECRETOS.md`, NO `GUIA_SECRETOS_CLAUDE.md`) |
 | Prompts | En `documentacion/prompts/` — base + un delta por agente |
 | Placeholders | Formato `{{NOMBRE_EN_MAYUSCULAS}}` — reemplazados por `scripts/inicializar_proyecto.sh` |
@@ -123,19 +123,19 @@ cd mi-nuevo-proyecto/
 
 # 3. Elegir domain packs
 # Copiar packs relevantes al nivel de skills:
-cp -r .agents/skills/packs/web-backend/* .agents/skills/
+cp -r .agents/skills/stacks/web-backend/* .agents/skills/
 # O para hardware:
-cp -r .agents/skills/packs/hardware-firmware-audio/* .agents/skills/
+cp -r .agents/skills/stacks/firmware-esp32/* .agents/skills/
 
 # 4. Eliminar packs no usados
-rm -rf .agents/skills/packs/
+rm -rf .agents/skills/stacks/
 
 # 5. Llenar contenido de instancia
 # - AGENTS.md §3 (arquitectura)
 # - AGENTS.md §4 (prioridades)
 # - PROJECT_STATE.md §1-§8
 # - documentacion/PLAN_DESARROLLO.md
-# - documentacion/prompts/PROMPT_SISTEMA_BASE.md §Arquitectura
+# - documentacion/prompts/SYSTEM_PROMPT_BASE.md §Arquitectura
 ```
 
 ---
@@ -147,7 +147,7 @@ rm -rf .agents/skills/packs/
 | Reglas permanentes | `AGENTS.md` (105 líneas mixtas) | `AGENTS.md` parametrizado + `excepciones_nominales.md` |
 | Prompts de sistema | 3 archivos con 80% duplicado | 1 base + 3 deltas mínimos |
 | Índices de lectura | 2 archivos (72 + 261 líneas) | 1 fusionado |
-| Skills genéricas | Mezcladas con skills de dominio | Separadas en raíz vs packs/ |
+| Skills genéricas | Mezcladas con skills de dominio | Separadas en raíz vs stacks/ |
 | Nombres de skills | Con sufijo `-entrevoces` | Sin sufijo de proyecto |
 | Carpetas de refs | `references/` (incorrecto) | `referencias/` (correcto) |
 | Multi-agente | §7 en AGENTS.md + regla redundante | §7 en AGENTS.md + skill `delegar-entre-agentes` |

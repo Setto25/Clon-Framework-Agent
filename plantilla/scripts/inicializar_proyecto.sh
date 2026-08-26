@@ -41,24 +41,10 @@ echo "    Idioma de nombres: $IDIOMA_NOMBRES"
 echo ""
 
 # --- Paso 1: Reemplazar placeholders automáticos ---
-echo "[1/6] Reemplazando placeholders automáticos..."
+echo "[1/7] Reemplazando placeholders automáticos..."
 
-ARCHIVOS_CON_PLACEHOLDERS=(
-  "AGENTS.md"
-  "PROJECT_STATE.md"
-  ".agents/rules/excepciones_nominales.md"
-  ".agents/skills/cerrar-modulo/SKILL.md"
-  ".agents/skills/evaluar-agente/SKILL.md"
-  ".agents/skills/probar-e2e/SKILL.md"
-  ".agents/skills/opcional/delegar-entre-agentes/SKILL.md"
-  "documentacion/prompts/PROMPT_SISTEMA_BASE.md"
-  "documentacion/prompts/PROMPT_DELTA_CLAUDE.md"
-  "documentacion/prompts/PROMPT_DELTA_ANTIGRAVITY.md"
-  "documentacion/prompts/PROMPT_DELTA_CODEX.md"
-  "documentacion/REGISTRO_CAMBIOS.md"
-  "documentacion/INDICE_LECTURA_AGENTES.md"
-  ".env.ejemplo"
-)
+# Descubrir dinámicamente todos los archivos con placeholders
+mapfile -t ARCHIVOS_CON_PLACEHOLDERS < <(grep -rl "{{" --include="*.md" --include="*.yaml" --include="*.sh" 2>/dev/null | sort)
 
 # Reemplazo seguro con perl (escapa caracteres especiales en búsqueda Y reemplazo)
 reemplazar_placeholder() {
@@ -76,14 +62,14 @@ for archivo in "${ARCHIVOS_CON_PLACEHOLDERS[@]}"; do
     reemplazar_placeholder "$archivo" "NOMBRE_PROYECTO" "$NOMBRE_PROYECTO"
     reemplazar_placeholder "$archivo" "IDIOMA_NOMBRES" "$IDIOMA_NOMBRES"
     reemplazar_placeholder "$archivo" "PROYECTO" "$NOMBRE_PROYECTO"
-    reemplazar_placeholder "$archivo" "PREFIJO_VARIABLES" "$(echo "$NOMBRE_PROYECTO" | tr '[:lower:]' '[:upper:]')"
+    reemplazar_placeholder "$archivo" "PREFIJO_VARIABLES" "$(echo "$NOMBRE_PROYECTO" | tr '[:lower:]' '[:upper:]' | tr '-' '_')"
     echo "    ✓ $archivo"
   fi
 done
 
 # --- Paso 2: Crear .env desde ejemplo ---
 echo ""
-echo "[2/6] Configurando entorno..."
+echo "[2/7] Configurando entorno..."
 
 if [ ! -f ".env" ] && [ -f ".env.ejemplo" ]; then
   cp .env.ejemplo .env
@@ -95,7 +81,7 @@ fi
 
 # --- Paso 3: Crear estructura de directorios faltantes ---
 echo ""
-echo "[3/6] Creando directorios..."
+echo "[3/7] Creando directorios..."
 
 DIRECTORIOS=(
   "documentacion"
@@ -110,7 +96,7 @@ done
 
 # --- Paso 4: Inicializar git si no existe ---
 echo ""
-echo "[4/6] Verificando repositorio git..."
+echo "[4/7] Verificando repositorio git..."
 
 if [ ! -d ".git" ]; then
   git init
@@ -121,47 +107,166 @@ fi
 
 # --- Paso 5: Eliminar centinela ---
 echo ""
-echo "[5/6] Limpiando archivos de plantilla..."
+echo "[5/7] Limpiando archivos de plantilla..."
 rm -f .plantilla-framework
 echo "    ✓ .plantilla-framework eliminado"
 
-# --- Paso 6: Reportar placeholders pendientes (requieren input manual) ---
+# --- Paso 6: Descubrir y catalogar skills disponibles ---
 echo ""
-echo "[6/6] Verificando placeholders que requieren configuración manual..."
+echo "[6/7] Descubriendo skills disponibles..."
 
-PLACEHOLDERS_MANUALES=(
-  "DESCRIPCION_PRODUCTO_UNA_LINEA|documentacion/prompts/PROMPT_SISTEMA_BASE.md|Descripción corta del producto"
-  "DESCRIPCION_PRODUCTO_COMPLETA|documentacion/prompts/PROMPT_SISTEMA_BASE.md|Párrafo completo describiendo el producto"
-  "OBJETIVO_INMEDIATO|documentacion/prompts/PROMPT_SISTEMA_BASE.md|Objetivo actual del proyecto (ej: completar MVP)"
-  "LISTA_PRIORIDADES_NUMERADA|documentacion/prompts/PROMPT_SISTEMA_BASE.md|Lista 1-N con prioridades del MVP"
-  "EXCLUSIONES_MVP|documentacion/prompts/PROMPT_SISTEMA_BASE.md|Qué queda fuera del MVP"
-  "SECCION_ARQUITECTURA|documentacion/prompts/PROMPT_SISTEMA_BASE.md|Diagrama y reglas de arquitectura"
-  "EXCEPCIONES_ADICIONALES|.agents/rules/excepciones_nominales.md|Excepciones de naming específicas del proyecto"
-)
+CATALOGO=".agents/skills/catalogo_skills.json"
+SKILLS_DIR=".agents/skills"
 
-echo ""
-echo "    Los siguientes placeholders requieren tu input manual:"
-echo "    (No son automatizables — dependen del contenido específico de tu proyecto)"
-echo ""
-printf "    %-35s %-50s %s\n" "PLACEHOLDER" "ARCHIVO" "QUÉ PONER"
-printf "    %-35s %-50s %s\n" "---" "---" "---"
+# Función: extraer descripción del frontmatter YAML de un SKILL.md
+extraer_descripcion() {
+  local skill_md="$1"
+  # Extrae el campo description: del frontmatter YAML (entre ---)
+  sed -n '/^---$/,/^---$/p' "$skill_md" | grep -m1 "^description:" | sed 's/^description:[[:space:]]*//'
+}
 
-for entry in "${PLACEHOLDERS_MANUALES[@]}"; do
-  IFS='|' read -r placeholder archivo descripcion <<< "$entry"
-  printf "    %-35s %-50s %s\n" "{{$placeholder}}" "$archivo" "$descripcion"
+# Función: extraer nombre del frontmatter YAML de un SKILL.md
+extraer_nombre() {
+  local skill_md="$1"
+  sed -n '/^---$/,/^---$/p' "$skill_md" | grep -m1 "^name:" | sed 's/^name:[[:space:]]*//'
+}
+
+# Iniciar JSON
+echo '{' > "$CATALOGO"
+echo '  "generado": "'$(date -Iseconds)'",' >> "$CATALOGO"
+echo '  "proyecto": "'"$NOMBRE_PROYECTO"'",' >> "$CATALOGO"
+
+# --- Core skills (siempre activas) ---
+echo '  "core": [' >> "$CATALOGO"
+FIRST=true
+for skill_dir in "$SKILLS_DIR"/*/; do
+  # Saltar stacks/, opcional/, y la propia carpeta iniciar-proyecto despues de init
+  skill_nombre=$(basename "$skill_dir")
+  if [[ "$skill_nombre" == "stacks" || "$skill_nombre" == "opcional" ]]; then
+    continue
+  fi
+  skill_md="$skill_dir/SKILL.md"
+  if [ -f "$skill_md" ]; then
+    nombre=$(extraer_nombre "$skill_md")
+    descripcion=$(extraer_descripcion "$skill_md")
+    if [ "$FIRST" = true ]; then FIRST=false; else echo ',' >> "$CATALOGO"; fi
+    printf '    {"nombre": "%s", "ruta": "%s", "descripcion": "%s"}' \
+      "$nombre" "$skill_dir" "$descripcion" >> "$CATALOGO"
+  fi
 done
+echo '' >> "$CATALOGO"
+echo '  ],' >> "$CATALOGO"
 
-# Verificar si hay algún placeholder inesperado no listado arriba
-CONOCIDOS="NOMBRE_PROYECTO|IDIOMA_NOMBRES|PROYECTO|PREFIJO_VARIABLES|DESCRIPCION_PRODUCTO_UNA_LINEA|DESCRIPCION_PRODUCTO_COMPLETA|OBJETIVO_INMEDIATO|LISTA_PRIORIDADES_NUMERADA|EXCLUSIONES_MVP|SECCION_ARQUITECTURA|EXCEPCIONES_ADICIONALES"
-DESCONOCIDOS=$(grep -roh "{{[^}]*}}" --include="*.md" --include="*.yaml" 2>/dev/null | sort -u | grep -vE "$CONOCIDOS" || true)
-
-if [ -n "$DESCONOCIDOS" ]; then
-  echo ""
-  echo "    ⚠ Placeholders NO RECONOCIDOS encontrados (posible error en la plantilla):"
-  echo "$DESCONOCIDOS" | while read -r p; do
-    UBICACION=$(grep -rl "$p" --include="*.md" --include="*.yaml" 2>/dev/null | head -1)
-    echo "      - $p en $UBICACION"
+# --- Skills opcionales ---
+echo '  "opcional": [' >> "$CATALOGO"
+FIRST=true
+if [ -d "$SKILLS_DIR/opcional" ]; then
+  for skill_dir in "$SKILLS_DIR/opcional"/*/; do
+    [ -d "$skill_dir" ] || continue
+    skill_md="$skill_dir/SKILL.md"
+    if [ -f "$skill_md" ]; then
+      nombre=$(extraer_nombre "$skill_md")
+      descripcion=$(extraer_descripcion "$skill_md")
+      if [ "$FIRST" = true ]; then FIRST=false; else echo ',' >> "$CATALOGO"; fi
+      printf '    {"nombre": "%s", "ruta": "%s", "descripcion": "%s"}' \
+        "$nombre" "$skill_dir" "$descripcion" >> "$CATALOGO"
+    fi
   done
+fi
+echo '' >> "$CATALOGO"
+echo '  ],' >> "$CATALOGO"
+
+# --- Stacks (agrupados por stack) ---
+echo '  "stacks": [' >> "$CATALOGO"
+FIRST_STACK=true
+if [ -d "$SKILLS_DIR/stacks" ]; then
+  for stack_dir in "$SKILLS_DIR/stacks"/*/; do
+    [ -d "$stack_dir" ] || continue
+    stack_nombre=$(basename "$stack_dir")
+
+    # Leer descripción del stack desde LEEME.md si existe
+    stack_descripcion=""
+    if [ -f "$stack_dir/LEEME.md" ]; then
+      # Tomar la línea "**Para:**" del LEEME como descripción corta
+      stack_descripcion=$(grep -m1 "^\*\*Para:\*\*" "$stack_dir/LEEME.md" | sed 's/\*\*Para:\*\*[[:space:]]*//' || echo "")
+    fi
+
+    # Descubrir skills dentro del stack (excluir domain-packs/ y skills/)
+    SKILLS_EN_STACK=""
+    FIRST_SKILL=true
+    for sub_skill_dir in "$stack_dir"*/; do
+      [ -d "$sub_skill_dir" ] || continue
+      local_nombre=$(basename "$sub_skill_dir")
+      [[ "$local_nombre" == "domain-packs" || "$local_nombre" == "skills" ]] && continue
+      sub_skill_md="$sub_skill_dir/SKILL.md"
+      if [ -f "$sub_skill_md" ]; then
+        nombre=$(extraer_nombre "$sub_skill_md")
+        descripcion=$(extraer_descripcion "$sub_skill_md")
+        if [ "$FIRST_SKILL" = true ]; then FIRST_SKILL=false; else SKILLS_EN_STACK+=","; fi
+        SKILLS_EN_STACK+=$(printf '\n        {"nombre": "%s", "ruta": "%s", "descripcion": "%s"}' \
+          "$nombre" "$sub_skill_dir" "$descripcion")
+      fi
+    done
+
+    # También buscar un nivel más profundo: stack/skills/nombre-skill/SKILL.md
+    if [ -d "$stack_dir/skills" ]; then
+      for sub_skill_dir in "$stack_dir/skills"/*/; do
+        [ -d "$sub_skill_dir" ] || continue
+        sub_skill_md="$sub_skill_dir/SKILL.md"
+        if [ -f "$sub_skill_md" ]; then
+          nombre=$(extraer_nombre "$sub_skill_md")
+          descripcion=$(extraer_descripcion "$sub_skill_md")
+          if [ "$FIRST_SKILL" = true ]; then FIRST_SKILL=false; else SKILLS_EN_STACK+=","; fi
+          SKILLS_EN_STACK+=$(printf '\n        {"nombre": "%s", "ruta": "%s", "descripcion": "%s"}' \
+            "$nombre" "$sub_skill_dir" "$descripcion")
+        fi
+      done
+    fi
+
+    if [ "$FIRST_STACK" = true ]; then FIRST_STACK=false; else echo ',' >> "$CATALOGO"; fi
+    printf '    {\n      "stack": "%s",\n      "descripcion": "%s",\n      "skills": [%s\n      ]\n    }' \
+      "$stack_nombre" "$stack_descripcion" "$SKILLS_EN_STACK" >> "$CATALOGO"
+  done
+fi
+echo '' >> "$CATALOGO"
+echo '  ]' >> "$CATALOGO"
+echo '}' >> "$CATALOGO"
+
+echo "    ✓ Catálogo generado: $CATALOGO"
+
+# Resumen para el usuario
+TOTAL_CORE=$(grep -c '"nombre"' <<< "$(sed -n '/"core"/,/]/p' "$CATALOGO")" 2>/dev/null || echo 0)
+TOTAL_OPCIONAL=$(grep -c '"nombre"' <<< "$(sed -n '/"opcional"/,/]/p' "$CATALOGO")" 2>/dev/null || echo 0)
+TOTAL_STACKS=$(grep -c '"stack"' "$CATALOGO" 2>/dev/null || echo 0)
+
+echo ""
+echo "    Resumen de skills descubiertos:"
+echo "      Core (siempre activas):  $(grep -o '"nombre"' "$CATALOGO" | head -20 | wc -l) skills en total"
+echo "      Stacks disponibles:      $TOTAL_STACKS"
+echo ""
+echo "    El agente usará este catálogo para preguntar qué activar."
+echo "    También puedes revisarlo manualmente: $CATALOGO"
+
+# --- Paso 7: Reportar placeholders pendientes (requieren input manual) ---
+echo ""
+echo "[7/7] Verificando placeholders que requieren configuración manual..."
+
+# Buscar dinámicamente los placeholders restantes
+RESTANTES=$(grep -roh "{{[^}]*}}" --include="*.md" --include="*.yaml" 2>/dev/null | sort -u || true)
+
+if [ -n "$RESTANTES" ]; then
+  echo ""
+  echo "    Placeholders pendientes (requieren input manual o del agente):"
+  echo ""
+  printf "    %-40s %s\n" "PLACEHOLDER" "ARCHIVO(S)"
+  printf "    %-40s %s\n" "---" "---"
+
+  echo "$RESTANTES" | while read -r placeholder; do
+    UBICACIONES=$(grep -rl "$placeholder" --include="*.md" --include="*.yaml" 2>/dev/null | tr '\n' ', ' | sed 's/,$//')
+    printf "    %-40s %s\n" "$placeholder" "$UBICACIONES"
+  done
+else
+  echo "    ✓ No quedan placeholders pendientes"
 fi
 
 echo ""
@@ -169,5 +274,7 @@ echo "=== Proyecto $NOMBRE_PROYECTO inicializado ==="
 echo ""
 echo "Siguiente paso:"
 echo "  1. Edita .env con tus valores reales"
-echo "  2. Rellena los {{placeholders}} manuales listados arriba"
-echo "  3. Haz git add -A && git commit -m 'init: proyecto $NOMBRE_PROYECTO desde plantilla'"
+echo "  2. Invoca \$iniciar-proyecto con tu agente para completar placeholders y seleccionar skills"
+echo "     (el agente leerá $CATALOGO para saber qué preguntar)"
+echo "  3. O rellena los {{placeholders}} manualmente y mueve skills a mano"
+echo "  4. Haz git add -A && git commit -m 'init: proyecto $NOMBRE_PROYECTO desde plantilla'"

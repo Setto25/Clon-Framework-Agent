@@ -8,6 +8,16 @@ Registra todos los nombres técnicos no configurables que se conservan como exce
 
 ---
 
+## Categorias de excepcion
+
+| Categoria | Criterio | Ejemplo |
+|---|---|---|
+| **Impuesta por herramienta** | La plataforma exige ese nombre exacto; no hay alternativa | `AGENTS.md`, `SKILL.md`, `.env` |
+| **Termino tecnico universal** | Concepto ampliamente reconocido en ingles por la comunidad; traducirlo dificulta busqueda, comunicacion o reconocimiento | `system_prompt`, `middleware`, `endpoint` |
+| **Nombre de proyecto** | Todo lo demas: modulos, clases, variables, archivos, carpetas creados por el equipo | En {{IDIOMA_NOMBRES}} |
+
+---
+
 ## Excepciones obligatorias por herramientas
 
 ### Antigravity / Codex
@@ -31,7 +41,53 @@ Registra todos los nombres técnicos no configurables que se conservan como exce
 
 ---
 
-## Regla de adición de nuevas excepciones
+## Terminos tecnicos universales (conservar en ingles)
+
+Terminos que se mantienen en ingles porque traducirlos genera confusion, dificulta busquedas o rompe la comunicacion con documentacion externa.
+
+### Criterio de inclusion
+
+Un termino entra aqui si cumple AL MENOS DOS de estos:
+1. La documentacion oficial del ecosistema lo usa exclusivamente en ingles.
+2. Buscarlo en español no devuelve resultados utiles (ej: "indicador de estado" vs "endpoint").
+3. El equipo lo usa en ingles al hablar, incluso en conversacion en español.
+4. Traducirlo introduce ambiguedad (ej: "cola" puede ser queue o tail).
+
+### Terminos aceptados
+
+| Termino en ingles | NO usar | Donde aplica |
+|---|---|---|
+| `system_prompt` / `system prompt` | `prompt_del_sistema` | Archivos, variables, docs |
+| `endpoint` | `punto_final` | URLs, rutas, docs |
+| `middleware` | `software_intermedio` | Capas, archivos |
+| `callback` | `retrollamada` | Codigo, docs |
+| `handler` | `manejador` | Nombres de funciones |
+| `token` | `ficha` | Auth, LLM |
+| `webhook` | `gancho_web` | Integraciones |
+| `payload` | `carga_util` | APIs, mensajes |
+| `schema` | `esquema` | Bases de datos, validacion |
+| `pipeline` | `tuberia` | CI/CD, procesamiento |
+| `cache` | `almacen_temporal` | Codigo, infra |
+| `runtime` | `tiempo_de_ejecucion` | Entorno, docs |
+| `deploy` / `deployment` | `despliegue` | CI/CD, docs |
+| `mock` | `simulacro` | Testing |
+| `fixture` | `accesorio_de_prueba` | Testing |
+| `plugin` | `complemento` | Extensiones |
+| `driver` | `controlador` | Hardware, DB |
+| `buffer` | `almacen_intermedio` | Audio, streams |
+| `router` | `enrutador` | Backend, redes |
+| `fallback` | `respaldo` | Logica de error |
+| `log` / `logging` | `registro` (si es ambiguo) | Observabilidad |
+
+### Regla de uso
+
+- En **nombres de archivo y codigo** (variables, funciones, clases): usar el termino en ingles tal cual. Ej: `system_prompt.md`, `crear_endpoint()`, `middleware_auth`.
+- En **documentacion narrativa**: se puede usar el termino en ingles inline sin traducir. Ej: "El middleware valida el token antes de pasar al handler."
+- **Composicion mixta permitida**: combinar termino universal + palabra en {{IDIOMA_NOMBRES}}. Ej: `middleware_autenticacion`, `handler_pedidos`, `cache_sesiones`.
+
+---
+
+## Regla de adicion de nuevas excepciones
 
 Si se necesita agregar una nueva excepción:
 

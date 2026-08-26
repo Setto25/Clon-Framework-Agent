@@ -11,11 +11,12 @@
 
 | Tarea | Archivos adicionales |
 |---|---|
-| Implementar backend | `.agents/skills/*/SKILL.md` relevante, `documentacion/prompts/PROMPT_SISTEMA_BASE.md` |
+| Implementar backend | `.agents/skills/*/SKILL.md` relevante, `documentacion/prompts/SYSTEM_PROMPT_BASE.md` |
 | Depurar problema | `documentacion/REGISTRO_CAMBIOS.md` (cambios recientes), logs en `infraestructura/registros/` |
 | Cerrar módulo | `.agents/skills/cerrar-modulo/SKILL.md` |
 | Evaluar calidad | `.agents/skills/evaluar-agente/SKILL.md` + `referencias/casos_evaluacion.md` |
 | Handoff a otro agente | `.agents/skills/delegar-entre-agentes/SKILL.md` |
+| Iniciar proyecto nuevo | `.agents/skills/iniciar-proyecto/SKILL.md` |
 
 ## NO leer salvo que se necesite
 
