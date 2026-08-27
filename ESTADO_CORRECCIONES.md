@@ -1,7 +1,7 @@
 # Estado de correcciones de agent-framework
 
-**Ultima actualizacion:** 2026-08-27 (rev 20)
-**Estado general:** Referencias interoperables depuradas; pilotos y procedencia pendientes
+**Ultima actualizacion:** 2026-08-27 (rev 21)
+**Estado general:** Contrato y entradas estrictas; pilotos y procedencia pendientes
 **Fase activa:** Fase 6 — validacion interna previa a pilotos
 **Rama de trabajo:** `codex/estabilizacion-framework`
 
@@ -101,6 +101,28 @@ La clasificacion confirmo que `_dryrun2/` era una salida generada para `proyecto
 - No existe una suite automatica que demuestre una instalacion reproducible.
 
 ## 7. Registro de avance
+
+### 2026-08-27 — Rev 21
+
+**Completado:**
+
+- El inicializador y el validador aceptan exclusivamente la version y sintaxis contractual soportadas.
+- Se validan claves exactas, origenes permitidos y rutas relativas portables sin duplicados.
+- Se rechazan campos derivados aportados por JSON o CLI.
+- Se eliminan precedencias silenciosas entre JSON, posicionales y argumentos `--valor`.
+- Se normalizan saltos de linea y se rechazan controles Unicode invisibles.
+- El framework avanzo a `0.2.0-alpha.5`.
+
+**Evidencia:**
+
+- El contrato aprobo.
+- Las 28 pruebas automaticas aprobaron.
+- Version contractual futura, version del framework mal formada, clave superior desconocida, rutas invalidas y origen invalido fallaron sin crear Git ni alterar la copia.
+- Valores derivados, claves repetidas y texto con control bidireccional fallaron sin publicar un destino.
+
+**Resultado:**
+
+Las entradas ya no dependen de precedencias implicitas y un contrato incompatible no puede ejecutarse como si fuera compatible.
 
 ### 2026-08-27 — Rev 20
 
@@ -569,7 +591,7 @@ El usuario indico que otras Skills tambien pueden contener adaptaciones de produ
 
 ## 8. Siguiente paso exacto
 
-Continuar la auditoria interna de entradas derivadas y validacion del contrato. Mantener los pilotos pendientes de una decision explicita del usuario.
+Auditar la portabilidad de rutas, enlaces simbolicos y limites del destino frente a copias o configuraciones manipuladas. Mantener los pilotos pendientes de una decision explicita del usuario.
 
 ## 9. Bloqueos
 

@@ -110,6 +110,8 @@ python scripts\crear_proyecto.py D:\PROYECTOS\mi-proyecto "Mi Proyecto" --config
 
 El destino no debe existir. El nombre visible puede contener espacios o acentos; el inicializador deriva por separado los identificadores tecnicos. El comando copia la base, instala el core automatico mas la seleccion explicita, crea `.env` ignorado por Git, registra las Skills en `.estado-plantilla.json` e inicializa un repositorio Git sin realizar commits.
 
+Las entradas son estrictas: el JSON, los argumentos posicionales y cada `--valor` no pueden definir la misma clave más de una vez. Los campos con origen `derivado` los calcula exclusivamente el inicializador. También se rechazan claves desconocidas, tipos incompatibles y caracteres de control invisibles; los campos multilínea normales conservan saltos de línea y tabulaciones.
+
 4. Verifica la memoria generada antes del primer commit:
 
 ```powershell

@@ -6,7 +6,7 @@ from __future__ import annotations
 import json
 import re
 import sys
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 from typing import TypedDict, cast
 
 
@@ -30,6 +30,21 @@ class ConfiguracionPlantilla(TypedDict):
 
 
 PATRON_PLACEHOLDER = re.compile(r"\{\{([A-Z0-9_]+)\}\}")
+PATRON_VERSION_FRAMEWORK = re.compile(r"^[0-9]+\.[0-9]+\.[0-9]+(?:-[0-9A-Za-z.-]+)?$")
+VERSION_CONTRATO_SOPORTADA = 2
+SINTAXIS_PLACEHOLDER_SOPORTADA = "{{CLAVE}}"
+ORIGENES_PERMITIDOS: frozenset[str] = frozenset({"usuario", "derivado", "predeterminado"})
+CLAVES_CONTRATO: frozenset[str] = frozenset(
+    {
+        "version_contrato",
+        "version_framework",
+        "sintaxis_placeholder",
+        "rutas_excluidas",
+        "archivos_incluidos",
+        "placeholders",
+    }
+)
+CLAVES_CAMPO_PLACEHOLDER: frozenset[str] = frozenset({"obligatorio", "origen", "descripcion"})
 
 
 def cargar_json_sin_duplicados(contenido: str, nombre: str) -> object:
@@ -59,20 +74,55 @@ def exigir_lista_cadenas(valor: object, nombre: str) -> list[str]:
     return cast(list[str], valor)
 
 
+def exigir_claves_exactas(
+    datos: dict[str, object],
+    esperadas: frozenset[str],
+    nombre: str,
+) -> None:
+    """Rechaza claves faltantes o desconocidas en un objeto contractual."""
+    presentes = set(datos)
+    faltantes = sorted(esperadas - presentes)
+    desconocidas = sorted(presentes - esperadas)
+    if faltantes:
+        raise ValueError(f"{nombre} no declara las claves requeridas: {', '.join(faltantes)}")
+    if desconocidas:
+        raise ValueError(f"{nombre} contiene claves desconocidas: {', '.join(desconocidas)}")
+
+
+def validar_rutas_contrato(rutas: list[str], nombre: str) -> list[str]:
+    """Valida rutas relativas y reproducibles declaradas por el contrato."""
+    if not rutas:
+        raise ValueError(f"{nombre} no puede estar vacio")
+    duplicadas = sorted({ruta for ruta in rutas if rutas.count(ruta) > 1})
+    if duplicadas:
+        raise ValueError(f"{nombre} contiene rutas duplicadas: {', '.join(duplicadas)}")
+    for ruta in rutas:
+        ruta_pura = PurePosixPath(ruta)
+        if not ruta or "\\" in ruta or ruta_pura.is_absolute() or ".." in ruta_pura.parts:
+            raise ValueError(f"{nombre} contiene una ruta no portable o insegura: {ruta}")
+    return rutas
+
+
 def cargar_configuracion(ruta: Path) -> ConfiguracionPlantilla:
     """Carga y valida la estructura minima del contrato."""
     contenido = cargar_json_sin_duplicados(ruta.read_text(encoding="utf-8"), str(ruta))
     datos = exigir_diccionario(contenido, "configuracion")
+    exigir_claves_exactas(datos, CLAVES_CONTRATO, "configuracion")
 
     version = datos.get("version_contrato")
     version_framework = datos.get("version_framework")
     sintaxis = datos.get("sintaxis_placeholder")
-    if not isinstance(version, int) or version < 1:
-        raise ValueError("version_contrato debe ser un entero positivo")
-    if not isinstance(version_framework, str) or not version_framework:
-        raise ValueError("version_framework debe ser una cadena no vacia")
-    if not isinstance(sintaxis, str) or not sintaxis:
-        raise ValueError("sintaxis_placeholder debe ser una cadena no vacia")
+    if version != VERSION_CONTRATO_SOPORTADA:
+        raise ValueError(
+            f"version_contrato no soportada: {version}. Se esperaba {VERSION_CONTRATO_SOPORTADA}"
+        )
+    if not isinstance(version_framework, str) or PATRON_VERSION_FRAMEWORK.fullmatch(version_framework) is None:
+        raise ValueError("version_framework debe usar una version semantica valida")
+    if sintaxis != SINTAXIS_PLACEHOLDER_SOPORTADA:
+        raise ValueError(
+            f"sintaxis_placeholder no soportada: {sintaxis}. "
+            f"Se esperaba {SINTAXIS_PLACEHOLDER_SOPORTADA}"
+        )
 
     campos_sin_validar = exigir_diccionario(datos.get("placeholders"), "placeholders")
     campos: dict[str, CampoPlaceholder] = {}
@@ -80,14 +130,18 @@ def cargar_configuracion(ruta: Path) -> ConfiguracionPlantilla:
         if not PATRON_PLACEHOLDER.fullmatch(f"{{{{{clave}}}}}"):
             raise ValueError(f"Nombre de placeholder invalido: {clave}")
         campo = exigir_diccionario(valor, f"placeholders.{clave}")
+        exigir_claves_exactas(campo, CLAVES_CAMPO_PLACEHOLDER, f"placeholders.{clave}")
         obligatorio = campo.get("obligatorio")
         origen = campo.get("origen")
         descripcion = campo.get("descripcion")
         if not isinstance(obligatorio, bool):
             raise ValueError(f"placeholders.{clave}.obligatorio debe ser booleano")
-        if not isinstance(origen, str) or not origen:
-            raise ValueError(f"placeholders.{clave}.origen debe ser una cadena no vacia")
-        if not isinstance(descripcion, str) or not descripcion:
+        if not isinstance(origen, str) or origen not in ORIGENES_PERMITIDOS:
+            raise ValueError(
+                f"placeholders.{clave}.origen debe ser uno de: "
+                + ", ".join(sorted(ORIGENES_PERMITIDOS))
+            )
+        if not isinstance(descripcion, str) or not descripcion.strip():
             raise ValueError(f"placeholders.{clave}.descripcion debe ser una cadena no vacia")
         campos[clave] = CampoPlaceholder(
             obligatorio=obligatorio,
@@ -95,12 +149,20 @@ def cargar_configuracion(ruta: Path) -> ConfiguracionPlantilla:
             descripcion=descripcion,
         )
 
+    rutas_excluidas = validar_rutas_contrato(
+        exigir_lista_cadenas(datos.get("rutas_excluidas"), "rutas_excluidas"),
+        "rutas_excluidas",
+    )
+    archivos_incluidos = validar_rutas_contrato(
+        exigir_lista_cadenas(datos.get("archivos_incluidos"), "archivos_incluidos"),
+        "archivos_incluidos",
+    )
     return ConfiguracionPlantilla(
         version_contrato=version,
         version_framework=version_framework,
         sintaxis_placeholder=sintaxis,
-        rutas_excluidas=exigir_lista_cadenas(datos.get("rutas_excluidas"), "rutas_excluidas"),
-        archivos_incluidos=exigir_lista_cadenas(datos.get("archivos_incluidos"), "archivos_incluidos"),
+        rutas_excluidas=rutas_excluidas,
+        archivos_incluidos=archivos_incluidos,
         placeholders=campos,
     )
 

@@ -100,6 +100,25 @@ class PruebasCreacionProyecto(unittest.TestCase):
         shutil.copytree(PLANTILLA, destino, copy_function=shutil.copy2)
         return destino
 
+    def escribir_configuracion(
+        self,
+        nombre_archivo: str,
+        valores_adicionales: dict[str, object],
+    ) -> Path:
+        """Crea una variante aislada de la configuracion publicada."""
+        datos: object = json.loads(CONFIGURACION_EJEMPLO.read_text(encoding="utf-8"))
+        self.assertIsInstance(datos, dict)
+        if not isinstance(datos, dict):
+            raise AssertionError("La configuracion de ejemplo no es un objeto JSON")
+        datos.update(valores_adicionales)
+        ruta = self.raiz_temporal / nombre_archivo
+        ruta.write_text(
+            json.dumps(datos, ensure_ascii=False),
+            encoding="utf-8",
+            newline="\n",
+        )
+        return ruta
+
     def test_crea_proyecto_completo_y_protege_entorno(self) -> None:
         """Confirma una instancia valida con Git, memoria y entorno protegido."""
         destino = self.crear_completo()
@@ -124,7 +143,7 @@ class PruebasCreacionProyecto(unittest.TestCase):
         instaladas = estado.get("skills_instaladas") if isinstance(estado, dict) else None
         self.assertEqual(set(instaladas) if isinstance(instaladas, list) else set(), CORE_AUTOMATICO)
         registro = (destino / "documentacion" / "REGISTRO_CAMBIOS.md").read_text(encoding="utf-8")
-        self.assertIn("agent-framework 0.2.0-alpha.4", registro)
+        self.assertIn("agent-framework 0.2.0-alpha.5", registro)
         for nombre in CORE_AUTOMATICO:
             with self.subTest(skill_registrada=nombre):
                 self.assertIn(f"- `{nombre}`", registro)
@@ -226,6 +245,153 @@ class PruebasCreacionProyecto(unittest.TestCase):
         self.assertNotEqual(resultado.returncode, 0)
         self.assertIn("caracteres de control", resultado.stderr)
         self.assertFalse(destino.exists())
+
+    def test_rechaza_valor_derivado_en_configuracion(self) -> None:
+        """Impide que una entrada externa suplante metadatos derivados."""
+        destino = self.raiz_temporal / "proyecto-derivado-externo"
+        configuracion = self.escribir_configuracion(
+            "configuracion-derivada.json",
+            {"VERSION_FRAMEWORK": "9.9.9"},
+        )
+        resultado = ejecutar(
+            [
+                sys.executable,
+                str(CREADOR),
+                str(destino),
+                "Proyecto Derivado",
+                "--configuracion",
+                str(configuracion),
+            ]
+        )
+        self.assertNotEqual(resultado.returncode, 0)
+        self.assertIn("valores derivados no se aceptan", resultado.stderr)
+        self.assertFalse(destino.exists())
+
+    def test_rechaza_clave_repetida_entre_fuentes(self) -> None:
+        """Impide precedencias silenciosas entre JSON y argumentos directos."""
+        destino = self.raiz_temporal / "proyecto-clave-repetida"
+        resultado = ejecutar(
+            [
+                sys.executable,
+                str(CREADOR),
+                str(destino),
+                "Proyecto Repetido",
+                "--configuracion",
+                str(CONFIGURACION_EJEMPLO),
+                "--valor",
+                "ZONA_HORARIA=UTC",
+            ]
+        )
+        self.assertNotEqual(resultado.returncode, 0)
+        self.assertIn("ZONA_HORARIA se definio mas de una vez", resultado.stderr)
+        self.assertFalse(destino.exists())
+
+    def test_rechaza_clave_repetida_en_valores_directos(self) -> None:
+        """Impide que dos argumentos directos oculten una seleccion anterior."""
+        destino = self.raiz_temporal / "proyecto-valor-repetido"
+        resultado = ejecutar(
+            [
+                sys.executable,
+                str(CREADOR),
+                str(destino),
+                "Proyecto Repetido",
+                "--permitir-pendientes",
+                "--valor",
+                "ZONA_HORARIA=UTC",
+                "--valor",
+                "ZONA_HORARIA=America/Santiago",
+            ]
+        )
+        self.assertNotEqual(resultado.returncode, 0)
+        self.assertIn("--valor repite la clave: ZONA_HORARIA", resultado.stderr)
+        self.assertFalse(destino.exists())
+
+    def test_rechaza_control_unicode_en_configuracion(self) -> None:
+        """Impide insertar controles Unicode invisibles en los artefactos."""
+        destino = self.raiz_temporal / "proyecto-control-unicode"
+        configuracion = self.escribir_configuracion(
+            "configuracion-control.json",
+            {"DESCRIPCION_OBJETIVO": "Texto visible\u202eoculto"},
+        )
+        resultado = ejecutar(
+            [
+                sys.executable,
+                str(CREADOR),
+                str(destino),
+                "Proyecto Control",
+                "--configuracion",
+                str(configuracion),
+            ]
+        )
+        self.assertNotEqual(resultado.returncode, 0)
+        self.assertIn("caracteres de control no permitidos", resultado.stderr)
+        self.assertFalse(destino.exists())
+
+    def test_rechaza_contratos_incompatibles_sin_escribir(self) -> None:
+        """Confirma que versiones, rutas, claves y origenes fallen sin mutar."""
+        casos = (
+            ("version-futura", "version_contrato no soportada"),
+            ("version-framework-invalida", "version_framework debe usar una version semantica valida"),
+            ("clave-desconocida", "contrato contiene claves desconocidas"),
+            ("ruta-insegura", "ruta no portable o insegura"),
+            ("ruta-duplicada", "rutas duplicadas"),
+            ("origen-desconocido", "origen debe ser uno de"),
+            ("origen-no-textual", "origen debe ser uno de"),
+        )
+        for caso, mensaje in casos:
+            with self.subTest(caso=caso):
+                destino = self.copiar_plantilla(f"copia-contrato-{caso}")
+                ruta_contrato = destino / "configuracion_plantilla.json"
+                contrato: object = json.loads(ruta_contrato.read_text(encoding="utf-8"))
+                self.assertIsInstance(contrato, dict)
+                if not isinstance(contrato, dict):
+                    raise AssertionError("El contrato publicado no es un objeto JSON")
+                if caso == "version-futura":
+                    contrato["version_contrato"] = 3
+                elif caso == "version-framework-invalida":
+                    contrato["version_framework"] = "version futura"
+                elif caso == "clave-desconocida":
+                    contrato["campo_inesperado"] = True
+                elif caso in {"ruta-insegura", "ruta-duplicada"}:
+                    archivos_incluidos = contrato.get("archivos_incluidos")
+                    self.assertIsInstance(archivos_incluidos, list)
+                    if not isinstance(archivos_incluidos, list):
+                        raise AssertionError("El contrato no declara archivos_incluidos")
+                    if caso == "ruta-insegura":
+                        archivos_incluidos.append("../secreto.md")
+                    else:
+                        archivos_incluidos.append(archivos_incluidos[0])
+                else:
+                    placeholders = contrato.get("placeholders")
+                    self.assertIsInstance(placeholders, dict)
+                    if not isinstance(placeholders, dict):
+                        raise AssertionError("El contrato no declara placeholders")
+                    zona_horaria = placeholders.get("ZONA_HORARIA")
+                    self.assertIsInstance(zona_horaria, dict)
+                    if not isinstance(zona_horaria, dict):
+                        raise AssertionError("ZONA_HORARIA no declara un campo contractual")
+                    zona_horaria["origen"] = ["usuario"] if caso == "origen-no-textual" else "externo"
+                ruta_contrato.write_text(
+                    json.dumps(contrato, ensure_ascii=False, indent=2) + "\n",
+                    encoding="utf-8",
+                    newline="\n",
+                )
+                huellas_antes = calcular_huellas(destino)
+                resultado = ejecutar(
+                    [
+                        sys.executable,
+                        str(destino / "scripts" / "inicializar_proyecto.py"),
+                        "Proyecto Contrato",
+                        "español",
+                        "--configuracion",
+                        str(CONFIGURACION_EJEMPLO),
+                    ],
+                    destino,
+                )
+                self.assertNotEqual(resultado.returncode, 0)
+                self.assertIn(mensaje, resultado.stderr)
+                self.assertEqual(calcular_huellas(destino), huellas_antes)
+                self.assertFalse((destino / ".git").exists())
 
     def test_inicializacion_directa_rechaza_placeholder_antes_de_escribir(self) -> None:
         """Confirma que contenido ambiguo no deje una copia parcialmente configurada."""

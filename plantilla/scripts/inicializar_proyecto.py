@@ -13,7 +13,7 @@ import sys
 import tempfile
 import unicodedata
 from datetime import datetime
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 from typing import TypedDict, cast
 
 
@@ -38,6 +38,21 @@ class ContratoPlantilla(TypedDict):
 
 PATRON_PLACEHOLDER = re.compile(r"\{\{([A-Z0-9_]+)\}\}")
 PATRON_NOMBRE_SKILL = re.compile(r"^name:\s*(.+?)\s*$", re.MULTILINE)
+PATRON_VERSION_FRAMEWORK = re.compile(r"^[0-9]+\.[0-9]+\.[0-9]+(?:-[0-9A-Za-z.-]+)?$")
+VERSION_CONTRATO_SOPORTADA = 2
+SINTAXIS_PLACEHOLDER_SOPORTADA = "{{CLAVE}}"
+ORIGENES_PERMITIDOS: frozenset[str] = frozenset({"usuario", "derivado", "predeterminado"})
+CLAVES_CONTRATO: frozenset[str] = frozenset(
+    {
+        "version_contrato",
+        "version_framework",
+        "sintaxis_placeholder",
+        "rutas_excluidas",
+        "archivos_incluidos",
+        "placeholders",
+    }
+)
+CLAVES_CAMPO_PLACEHOLDER: frozenset[str] = frozenset({"obligatorio", "origen", "descripcion"})
 VALORES_PREDETERMINADOS: dict[str, str] = {
     "ESTADO_BREVE": "Inicializando",
     "FASE_ACTIVA": "Fase 0 — Setup",
@@ -85,52 +100,118 @@ def exigir_lista_cadenas(valor: object, nombre: str) -> list[str]:
     return cast(list[str], valor)
 
 
+def exigir_claves_exactas(
+    datos: dict[str, object],
+    esperadas: frozenset[str],
+    nombre: str,
+) -> None:
+    """Rechaza claves faltantes o desconocidas en un objeto contractual."""
+    presentes = set(datos)
+    faltantes = sorted(esperadas - presentes)
+    desconocidas = sorted(presentes - esperadas)
+    if faltantes:
+        raise ValueError(f"{nombre} no declara las claves requeridas: {', '.join(faltantes)}")
+    if desconocidas:
+        raise ValueError(f"{nombre} contiene claves desconocidas: {', '.join(desconocidas)}")
+
+
+def validar_rutas_contrato(rutas: list[str], nombre: str) -> list[str]:
+    """Valida rutas relativas y reproducibles declaradas por el contrato."""
+    if not rutas:
+        raise ValueError(f"{nombre} no puede estar vacio")
+    duplicadas = sorted({ruta for ruta in rutas if rutas.count(ruta) > 1})
+    if duplicadas:
+        raise ValueError(f"{nombre} contiene rutas duplicadas: {', '.join(duplicadas)}")
+    for ruta in rutas:
+        ruta_pura = PurePosixPath(ruta)
+        if not ruta or "\\" in ruta or ruta_pura.is_absolute() or ".." in ruta_pura.parts:
+            raise ValueError(f"{nombre} contiene una ruta no portable o insegura: {ruta}")
+    return rutas
+
+
 def cargar_contrato(ruta: Path) -> ContratoPlantilla:
     """Carga el contrato y valida su estructura minima."""
     contenido = cargar_json_sin_duplicados(ruta.read_text(encoding="utf-8"), str(ruta))
     datos = exigir_diccionario(contenido, "contrato")
+    exigir_claves_exactas(datos, CLAVES_CONTRATO, "contrato")
     version_contrato = datos.get("version_contrato")
     version_framework = datos.get("version_framework")
     sintaxis = datos.get("sintaxis_placeholder")
-    if not isinstance(version_contrato, int) or version_contrato < 1:
-        raise ValueError("version_contrato debe ser un entero positivo")
-    if not isinstance(version_framework, str) or not version_framework:
-        raise ValueError("version_framework debe ser una cadena no vacia")
-    if not isinstance(sintaxis, str) or not sintaxis:
-        raise ValueError("sintaxis_placeholder debe ser una cadena no vacia")
+    if version_contrato != VERSION_CONTRATO_SOPORTADA:
+        raise ValueError(
+            f"version_contrato no soportada: {version_contrato}. "
+            f"Se esperaba {VERSION_CONTRATO_SOPORTADA}"
+        )
+    if not isinstance(version_framework, str) or PATRON_VERSION_FRAMEWORK.fullmatch(version_framework) is None:
+        raise ValueError("version_framework debe usar una version semantica valida")
+    if sintaxis != SINTAXIS_PLACEHOLDER_SOPORTADA:
+        raise ValueError(
+            f"sintaxis_placeholder no soportada: {sintaxis}. "
+            f"Se esperaba {SINTAXIS_PLACEHOLDER_SOPORTADA}"
+        )
 
     campos_crudos = exigir_diccionario(datos.get("placeholders"), "placeholders")
     campos: dict[str, CampoPlaceholder] = {}
     for clave, valor in campos_crudos.items():
+        if PATRON_PLACEHOLDER.fullmatch(f"{{{{{clave}}}}}") is None:
+            raise ValueError(f"Nombre de placeholder invalido: {clave}")
         campo = exigir_diccionario(valor, f"placeholders.{clave}")
+        exigir_claves_exactas(campo, CLAVES_CAMPO_PLACEHOLDER, f"placeholders.{clave}")
         obligatorio = campo.get("obligatorio")
         origen = campo.get("origen")
         descripcion = campo.get("descripcion")
         if not isinstance(obligatorio, bool):
             raise ValueError(f"placeholders.{clave}.obligatorio debe ser booleano")
-        if not isinstance(origen, str) or not origen:
-            raise ValueError(f"placeholders.{clave}.origen debe ser una cadena no vacia")
-        if not isinstance(descripcion, str) or not descripcion:
+        if not isinstance(origen, str) or origen not in ORIGENES_PERMITIDOS:
+            raise ValueError(
+                f"placeholders.{clave}.origen debe ser uno de: "
+                + ", ".join(sorted(ORIGENES_PERMITIDOS))
+            )
+        if not isinstance(descripcion, str) or not descripcion.strip():
             raise ValueError(f"placeholders.{clave}.descripcion debe ser una cadena no vacia")
         campos[clave] = CampoPlaceholder(obligatorio=obligatorio, origen=origen, descripcion=descripcion)
 
+    rutas_excluidas = validar_rutas_contrato(
+        exigir_lista_cadenas(datos.get("rutas_excluidas"), "rutas_excluidas"),
+        "rutas_excluidas",
+    )
+    archivos_incluidos = validar_rutas_contrato(
+        exigir_lista_cadenas(datos.get("archivos_incluidos"), "archivos_incluidos"),
+        "archivos_incluidos",
+    )
     return ContratoPlantilla(
         version_contrato=version_contrato,
         version_framework=version_framework,
         sintaxis_placeholder=sintaxis,
-        rutas_excluidas=exigir_lista_cadenas(datos.get("rutas_excluidas"), "rutas_excluidas"),
-        archivos_incluidos=exigir_lista_cadenas(datos.get("archivos_incluidos"), "archivos_incluidos"),
+        rutas_excluidas=rutas_excluidas,
+        archivos_incluidos=archivos_incluidos,
         placeholders=campos,
     )
+
+
+def validar_caracteres_configuracion(valor: str, clave: str) -> str:
+    """Normaliza saltos y rechaza controles capaces de alterar artefactos."""
+    normalizado = valor.replace("\r\n", "\n").replace("\r", "\n").strip()
+    controles = [
+        caracter
+        for caracter in normalizado
+        if unicodedata.category(caracter).startswith("C") and caracter not in {"\n", "\t"}
+    ]
+    if controles:
+        raise ValueError(f"El valor de {clave} contiene caracteres de control no permitidos")
+    return normalizado
 
 
 def normalizar_valor(valor: object, clave: str) -> str:
     """Convierte un valor de configuracion a texto reproducible."""
     if isinstance(valor, str):
-        return valor.strip()
+        return validar_caracteres_configuracion(valor, clave)
     if isinstance(valor, list) and all(isinstance(item, str) for item in valor):
         elementos = cast(list[str], valor)
-        return "\n".join(f"- {elemento.strip()}" for elemento in elementos if elemento.strip())
+        normalizados = [validar_caracteres_configuracion(elemento, clave) for elemento in elementos]
+        if any("\n" in elemento for elemento in normalizados):
+            raise ValueError(f"La lista de {clave} debe contener elementos de una sola linea")
+        return "\n".join(f"- {elemento}" for elemento in normalizados if elemento)
     raise ValueError(f"El valor de {clave} debe ser una cadena o una lista de cadenas")
 
 
@@ -153,7 +234,51 @@ def analizar_valores_directos(valores: list[str]) -> dict[str, str]:
         clave_limpia = clave.strip()
         if not clave_limpia or not valor.strip():
             raise ValueError(f"Valor invalido, se esperaba CLAVE=VALOR: {expresion}")
-        resultado[clave_limpia] = valor.strip()
+        if clave_limpia in resultado:
+            raise ValueError(f"--valor repite la clave: {clave_limpia}")
+        resultado[clave_limpia] = validar_caracteres_configuracion(valor, clave_limpia)
+    return resultado
+
+
+def combinar_valores_usuario(
+    contrato: ContratoPlantilla,
+    configuracion: dict[str, str],
+    nombre_proyecto: str | None,
+    idioma_nombres: str | None,
+    valores_directos: dict[str, str],
+) -> dict[str, str]:
+    """Combina entradas sin permitir precedencias silenciosas ni derivados externos."""
+    fuentes: list[tuple[str, dict[str, str]]] = [("configuracion JSON", configuracion)]
+    if nombre_proyecto is not None:
+        fuentes.append(("argumento nombre_proyecto", {"NOMBRE_PROYECTO": nombre_proyecto}))
+    if idioma_nombres is not None:
+        fuentes.append(("argumento idioma_nombres", {"IDIOMA_NOMBRES": idioma_nombres}))
+    fuentes.append(("argumentos --valor", valores_directos))
+
+    resultado: dict[str, str] = {}
+    origen_por_clave: dict[str, str] = {}
+    for fuente, valores in fuentes:
+        for clave, valor in valores.items():
+            if clave in resultado:
+                raise ValueError(
+                    f"{clave} se definio mas de una vez: {origen_por_clave[clave]} y {fuente}"
+                )
+            resultado[clave] = validar_caracteres_configuracion(valor, clave)
+            origen_por_clave[clave] = fuente
+
+    desconocidas = sorted(set(resultado) - set(contrato["placeholders"]))
+    if desconocidas:
+        raise ValueError(f"Placeholders no declarados en la configuracion: {', '.join(desconocidas)}")
+    derivadas = sorted(
+        clave
+        for clave in resultado
+        if contrato["placeholders"][clave]["origen"] == "derivado"
+    )
+    if derivadas:
+        raise ValueError(
+            "Los valores derivados no se aceptan desde configuracion o CLI: "
+            + ", ".join(derivadas)
+        )
     return resultado
 
 
@@ -463,12 +588,13 @@ def main() -> int:
             raise ValueError("Falta .plantilla-framework; la plantilla ya fue inicializada o no es una copia valida")
         contrato = cargar_contrato(raiz / "configuracion_plantilla.json")
         skills_instaladas = validar_skills_instaladas(raiz, argumentos.skill_seleccionada)
-        valores = cargar_valores(argumentos.configuracion)
-        if argumentos.nombre_proyecto:
-            valores["NOMBRE_PROYECTO"] = argumentos.nombre_proyecto
-        if argumentos.idioma_nombres:
-            valores["IDIOMA_NOMBRES"] = argumentos.idioma_nombres
-        valores.update(analizar_valores_directos(argumentos.valor))
+        valores = combinar_valores_usuario(
+            contrato,
+            cargar_valores(argumentos.configuracion),
+            argumentos.nombre_proyecto,
+            argumentos.idioma_nombres,
+            analizar_valores_directos(argumentos.valor),
+        )
         valores["VERSION_FRAMEWORK"] = contrato["version_framework"]
         valores["LISTA_SKILLS_INSTALADAS"] = "\n".join(
             f"- `{nombre}`" for nombre in skills_instaladas

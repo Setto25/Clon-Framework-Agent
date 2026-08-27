@@ -1,7 +1,7 @@
 # Estado del proyecto: agent-framework
 
-**Ultima actualizacion:** 2026-08-27 (rev 22)
-**Estado general:** Referencias interoperables depuradas; pilotos y procedencia pendientes
+**Ultima actualizacion:** 2026-08-27 (rev 23)
+**Estado general:** Contrato y entradas estrictas; pilotos y procedencia pendientes
 **Fase activa:** Fase 6 — validacion interna previa a pilotos
 
 ## 1. Objetivo
@@ -110,6 +110,10 @@ Cada stack tiene LEEME.md con reglas adicionales, terminos tecnicos y procedimie
 58. **Referencia arqueologica eliminada.** El indice de una instancia ya no apunta a `documentacion/analisis/`, ruta historica que solo existe en el meta-repositorio.
 59. **Referencias condicionales comprobadas.** La version `0.2.0-alpha.4` y 23 pruebas verifican que cada stack citado tenga `LEEME.md` y referencia de lecciones, y que las Skills condicionales del indice existan en la fuente.
 60. **Exportacion agnostica aprobada.** El commit `91346e6` aprobo el contrato y las 23 pruebas desde un `git archive` limpio; los temporales se eliminaron al finalizar.
+61. **Contrato ejecutable estricto.** La version `0.2.0-alpha.5` acepta solamente contrato version `2`, sintaxis `{{CLAVE}}`, origenes conocidos, claves exactas y rutas relativas portables sin duplicados.
+62. **Precedencia ambigua eliminada.** Una clave no puede repetirse entre JSON, argumentos posicionales o `--valor`; los campos derivados se calculan internamente y no aceptan suplantacion externa.
+63. **Texto de configuracion endurecido.** Los saltos multilinea y tabulaciones legitimos se conservan, mientras controles Unicode invisibles y listas con elementos multilinea se rechazan antes de escribir.
+64. **Regresion de entradas ampliada.** La suite tiene 28 pruebas e incluye contratos futuros o deformados, valores derivados externos, duplicados entre fuentes y controles Unicode.
 
 ## 5. Que falta
 
@@ -121,4 +125,4 @@ Cada stack tiene LEEME.md con reglas adicionales, terminos tecnicos y procedimie
 
 ## 6. Siguiente paso logico
 
-Mientras los pilotos permanezcan pospuestos, continuar la auditoria interna de entradas derivadas y validacion del contrato, priorizando tipos, valores permitidos y mensajes de error recuperables. Ejecutar un piloto real solo cuando el usuario decida crear un proyecto.
+Mientras los pilotos permanezcan pospuestos, auditar la portabilidad de rutas, enlaces simbolicos y limites del destino frente a copias o configuraciones manipuladas. Ejecutar un piloto real solo cuando el usuario decida crear un proyecto.
