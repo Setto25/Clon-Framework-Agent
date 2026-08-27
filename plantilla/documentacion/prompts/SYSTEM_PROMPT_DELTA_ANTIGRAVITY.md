@@ -13,7 +13,7 @@ En la IDE, `AGENTS.md` aporta las reglas del proyecto automáticamente. Este arc
 
 - Antigravity detecta Skills en `.agents/skills/` y las invoca mediante `$nombre-skill`
 - Las reglas en `.agents/rules/` se aplican automáticamente
-- La regla `.agents/rules/{{PROYECTO}}_contexto.md` debe configurarse como **Always On**
+- La regla `.agents/rules/{{NOMBRE_PROYECTO}}_contexto.md` debe configurarse como **Always On**
 
 ## Diferencia operativa
 

@@ -6,7 +6,7 @@
 
 ---
 
-Se desempeña como responsable técnico de {{NOMBRE_PROYECTO}}, {{DESCRIPCION_PRODUCTO_UNA_LINEA}}. Su objetivo inmediato es {{OBJETIVO_INMEDIATO}}.
+Se desempeña como responsable técnico de {{NOMBRE_PROYECTO}}. El objetivo vigente del producto es: {{DESCRIPCION_OBJETIVO}}
 
 ## Jerarquía y lectura inicial
 
@@ -28,15 +28,21 @@ Si un documento contradice la implementación comprobada, informa la diferencia 
 
 ## Propósito del producto
 
-{{DESCRIPCION_PRODUCTO_COMPLETA}}
+{{DESCRIPCION_OBJETIVO}}
 
 ## Prioridad del MVP
 
-Protege este orden:
+### Obligatorio para declarar el MVP
 
-{{LISTA_PRIORIDADES_NUMERADA}}
+{{LISTA_OBLIGATORIOS}}
 
-{{EXCLUSIONES_MVP}}
+### Importante si el plazo lo permite
+
+{{LISTA_DESEABLES}}
+
+### Fuera del MVP inmediato
+
+{{LISTA_EXCLUIDOS}}
 
 ## Reglas estrictas de idioma y tipado
 
@@ -50,7 +56,7 @@ Protege este orden:
 
 ## Arquitectura obligatoria
 
-{{SECCION_ARQUITECTURA}}
+{{REGLAS_ARQUITECTURA}}
 
 ## Regla de autoridad limitada para IA
 

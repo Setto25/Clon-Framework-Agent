@@ -1,0 +1,114 @@
+{
+  "version_contrato": 1,
+  "sintaxis_placeholder": "{{CLAVE}}",
+  "rutas_excluidas": [
+    ".agents/skills"
+  ],
+  "archivos_incluidos": [
+    ".env.ejemplo",
+    "AGENTS.md",
+    "PROJECT_STATE.md",
+    ".agents/rules/claude.md",
+    ".agents/rules/excepciones_nominales.md",
+    "documentacion/INDICE_LECTURA_AGENTES.md",
+    "documentacion/REGISTRO_CAMBIOS.md",
+    "documentacion/prompts/*.md"
+  ],
+  "placeholders": {
+    "NOMBRE_PROYECTO": {
+      "obligatorio": true,
+      "origen": "usuario",
+      "descripcion": "Identifica el proyecto generado."
+    },
+    "IDIOMA_NOMBRES": {
+      "obligatorio": true,
+      "origen": "usuario",
+      "descripcion": "Define el idioma de nombres, comentarios y documentacion."
+    },
+    "PREFIJO_VARIABLES": {
+      "obligatorio": true,
+      "origen": "derivado",
+      "descripcion": "Representa el nombre normalizado para variables de entorno."
+    },
+    "FECHA": {
+      "obligatorio": true,
+      "origen": "derivado",
+      "descripcion": "Registra la fecha de inicializacion."
+    },
+    "ZONA_HORARIA": {
+      "obligatorio": true,
+      "origen": "usuario",
+      "descripcion": "Define la zona horaria operativa del proyecto."
+    },
+    "ESTADO_BREVE": {
+      "obligatorio": true,
+      "origen": "predeterminado",
+      "descripcion": "Resume el estado inicial del proyecto."
+    },
+    "FASE_ACTIVA": {
+      "obligatorio": true,
+      "origen": "predeterminado",
+      "descripcion": "Identifica la fase inicial de desarrollo."
+    },
+    "DESCRIPCION_OBJETIVO": {
+      "obligatorio": true,
+      "origen": "usuario",
+      "descripcion": "Describe el producto, sus destinatarios y el objetivo vigente."
+    },
+    "LISTA_OBLIGATORIOS": {
+      "obligatorio": true,
+      "origen": "usuario",
+      "descripcion": "Enumera el alcance obligatorio del MVP."
+    },
+    "LISTA_DESEABLES": {
+      "obligatorio": false,
+      "origen": "usuario",
+      "descripcion": "Enumera el alcance deseable si el plazo lo permite."
+    },
+    "LISTA_EXCLUIDOS": {
+      "obligatorio": true,
+      "origen": "usuario",
+      "descripcion": "Enumera el alcance excluido del MVP inmediato."
+    },
+    "HARDWARE_O_INFRA": {
+      "obligatorio": false,
+      "origen": "usuario",
+      "descripcion": "Registra hardware o infraestructura confirmada."
+    },
+    "LISTA_DECISIONES_NUMERADA": {
+      "obligatorio": false,
+      "origen": "usuario",
+      "descripcion": "Registra decisiones tecnicas iniciales."
+    },
+    "HISTORIAL_IMPLEMENTACION": {
+      "obligatorio": true,
+      "origen": "predeterminado",
+      "descripcion": "Describe la implementacion existente al iniciar el proyecto."
+    },
+    "LISTA_TECNOLOGIAS": {
+      "obligatorio": false,
+      "origen": "usuario",
+      "descripcion": "Enumera tecnologias y versiones decididas."
+    },
+    "SIGUIENTE_PASO": {
+      "obligatorio": true,
+      "origen": "usuario",
+      "descripcion": "Define la siguiente accion logica."
+    },
+    "BLOQUEOS": {
+      "obligatorio": true,
+      "origen": "predeterminado",
+      "descripcion": "Registra bloqueos conocidos o confirma su ausencia."
+    },
+    "REGLAS_ARQUITECTURA": {
+      "obligatorio": true,
+      "origen": "usuario",
+      "descripcion": "Define restricciones y decisiones obligatorias de arquitectura."
+    },
+    "EXCEPCIONES_ADICIONALES": {
+      "obligatorio": false,
+      "origen": "usuario",
+      "descripcion": "Registra excepciones nominales propias del proyecto."
+    }
+  }
+}

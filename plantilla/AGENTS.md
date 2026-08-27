@@ -26,11 +26,17 @@
 
 ## 4. Prioridad del MVP
 
-Se protege este orden:
+### Obligatorio para declarar el MVP
 
-{{LISTA_PRIORIDADES}}
+{{LISTA_OBLIGATORIOS}}
 
-{{EXCLUSIONES_MVP}}
+### Importante si el plazo lo permite
+
+{{LISTA_DESEABLES}}
+
+### Fuera del MVP inmediato
+
+{{LISTA_EXCLUIDOS}}
 
 ## 5. Definición de terminado
 

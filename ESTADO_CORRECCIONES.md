@@ -1,8 +1,8 @@
 # Estado de correcciones de agent-framework
 
-**Ultima actualizacion:** 2026-08-26 (rev 4)
-**Estado general:** Protecciones tecnicas instaladas; licencia pendiente
-**Fase activa:** Fase 2 — seguridad, licencia y atribuciones
+**Ultima actualizacion:** 2026-08-26 (rev 5)
+**Estado general:** Contrato de plantilla validado; licencia pendiente
+**Fase activa:** Fase 4 — reconstruccion del inicializador
 **Rama de trabajo:** `codex/estabilizacion-framework`
 
 ## 1. Proposito
@@ -40,9 +40,9 @@ El framework debe llegar a una version `v1.0.0` que cumpla estas condiciones:
 | Fase | Alcance | Estado | Criterio de salida |
 |---|---|---|---|
 | 1 | Estabilizar Git y definir la linea base | Completada | Rama canónica definida, arbol limpio y clon reproducible |
-| 2 | Seguridad, `.gitignore`, licencia y atribuciones | En curso | `.env` protegido, licencia y atribuciones completas |
-| 3 | Contrato unico de plantilla y placeholders | Pendiente | Manifiesto valido y placeholders sin duplicidad |
-| 4 | Reconstruir el inicializador | Pendiente | Un comando genera un proyecto completo y seguro |
+| 2 | Seguridad, `.gitignore`, licencia y atribuciones | En curso — procedencia | `.env` protegido, licencia y atribuciones completas |
+| 3 | Contrato unico de plantilla y placeholders | Completada | Manifiesto valido y placeholders sin duplicidad |
+| 4 | Reconstruir el inicializador | En curso | Un comando genera un proyecto completo y seguro |
 | 5 | Corregir wizard, documentos y referencias | Pendiente | No existen archivos o rutas prometidas ausentes |
 | 6 | Validar Skills, stacks y agentes | Pendiente | Solo se descubren Skills activas y las guias estan comprobadas |
 | 7 | Incorporar pruebas y CI | Pendiente | Matriz automatica aprobada en plataformas soportadas |
@@ -101,6 +101,26 @@ La clasificacion confirmo que `_dryrun2/` era una salida generada para `proyecto
 - No existe una suite automatica que demuestre una instalacion reproducible.
 
 ## 7. Registro de avance
+
+### 2026-08-26 — Rev 5
+
+**Completado:**
+
+- Se creo `plantilla/configuracion_plantilla.json` como fuente unica de placeholders configurables.
+- El contrato excluye expresamente `.agents/skills` mientras las Skills permanecen congeladas.
+- Se creo `scripts/validar_contrato_plantilla.py` con tipado explicito y validacion estructural.
+- Se unifico el vocabulario de `plantilla/AGENTS.md` y `SYSTEM_PROMPT_BASE.md` con `PROJECT_STATE.md`.
+- Se eliminaron de los archivos configurables los alias `DESCRIPCION_PRODUCTO_UNA_LINEA`, `OBJETIVO_INMEDIATO`, `DESCRIPCION_PRODUCTO_COMPLETA`, `LISTA_PRIORIDADES_NUMERADA`, `LISTA_PRIORIDADES`, `EXCLUSIONES_MVP`, `SECCION_ARQUITECTURA` y `PROYECTO`.
+- El comando `python scripts/validar_contrato_plantilla.py` finalizo correctamente.
+- Se confirmo que esta fase no modifica ninguna Skill.
+
+**Limite deliberado:**
+
+Los placeholders operativos que viven dentro de Skills no forman parte del contrato de inicializacion mientras su procedencia se encuentre en revision. El validador no los modifica ni los interpreta como configuracion del proyecto.
+
+**Resultado:**
+
+La Fase 3 queda completada. La Fase 4 puede reconstruir el inicializador para consumir el manifiesto sin duplicar nombres ni reglas de sustitucion.
 
 ### 2026-08-26 — Rev 4
 
@@ -193,7 +213,7 @@ El usuario indico que otras Skills tambien pueden contener adaptaciones de produ
 
 ## 8. Siguiente paso exacto
 
-Versionar las protecciones tecnicas y el registro de atribuciones. Despues se iniciara el contrato de placeholders fuera de las Skills, manteniendo congelado todo `plantilla/.agents/skills/`.
+Versionar el contrato y su validador. Despues se reconstruira el inicializador Python para consumir `configuracion_plantilla.json`, sin modificar la Skill `iniciar-proyecto` mientras permanezca congelada.
 
 ## 9. Bloqueos
 

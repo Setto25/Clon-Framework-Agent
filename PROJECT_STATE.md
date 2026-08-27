@@ -1,8 +1,8 @@
 # Estado del proyecto: agent-framework
 
-**Ultima actualizacion:** 2026-08-26 (rev 6)
+**Ultima actualizacion:** 2026-08-26 (rev 7)
 **Estado general:** Plantilla funcional en proceso de endurecimiento
-**Fase activa:** Fase 2 — seguridad, licencia y atribuciones
+**Fase activa:** Fase 4 — reconstruccion del inicializador
 
 ## 1. Objetivo
 
@@ -66,6 +66,8 @@ Cada stack tiene LEEME.md con reglas adicionales, terminos tecnicos y procedimie
 14. **Skills congeladas por procedencia.** Por decision del usuario no se modifican, agregan ni eliminan Skills hasta completar el inventario de fuentes, versiones y licencias. Los riesgos se documentan en `ATRIBUCIONES.md`.
 15. **Protecciones Git instaladas.** La raiz y `plantilla/` incluyen `.gitignore` y `.gitattributes`; `.env` queda ignorado, `.env.ejemplo` permanece versionable y los archivos de texto principales usan finales LF.
 16. **Licencia raiz diferida.** No se aplicara una licencia global hasta separar el contenido original de las adaptaciones con derechos pendientes. La correccion tecnica continua sin tocar Skills.
+17. **Contrato unico de placeholders.** `plantilla/configuracion_plantilla.json` declara los campos configurables y `scripts/validar_contrato_plantilla.py` comprueba su uso. Los alias duplicados se eliminaron fuera de Skills.
+18. **Limite de congelacion respetado.** El contrato excluye `.agents/skills`; los placeholders operativos de esas rutas no se modifican ni se validan como configuracion inicial.
 
 ## 5. Que falta
 
@@ -76,4 +78,4 @@ Cada stack tiene LEEME.md con reglas adicionales, terminos tecnicos y procedimie
 
 ## 6. Siguiente paso logico
 
-Versionar las protecciones de la Fase 2 e iniciar el contrato unico de placeholders de la Fase 3, sin modificar ni agregar Skills.
+Versionar el contrato de la Fase 3 y reconstruir el inicializador Python para consumirlo, sin modificar la Skill `iniciar-proyecto` ni ninguna otra Skill congelada.
