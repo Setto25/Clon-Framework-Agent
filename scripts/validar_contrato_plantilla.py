@@ -22,6 +22,7 @@ class ConfiguracionPlantilla(TypedDict):
     """Representa el contrato validado de la plantilla."""
 
     version_contrato: int
+    version_framework: str
     sintaxis_placeholder: str
     rutas_excluidas: list[str]
     archivos_incluidos: list[str]
@@ -29,6 +30,19 @@ class ConfiguracionPlantilla(TypedDict):
 
 
 PATRON_PLACEHOLDER = re.compile(r"\{\{([A-Z0-9_]+)\}\}")
+
+
+def cargar_json_sin_duplicados(contenido: str, nombre: str) -> object:
+    """Carga JSON y rechaza claves duplicadas en cualquier objeto."""
+    def construir_objeto(pares: list[tuple[str, object]]) -> dict[str, object]:
+        resultado: dict[str, object] = {}
+        for clave, valor in pares:
+            if clave in resultado:
+                raise ValueError(f"{nombre} contiene una clave duplicada: {clave}")
+            resultado[clave] = valor
+        return resultado
+
+    return cast(object, json.loads(contenido, object_pairs_hook=construir_objeto))
 
 
 def exigir_diccionario(valor: object, nombre: str) -> dict[str, object]:
@@ -47,13 +61,16 @@ def exigir_lista_cadenas(valor: object, nombre: str) -> list[str]:
 
 def cargar_configuracion(ruta: Path) -> ConfiguracionPlantilla:
     """Carga y valida la estructura minima del contrato."""
-    contenido = json.loads(ruta.read_text(encoding="utf-8"))
+    contenido = cargar_json_sin_duplicados(ruta.read_text(encoding="utf-8"), str(ruta))
     datos = exigir_diccionario(contenido, "configuracion")
 
     version = datos.get("version_contrato")
+    version_framework = datos.get("version_framework")
     sintaxis = datos.get("sintaxis_placeholder")
     if not isinstance(version, int) or version < 1:
         raise ValueError("version_contrato debe ser un entero positivo")
+    if not isinstance(version_framework, str) or not version_framework:
+        raise ValueError("version_framework debe ser una cadena no vacia")
     if not isinstance(sintaxis, str) or not sintaxis:
         raise ValueError("sintaxis_placeholder debe ser una cadena no vacia")
 
@@ -80,6 +97,7 @@ def cargar_configuracion(ruta: Path) -> ConfiguracionPlantilla:
 
     return ConfiguracionPlantilla(
         version_contrato=version,
+        version_framework=version_framework,
         sintaxis_placeholder=sintaxis,
         rutas_excluidas=exigir_lista_cadenas(datos.get("rutas_excluidas"), "rutas_excluidas"),
         archivos_incluidos=exigir_lista_cadenas(datos.get("archivos_incluidos"), "archivos_incluidos"),

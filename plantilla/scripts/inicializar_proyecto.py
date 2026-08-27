@@ -1,337 +1,375 @@
 #!/usr/bin/env python3
-"""
-Inicializa un nuevo proyecto a partir de la plantilla del framework agentico.
-Uso: python scripts/inicializar_proyecto.py <nombre-proyecto> [idioma-nombres]
-"""
+"""Inicializa una copia de la plantilla mediante su contrato declarado."""
 
-import sys
-import re
+from __future__ import annotations
+
+import argparse
 import json
+import os
+import re
 import shutil
 import subprocess
-from pathlib import Path
+import sys
+import tempfile
+import unicodedata
 from datetime import datetime
-
-# Fuerza UTF-8 en stdout para que los checkmarks (✓ ⚠) funcionen en terminales
-# Windows (cp1252 por defecto en PowerShell/cmd). Sin esto falla con UnicodeEncodeError.
-if hasattr(sys.stdout, "reconfigure"):
-    sys.stdout.reconfigure(encoding="utf-8")
+from pathlib import Path
+from typing import TypedDict, cast
 
 
-def main():
-    # --- Configuracion ---
-    if len(sys.argv) < 2:
-        print("Uso: python scripts/inicializar_proyecto.py <nombre-proyecto> [idioma-nombres]")
-        print("  nombre-proyecto: Nombre del proyecto (ej: entrevoces, miapp)")
-        print("  idioma-nombres:  Idioma para nombres de archivos (default: español)")
-        sys.exit(1)
+class CampoPlaceholder(TypedDict):
+    """Representa la configuracion de un placeholder."""
 
-    nombre_proyecto = sys.argv[1]
-    idioma_nombres = sys.argv[2] if len(sys.argv) > 2 else "español"
-    raiz = Path.cwd()
+    obligatorio: bool
+    origen: str
+    descripcion: str
 
-    print(f"=== Inicializando proyecto: {nombre_proyecto} ===")
-    print(f"    Idioma de nombres: {idioma_nombres}")
-    print()
 
-    # --- Validacion 1: Centinela ---
-    centinela = raiz / ".plantilla-framework"
-    if not centinela.exists():
-        print("ERROR: No se encontró .plantilla-framework en el directorio actual.")
-        print("       Este script solo debe ejecutarse dentro de una copia limpia de la plantilla.")
-        print(f"       Directorio actual: {raiz}")
-        sys.exit(1)
+class ContratoPlantilla(TypedDict):
+    """Representa el contrato necesario para inicializar la plantilla."""
 
-    # --- Validacion 2: Git limpio ---
-    git_dir = raiz / ".git"
-    if git_dir.exists():
-        resultado = subprocess.run(
-            ["git", "status", "--porcelain"],
-            capture_output=True, text=True, cwd=raiz
-        )
-        if resultado.stdout.strip():
-            print("ERROR: El árbol de trabajo tiene cambios sin commitear.")
-            print("       Haz commit o stash antes de inicializar, para poder revertir con git checkout si algo falla.")
-            print()
-            print("Archivos con cambios:")
-            print(resultado.stdout)
-            sys.exit(1)
+    version_contrato: int
+    version_framework: str
+    sintaxis_placeholder: str
+    rutas_excluidas: list[str]
+    archivos_incluidos: list[str]
+    placeholders: dict[str, CampoPlaceholder]
 
-    # --- Paso 1: Reemplazar placeholders ---
-    print("[1/7] Reemplazando placeholders automáticos...")
 
-    # Más agresivo que bash (tr '-' '_'): reemplaza CUALQUIER carácter no alfanumérico por '_'.
-    # Para nombres de proyecto normales es equivalente; difiere con espacios u otros símbolos (ej: "mi app" → "MI_APP").
-    prefijo_variables = re.sub(r'[^A-Z0-9_]', '_', nombre_proyecto.upper())
+PATRON_PLACEHOLDER = re.compile(r"\{\{([A-Z0-9_]+)\}\}")
+VALORES_PREDETERMINADOS: dict[str, str] = {
+    "ESTADO_BREVE": "Inicializando",
+    "FASE_ACTIVA": "Fase 0 — Setup",
+    "LISTA_DESEABLES": "- Sin elementos deseables definidos.",
+    "HARDWARE_O_INFRA": "- Sin hardware o infraestructura confirmada.",
+    "LISTA_DECISIONES_NUMERADA": "1. Sin decisiones tecnicas adicionales.",
+    "HISTORIAL_IMPLEMENTACION": "- Sin modulos implementados todavia.",
+    "LISTA_TECNOLOGIAS": "- Pendiente de definicion.",
+    "BLOQUEOS": "- Sin bloqueos conocidos.",
+    "EXCEPCIONES_ADICIONALES": "- Sin excepciones adicionales.",
+}
 
-    reemplazos = {
-        "NOMBRE_PROYECTO":   nombre_proyecto,
-        "IDIOMA_NOMBRES":    idioma_nombres,
-        "PROYECTO":          nombre_proyecto,
-        "PREFIJO_VARIABLES": prefijo_variables,
-    }
 
-    extensiones = {".md", ".yaml", ".sh", ".py"}
-    archivos_modificados = []
+def cargar_json_sin_duplicados(contenido: str, nombre: str) -> object:
+    """Carga JSON y rechaza claves duplicadas en cualquier objeto."""
+    def construir_objeto(pares: list[tuple[str, object]]) -> dict[str, object]:
+        resultado: dict[str, object] = {}
+        for clave, valor in pares:
+            if clave in resultado:
+                raise ValueError(f"{nombre} contiene una clave duplicada: {clave}")
+            resultado[clave] = valor
+        return resultado
 
-    for archivo in sorted(raiz.rglob("*")):
-        if not archivo.is_file():
-            continue
-        if archivo.suffix not in extensiones:
-            continue
-        # Saltar el propio script y el .sh deprecado (contiene {{$p}} y {{placeholders}}
-        # como literales de código bash, no como placeholders reales del proyecto).
-        if archivo.resolve() == Path(__file__).resolve():
-            continue
-        if archivo.name == "inicializar_proyecto.sh":
-            continue
+    return cast(object, json.loads(contenido, object_pairs_hook=construir_objeto))
 
-        try:
-            contenido = archivo.read_text(encoding="utf-8")
-        except (UnicodeDecodeError, PermissionError):
-            continue
 
-        contenido_nuevo = contenido
-        for placeholder, valor in reemplazos.items():
-            # re.escape() equivale a \Q...\E de perl — sanitiza metacaracteres del placeholder.
-            # Usar callable en re.sub hace que el valor de reemplazo sea literal (no se interpreta como regex).
-            patron = r"\{\{" + re.escape(placeholder) + r"\}\}"
-            contenido_nuevo = re.sub(patron, lambda m, v=valor: v, contenido_nuevo)
+def configurar_salida_utf8() -> None:
+    """Configura UTF-8 cuando la terminal permite cambiar su codificacion."""
+    reconfigurar = getattr(sys.stdout, "reconfigure", None)
+    if callable(reconfigurar):
+        reconfigurar(encoding="utf-8")
 
-        if contenido_nuevo != contenido:
-            archivo.write_text(contenido_nuevo, encoding="utf-8")
-            archivos_modificados.append(archivo.relative_to(raiz))
-            print(f"    ✓ {archivo.relative_to(raiz)}")
 
-    if not archivos_modificados:
-        print("    (ningún archivo con placeholders encontrado)")
+def exigir_diccionario(valor: object, nombre: str) -> dict[str, object]:
+    """Verifica que un valor sea un objeto JSON."""
+    if not isinstance(valor, dict):
+        raise ValueError(f"{nombre} debe ser un objeto JSON")
+    return cast(dict[str, object], valor)
 
-    # --- Paso 2: Crear .env desde ejemplo ---
-    print()
-    print("[2/7] Configurando entorno...")
 
-    env_file    = raiz / ".env"
-    env_ejemplo = raiz / ".env.ejemplo"
+def exigir_lista_cadenas(valor: object, nombre: str) -> list[str]:
+    """Verifica que un valor sea una lista de cadenas."""
+    if not isinstance(valor, list) or not all(isinstance(item, str) for item in valor):
+        raise ValueError(f"{nombre} debe ser una lista de cadenas")
+    return cast(list[str], valor)
 
-    if not env_file.exists() and env_ejemplo.exists():
-        shutil.copy(env_ejemplo, env_file)
-        print("    ✓ .env creado desde .env.ejemplo")
-        print("    ⚠ Edita .env con tus valores reales antes de continuar")
-    else:
-        print("    - .env ya existe o .env.ejemplo no encontrado")
 
-    # --- Paso 3: Crear directorios faltantes ---
-    print()
-    print("[3/7] Creando directorios...")
+def cargar_contrato(ruta: Path) -> ContratoPlantilla:
+    """Carga el contrato y valida su estructura minima."""
+    contenido = cargar_json_sin_duplicados(ruta.read_text(encoding="utf-8"), str(ruta))
+    datos = exigir_diccionario(contenido, "contrato")
+    version_contrato = datos.get("version_contrato")
+    version_framework = datos.get("version_framework")
+    sintaxis = datos.get("sintaxis_placeholder")
+    if not isinstance(version_contrato, int) or version_contrato < 1:
+        raise ValueError("version_contrato debe ser un entero positivo")
+    if not isinstance(version_framework, str) or not version_framework:
+        raise ValueError("version_framework debe ser una cadena no vacia")
+    if not isinstance(sintaxis, str) or not sintaxis:
+        raise ValueError("sintaxis_placeholder debe ser una cadena no vacia")
 
-    directorios = [
-        "documentacion",
-        "infraestructura/registros",
-        "scripts",
-    ]
+    campos_crudos = exigir_diccionario(datos.get("placeholders"), "placeholders")
+    campos: dict[str, CampoPlaceholder] = {}
+    for clave, valor in campos_crudos.items():
+        campo = exigir_diccionario(valor, f"placeholders.{clave}")
+        obligatorio = campo.get("obligatorio")
+        origen = campo.get("origen")
+        descripcion = campo.get("descripcion")
+        if not isinstance(obligatorio, bool):
+            raise ValueError(f"placeholders.{clave}.obligatorio debe ser booleano")
+        if not isinstance(origen, str) or not origen:
+            raise ValueError(f"placeholders.{clave}.origen debe ser una cadena no vacia")
+        if not isinstance(descripcion, str) or not descripcion:
+            raise ValueError(f"placeholders.{clave}.descripcion debe ser una cadena no vacia")
+        campos[clave] = CampoPlaceholder(obligatorio=obligatorio, origen=origen, descripcion=descripcion)
 
-    for d in directorios:
-        ruta = raiz / Path(d)
-        ruta.mkdir(parents=True, exist_ok=True)
-        print(f"    ✓ {d}/")
-
-    # --- Paso 4: Inicializar git ---
-    print()
-    print("[4/7] Verificando repositorio git...")
-
-    if not git_dir.exists():
-        subprocess.run(["git", "init"], cwd=raiz, check=True)
-        print("    ✓ Repositorio git inicializado")
-    else:
-        print("    - Repositorio git ya existe")
-
-    # --- Paso 5: Eliminar centinela ---
-    print()
-    print("[5/7] Limpiando archivos de plantilla...")
-    # missing_ok=True equivale al rm -f del bash: no falla si el archivo ya no existe.
-    centinela.unlink(missing_ok=True)
-    print("    ✓ .plantilla-framework eliminado")
-
-    # --- Paso 6: Generar catalogo de skills ---
-    print()
-    print("[6/7] Descubriendo skills disponibles...")
-
-    skills_dir    = raiz / ".agents" / "skills"
-    catalogo_path = skills_dir / "catalogo_skills.json"
-
-    def extraer_frontmatter(skill_md: Path) -> dict:
-        """Extrae name y description del bloque --- YAML del SKILL.md."""
-        try:
-            lineas = skill_md.read_text(encoding="utf-8").splitlines()
-        except (UnicodeDecodeError, PermissionError):
-            return {}
-
-        en_frontmatter = False
-        datos = {}
-        for linea in lineas:
-            if linea.strip() == "---":
-                if not en_frontmatter:
-                    en_frontmatter = True
-                    continue
-                else:
-                    break
-            if en_frontmatter:
-                if linea.startswith("name:"):
-                    datos["nombre"] = linea[5:].strip().strip('"')
-                elif linea.startswith("description:"):
-                    datos["descripcion"] = linea[12:].strip().strip('"')
-        return datos
-
-    catalogo = {
-        "generado": datetime.now().isoformat(),
-        "proyecto": nombre_proyecto,
-        "core":     [],
-        "opcional": [],
-        "stacks":   [],
-    }
-
-    if skills_dir.exists():
-        # Core: skills sueltos bajo .agents/skills/ (excluir stacks/ y opcional/)
-        for skill_dir in sorted(skills_dir.iterdir()):
-            if not skill_dir.is_dir():
-                continue
-            if skill_dir.name in ("stacks", "opcional"):
-                continue
-            skill_md = skill_dir / "SKILL.md"
-            if skill_md.exists():
-                datos = extraer_frontmatter(skill_md)
-                datos["ruta"] = str(skill_dir.relative_to(raiz))
-                catalogo["core"].append(datos)
-
-        # Opcional
-        opcional_dir = skills_dir / "opcional"
-        if opcional_dir.exists():
-            for skill_dir in sorted(opcional_dir.iterdir()):
-                if not skill_dir.is_dir():
-                    continue
-                skill_md = skill_dir / "SKILL.md"
-                if skill_md.exists():
-                    datos = extraer_frontmatter(skill_md)
-                    datos["ruta"] = str(skill_dir.relative_to(raiz))
-                    catalogo["opcional"].append(datos)
-
-        # Stacks
-        stacks_dir = skills_dir / "stacks"
-        if stacks_dir.exists():
-            for stack_dir in sorted(stacks_dir.iterdir()):
-                if not stack_dir.is_dir():
-                    continue
-
-                # Descripcion del stack desde LEEME.md
-                descripcion_stack = ""
-                leeme = stack_dir / "LEEME.md"
-                if leeme.exists():
-                    for linea in leeme.read_text(encoding="utf-8").splitlines():
-                        if linea.startswith("**Para:**"):
-                            descripcion_stack = linea[9:].strip()
-                            break
-
-                skills_stack = []
-
-                # Skills bajo stack_dir/skills/*/
-                sub_skills_dir = stack_dir / "skills"
-                if sub_skills_dir.exists():
-                    for skill_dir in sorted(sub_skills_dir.iterdir()):
-                        if not skill_dir.is_dir():
-                            continue
-                        skill_md = skill_dir / "SKILL.md"
-                        if skill_md.exists():
-                            datos = extraer_frontmatter(skill_md)
-                            datos["ruta"] = str(skill_dir.relative_to(raiz))
-                            skills_stack.append(datos)
-
-                # Skills directamente bajo stack_dir/ (fuera de skills/), igual que el bash original.
-                # Cubre el caso futuro donde un skill viva en stack_dir/<nombre>/SKILL.md
-                # en vez de stack_dir/skills/<nombre>/SKILL.md.
-                for skill_dir in sorted(stack_dir.iterdir()):
-                    if not skill_dir.is_dir():
-                        continue
-                    if skill_dir.name in ("domain-packs", "skills"):
-                        continue
-                    skill_md = skill_dir / "SKILL.md"
-                    if skill_md.exists():
-                        datos = extraer_frontmatter(skill_md)
-                        datos["ruta"] = str(skill_dir.relative_to(raiz))
-                        skills_stack.append(datos)
-
-                catalogo["stacks"].append({
-                    "stack":       stack_dir.name,
-                    "descripcion": descripcion_stack,
-                    "skills":      skills_stack,
-                })
-
-    catalogo_path.parent.mkdir(parents=True, exist_ok=True)
-    catalogo_path.write_text(
-        json.dumps(catalogo, ensure_ascii=False, indent=2),
-        encoding="utf-8"
+    return ContratoPlantilla(
+        version_contrato=version_contrato,
+        version_framework=version_framework,
+        sintaxis_placeholder=sintaxis,
+        rutas_excluidas=exigir_lista_cadenas(datos.get("rutas_excluidas"), "rutas_excluidas"),
+        archivos_incluidos=exigir_lista_cadenas(datos.get("archivos_incluidos"), "archivos_incluidos"),
+        placeholders=campos,
     )
-    print(f"    ✓ Catálogo generado: {catalogo_path.relative_to(raiz)}")
 
-    total_core    = len(catalogo["core"])
-    total_opcional = len(catalogo["opcional"])
-    total_stacks  = len(catalogo["stacks"])
-    print(f"\n    Resumen de skills descubiertos:")
-    print(f"      Core (siempre activas):  {total_core} skills")
-    print(f"      Opcional:                {total_opcional} skills")
-    print(f"      Stacks disponibles:      {total_stacks}")
-    print()
-    print(f"    El agente usará este catálogo para preguntar qué activar.")
-    print(f"    También puedes revisarlo manualmente: {catalogo_path.relative_to(raiz)}")
 
-    # --- Paso 7: Reporte de placeholders pendientes ---
-    print()
-    print("[7/7] Verificando placeholders que requieren configuración manual...")
+def normalizar_valor(valor: object, clave: str) -> str:
+    """Convierte un valor de configuracion a texto reproducible."""
+    if isinstance(valor, str):
+        return valor.strip()
+    if isinstance(valor, list) and all(isinstance(item, str) for item in valor):
+        elementos = cast(list[str], valor)
+        return "\n".join(f"- {elemento.strip()}" for elemento in elementos if elemento.strip())
+    raise ValueError(f"El valor de {clave} debe ser una cadena o una lista de cadenas")
 
-    pendientes: dict = {}
-    patron_placeholder = re.compile(r"\{\{[^}]+\}\}")
 
-    for archivo in sorted(raiz.rglob("*")):
-        if not archivo.is_file():
+def cargar_valores(ruta: Path | None) -> dict[str, str]:
+    """Carga valores de proyecto desde un archivo JSON opcional."""
+    if ruta is None:
+        return {}
+    contenido = cargar_json_sin_duplicados(ruta.read_text(encoding="utf-8"), str(ruta))
+    datos = exigir_diccionario(contenido, "configuracion de proyecto")
+    return {clave: normalizar_valor(valor, clave) for clave, valor in datos.items()}
+
+
+def analizar_valores_directos(valores: list[str]) -> dict[str, str]:
+    """Interpreta argumentos repetibles con formato CLAVE=VALOR."""
+    resultado: dict[str, str] = {}
+    for expresion in valores:
+        if "=" not in expresion:
+            raise ValueError(f"Valor invalido, se esperaba CLAVE=VALOR: {expresion}")
+        clave, valor = expresion.split("=", 1)
+        clave_limpia = clave.strip()
+        if not clave_limpia or not valor.strip():
+            raise ValueError(f"Valor invalido, se esperaba CLAVE=VALOR: {expresion}")
+        resultado[clave_limpia] = valor.strip()
+    return resultado
+
+
+def crear_prefijo_variables(nombre_proyecto: str) -> str:
+    """Deriva un prefijo portable para variables de entorno."""
+    normalizado = unicodedata.normalize("NFKD", nombre_proyecto)
+    sin_acentos = "".join(caracter for caracter in normalizado if not unicodedata.combining(caracter))
+    prefijo = re.sub(r"[^A-Z0-9]+", "_", sin_acentos.upper()).strip("_")
+    if not prefijo:
+        raise ValueError("NOMBRE_PROYECTO no produce un prefijo de variables valido")
+    if prefijo[0].isdigit():
+        prefijo = f"PROYECTO_{prefijo}"
+    return prefijo
+
+
+def completar_valores(
+    contrato: ContratoPlantilla,
+    valores: dict[str, str],
+    permitir_pendientes: bool,
+) -> tuple[dict[str, str], list[str]]:
+    """Completa derivados y predeterminados, y controla datos faltantes."""
+    desconocidos = sorted(set(valores) - set(contrato["placeholders"]))
+    if desconocidos:
+        raise ValueError(f"Placeholders no declarados en la configuracion: {', '.join(desconocidos)}")
+
+    resultado = dict(VALORES_PREDETERMINADOS)
+    resultado.update(valores)
+    nombre = resultado.get("NOMBRE_PROYECTO", "").strip()
+    if not nombre:
+        raise ValueError("NOMBRE_PROYECTO es obligatorio")
+    resultado["NOMBRE_PROYECTO"] = nombre
+    resultado.setdefault("IDIOMA_NOMBRES", "español")
+    resultado["PREFIJO_VARIABLES"] = crear_prefijo_variables(nombre)
+    resultado["IDENTIFICADOR_PROYECTO"] = resultado["PREFIJO_VARIABLES"].lower()
+    resultado["FECHA"] = datetime.now().astimezone().date().isoformat()
+
+    pendientes: list[str] = []
+    for clave, campo in contrato["placeholders"].items():
+        if resultado.get(clave, "").strip():
             continue
-        if archivo.suffix not in extensiones:
+        if campo["obligatorio"] and not permitir_pendientes:
+            pendientes.append(clave)
             continue
-        if archivo.resolve() == Path(__file__).resolve():
-            continue
-        if archivo.name == "inicializar_proyecto.sh":
-            continue
-        try:
-            contenido = archivo.read_text(encoding="utf-8")
-        except (UnicodeDecodeError, PermissionError):
-            continue
-        for match in patron_placeholder.findall(contenido):
-            pendientes.setdefault(match, [])
-            ruta_rel = str(archivo.relative_to(raiz))
-            if ruta_rel not in pendientes[match]:
-                pendientes[match].append(ruta_rel)
+        resultado[clave] = f"<!-- TODO: {clave} — completar cuando se defina -->"
 
     if pendientes:
-        print()
-        print("    Placeholders pendientes (requieren input manual o del agente):")
-        print()
-        print(f"    {'PLACEHOLDER':<40} ARCHIVO(S)")
-        print(f"    {'---':<40} ---")
-        for placeholder, archivos in sorted(pendientes.items()):
-            sufijo = f"  (+{len(archivos) - 10} mas)" if len(archivos) > 10 else ""
-            print(f"    {placeholder:<40} {', '.join(archivos[:10])}{sufijo}")
-    else:
-        print("    ✓ No quedan placeholders pendientes")
+        raise ValueError(
+            "Faltan valores obligatorios: "
+            + ", ".join(sorted(pendientes))
+            + ". Se puede usar --permitir-pendientes para marcarlos como TODO."
+        )
+    return resultado, sorted(clave for clave, valor in resultado.items() if valor.startswith("<!-- TODO:"))
 
-    # --- Resumen final ---
-    print()
-    print(f"=== Proyecto {nombre_proyecto} inicializado ===")
-    print()
-    print("Siguiente paso:")
-    print("  1. Edita .env con tus valores reales")
-    print("  2. Invoca $iniciar-proyecto con tu agente para completar placeholders y seleccionar skills")
-    print(f"     (el agente leerá {catalogo_path.relative_to(raiz)} para saber qué preguntar)")
-    print("  3. O rellena los {{placeholders}} manualmente y mueve skills a mano")
-    print(f"  4. Haz: git add -A && git commit -m 'init: proyecto {nombre_proyecto} desde plantilla'")
+
+def resolver_archivos(raiz: Path, patrones: list[str]) -> list[Path]:
+    """Resuelve todos los archivos declarados por el contrato."""
+    archivos: set[Path] = set()
+    for patron in patrones:
+        coincidencias = [ruta for ruta in raiz.glob(patron) if ruta.is_file()]
+        if not coincidencias:
+            raise ValueError(f"El patron del contrato no encontro archivos: {patron}")
+        archivos.update(coincidencias)
+    return sorted(archivos)
+
+
+def preparar_cambios(archivos: list[Path], valores: dict[str, str]) -> dict[Path, str]:
+    """Prepara todas las sustituciones antes de escribir un archivo."""
+    cambios: dict[Path, str] = {}
+    for archivo in archivos:
+        contenido = archivo.read_text(encoding="utf-8")
+        claves_encontradas = set(PATRON_PLACEHOLDER.findall(contenido))
+        faltantes = claves_encontradas - set(valores)
+        if faltantes:
+            raise ValueError(f"{archivo} contiene placeholders sin valor: {', '.join(sorted(faltantes))}")
+        contenido_nuevo = PATRON_PLACEHOLDER.sub(lambda coincidencia: valores[coincidencia.group(1)], contenido)
+        if contenido_nuevo != contenido:
+            cambios[archivo] = contenido_nuevo
+    return cambios
+
+
+def escribir_cambios(cambios: dict[Path, str], raiz: Path) -> None:
+    """Escribe cambios con respaldo temporal y restaura ante un fallo."""
+    with tempfile.TemporaryDirectory(prefix="respaldo-inicializacion-") as directorio_temporal:
+        respaldo = Path(directorio_temporal)
+        for archivo in cambios:
+            destino_respaldo = respaldo / archivo.relative_to(raiz)
+            destino_respaldo.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(archivo, destino_respaldo)
+        try:
+            for archivo, contenido in cambios.items():
+                temporal = archivo.with_name(f".{archivo.name}.temporal")
+                temporal.write_text(contenido, encoding="utf-8", newline="\n")
+                os.replace(temporal, archivo)
+        except OSError:
+            for archivo in cambios:
+                origen_respaldo = respaldo / archivo.relative_to(raiz)
+                if origen_respaldo.exists():
+                    shutil.copy2(origen_respaldo, archivo)
+            raise
+
+
+def ejecutar_git(argumentos: list[str], raiz: Path, comprobar: bool = True) -> subprocess.CompletedProcess[str]:
+    """Ejecuta Git sin utilizar un shell intermedio."""
+    return subprocess.run(
+        ["git", *argumentos],
+        cwd=raiz,
+        check=comprobar,
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        errors="replace",
+    )
+
+
+def verificar_git(raiz: Path) -> None:
+    """Inicializa Git o rechaza cambios rastreados preexistentes."""
+    directorio_git = raiz / ".git"
+    if not directorio_git.exists():
+        ejecutar_git(["init"], raiz)
+        return
+    referencia = ejecutar_git(["rev-parse", "--verify", "HEAD"], raiz, comprobar=False)
+    if referencia.returncode != 0:
+        return
+    cambios_trabajo = ejecutar_git(["diff", "--quiet"], raiz, comprobar=False)
+    cambios_preparados = ejecutar_git(["diff", "--cached", "--quiet"], raiz, comprobar=False)
+    if cambios_trabajo.returncode == 1 or cambios_preparados.returncode == 1:
+        raise ValueError("El repositorio contiene cambios rastreados sin confirmar")
+    if cambios_trabajo.returncode not in (0, 1) or cambios_preparados.returncode not in (0, 1):
+        raise ValueError("Git no pudo comprobar el estado del repositorio")
+
+
+def verificar_env_ignorado(raiz: Path) -> None:
+    """Comprueba que Git ignore `.env` antes de crear el archivo."""
+    resultado = ejecutar_git(["check-ignore", "--quiet", "--no-index", ".env"], raiz, comprobar=False)
+    if resultado.returncode != 0:
+        raise ValueError(".env no esta protegido por .gitignore")
+
+
+def crear_argumentos() -> argparse.Namespace:
+    """Define la interfaz de linea de comandos."""
+    analizador = argparse.ArgumentParser(description=__doc__)
+    analizador.add_argument("nombre_proyecto", nargs="?", help="Nombre del proyecto")
+    analizador.add_argument("idioma_nombres", nargs="?", help="Idioma de nombres")
+    analizador.add_argument("--configuracion", type=Path, help="Archivo JSON con valores por placeholder")
+    analizador.add_argument("--valor", action="append", default=[], metavar="CLAVE=VALOR")
+    analizador.add_argument("--permitir-pendientes", action="store_true")
+    analizador.add_argument("--sin-env", action="store_true")
+    return analizador.parse_args()
+
+
+def main() -> int:
+    """Ejecuta una inicializacion validada y reproducible."""
+    configurar_salida_utf8()
+    argumentos = crear_argumentos()
+    raiz = Path(__file__).resolve().parent.parent
+    centinela = raiz / ".plantilla-framework"
+
+    try:
+        if not centinela.exists():
+            raise ValueError("Falta .plantilla-framework; la plantilla ya fue inicializada o no es una copia valida")
+        contrato = cargar_contrato(raiz / "configuracion_plantilla.json")
+        valores = cargar_valores(argumentos.configuracion)
+        if argumentos.nombre_proyecto:
+            valores["NOMBRE_PROYECTO"] = argumentos.nombre_proyecto
+        if argumentos.idioma_nombres:
+            valores["IDIOMA_NOMBRES"] = argumentos.idioma_nombres
+        valores.update(analizar_valores_directos(argumentos.valor))
+        valores_completos, pendientes = completar_valores(contrato, valores, argumentos.permitir_pendientes)
+        archivos = resolver_archivos(raiz, contrato["archivos_incluidos"])
+        cambios = preparar_cambios(archivos, valores_completos)
+
+        verificar_git(raiz)
+        verificar_env_ignorado(raiz)
+        escribir_cambios(cambios, raiz)
+        for directorio in ("documentacion", "infraestructura/registros", "scripts"):
+            (raiz / directorio).mkdir(parents=True, exist_ok=True)
+
+        env_ejemplo = raiz / ".env.ejemplo"
+        env_destino = raiz / ".env"
+        if not argumentos.sin_env and not env_destino.exists():
+            shutil.copy2(env_ejemplo, env_destino)
+
+        estado_plantilla = {
+            "version_framework": contrato["version_framework"],
+            "version_contrato": contrato["version_contrato"],
+            "inicializado_en": datetime.now().astimezone().isoformat(),
+            "nombre_proyecto": valores_completos["NOMBRE_PROYECTO"],
+            "idioma_nombres": valores_completos["IDIOMA_NOMBRES"],
+            "pendientes": pendientes,
+            "skills_congeladas": True,
+        }
+        (raiz / ".estado-plantilla.json").write_text(
+            json.dumps(estado_plantilla, ensure_ascii=False, indent=2) + "\n",
+            encoding="utf-8",
+            newline="\n",
+        )
+        centinela.unlink()
+
+        restantes: dict[str, list[str]] = {}
+        for archivo in archivos:
+            for clave in PATRON_PLACEHOLDER.findall(archivo.read_text(encoding="utf-8")):
+                restantes.setdefault(clave, []).append(str(archivo.relative_to(raiz)))
+        if restantes:
+            detalle = "; ".join(f"{clave}: {', '.join(rutas)}" for clave, rutas in sorted(restantes.items()))
+            raise ValueError(f"Quedaron placeholders configurables sin resolver: {detalle}")
+
+    except (OSError, UnicodeError, json.JSONDecodeError, ValueError, subprocess.SubprocessError) as error:
+        print(f"ERROR: {error}", file=sys.stderr)
+        return 1
+
+    print(f"Proyecto inicializado: {valores_completos['NOMBRE_PROYECTO']}")
+    print(f"Archivos configurados: {len(cambios)}")
+    print(f"Pendientes marcados: {len(pendientes)}")
+    print("Skills: conservadas sin modificaciones por auditoria de procedencia")
+    print("Siguiente paso: revisar .env y confirmar los TODO pendientes antes del primer commit.")
+    return 0
 
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())

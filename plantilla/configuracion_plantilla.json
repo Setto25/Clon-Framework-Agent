@@ -1,5 +1,6 @@
 {
   "version_contrato": 1,
+  "version_framework": "0.1.0-alpha.1",
   "sintaxis_placeholder": "{{CLAVE}}",
   "rutas_excluidas": [
     ".agents/skills"
@@ -29,6 +30,11 @@
       "obligatorio": true,
       "origen": "derivado",
       "descripcion": "Representa el nombre normalizado para variables de entorno."
+    },
+    "IDENTIFICADOR_PROYECTO": {
+      "obligatorio": true,
+      "origen": "derivado",
+      "descripcion": "Representa el nombre portable para identificadores tecnicos."
     },
     "FECHA": {
       "obligatorio": true,

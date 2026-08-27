@@ -1,7 +1,7 @@
 # Estado de correcciones de agent-framework
 
-**Ultima actualizacion:** 2026-08-26 (rev 5)
-**Estado general:** Contrato de plantilla validado; licencia pendiente
+**Ultima actualizacion:** 2026-08-26 (rev 6)
+**Estado general:** Inicializador interno reconstruido; creador externo pendiente
 **Fase activa:** Fase 4 — reconstruccion del inicializador
 **Rama de trabajo:** `codex/estabilizacion-framework`
 
@@ -101,6 +101,35 @@ La clasificacion confirmo que `_dryrun2/` era una salida generada para `proyecto
 - No existe una suite automatica que demuestre una instalacion reproducible.
 
 ## 7. Registro de avance
+
+### 2026-08-26 — Rev 6
+
+**Completado:**
+
+- Se reconstruyo `plantilla/scripts/inicializar_proyecto.py` para consumir `configuracion_plantilla.json`.
+- El inicializador procesa exclusivamente los archivos declarados y no recorre `.agents/skills`.
+- Se agrego soporte para configuracion JSON, valores `CLAVE=VALOR`, valores predeterminados y pendientes explicitos.
+- Se agregaron validaciones de claves desconocidas, datos obligatorios, nombres portables, estado Git y proteccion de `.env`.
+- Se separo el nombre visible del identificador tecnico mediante `IDENTIFICADOR_PROYECTO`.
+- La escritura de archivos configurables usa respaldo temporal y restauracion ante errores de E/S.
+- Se conserva la procedencia en `.estado-plantilla.json` y se rechaza una segunda inicializacion accidental.
+- Los cargadores JSON rechazan claves duplicadas.
+
+**Prueba aislada:**
+
+- Se copio `plantilla/` a un directorio temporal.
+- Se inicializo `Proyecto Ágil 2` con pendientes permitidos.
+- Se configuraron 11 archivos y se marcaron 6 datos pendientes.
+- `.env` quedo ignorado y utilizo `proyecto_agil_2` como identificador tecnico.
+- El nombre visible con acento se conservo en `PROJECT_NAME`.
+- Una segunda ejecucion fue rechazada.
+- Las huellas SHA-256 de todos los archivos bajo `.agents/skills` fueron identicas antes y despues.
+- El directorio temporal se elimino despues de verificar el resultado.
+
+**Pendiente de la Fase 4:**
+
+- Crear un comando desde la raiz del meta-repositorio que copie `plantilla/` hacia un destino y ejecute este inicializador interno.
+- Agregar pruebas automatizadas permanentes para los casos verificados manualmente.
 
 ### 2026-08-26 — Rev 5
 
@@ -213,7 +242,7 @@ El usuario indico que otras Skills tambien pueden contener adaptaciones de produ
 
 ## 8. Siguiente paso exacto
 
-Versionar el contrato y su validador. Despues se reconstruira el inicializador Python para consumir `configuracion_plantilla.json`, sin modificar la Skill `iniciar-proyecto` mientras permanezca congelada.
+Versionar el inicializador interno reconstruido. Despues se creara el comando raiz `scripts/crear_proyecto.py` para copiar la plantilla a un destino seguro y completar el flujo de un solo comando.
 
 ## 9. Bloqueos
 
