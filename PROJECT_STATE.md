@@ -1,8 +1,8 @@
 # Estado del proyecto: agent-framework
 
-**Ultima actualizacion:** 2026-08-26 (rev 8)
+**Ultima actualizacion:** 2026-08-26 (rev 9)
 **Estado general:** Plantilla funcional en proceso de endurecimiento
-**Fase activa:** Fase 4 — reconstruccion del inicializador
+**Fase activa:** Fase 5 — documentos y referencias externas a Skills
 
 ## 1. Objetivo
 
@@ -70,6 +70,8 @@ Cada stack tiene LEEME.md con reglas adicionales, terminos tecnicos y procedimie
 18. **Limite de congelacion respetado.** El contrato excluye `.agents/skills`; los placeholders operativos de esas rutas no se modifican ni se validan como configuracion inicial.
 19. **Inicializador interno reconstruido.** `plantilla/scripts/inicializar_proyecto.py` consume el contrato, protege `.env`, separa nombre visible e identificador tecnico, conserva procedencia y rechaza reinicializaciones.
 20. **Inmutabilidad de Skills comprobada.** Una prueba temporal comparo SHA-256 antes y despues de inicializar; todas las Skills permanecieron identicas.
+21. **Creacion de un comando verificada.** `scripts/crear_proyecto.py` copia hacia un temporal, ejecuta el inicializador contractual y publica el destino solo al terminar. Rechaza sobrescrituras y conserva las Skills byte por byte.
+22. **Wizard temporalmente no soportado para correcciones.** La Skill `iniciar-proyecto` permanece congelada; hasta completar su auditoria, la CLI Python es la ruta soportada para crear proyectos.
 
 ## 5. Que falta
 
@@ -80,4 +82,4 @@ Cada stack tiene LEEME.md con reglas adicionales, terminos tecnicos y procedimie
 
 ## 6. Siguiente paso logico
 
-Versionar el inicializador interno y crear `scripts/crear_proyecto.py` para copiar la plantilla e inicializar un destino mediante un solo comando, sin modificar ninguna Skill congelada.
+Versionar el creador y completar los documentos y verificadores ausentes fuera de Skills. Corregir el README para documentar la CLI Python como ruta soportada.

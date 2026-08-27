@@ -1,8 +1,8 @@
 # Estado de correcciones de agent-framework
 
-**Ultima actualizacion:** 2026-08-26 (rev 6)
-**Estado general:** Inicializador interno reconstruido; creador externo pendiente
-**Fase activa:** Fase 4 — reconstruccion del inicializador
+**Ultima actualizacion:** 2026-08-26 (rev 7)
+**Estado general:** Flujo de un comando verificado
+**Fase activa:** Fase 5 — documentos y referencias externas a Skills
 **Rama de trabajo:** `codex/estabilizacion-framework`
 
 ## 1. Proposito
@@ -42,8 +42,8 @@ El framework debe llegar a una version `v1.0.0` que cumpla estas condiciones:
 | 1 | Estabilizar Git y definir la linea base | Completada | Rama canónica definida, arbol limpio y clon reproducible |
 | 2 | Seguridad, `.gitignore`, licencia y atribuciones | En curso — procedencia | `.env` protegido, licencia y atribuciones completas |
 | 3 | Contrato unico de plantilla y placeholders | Completada | Manifiesto valido y placeholders sin duplicidad |
-| 4 | Reconstruir el inicializador | En curso | Un comando genera un proyecto completo y seguro |
-| 5 | Corregir wizard, documentos y referencias | Pendiente | No existen archivos o rutas prometidas ausentes |
+| 4 | Reconstruir el inicializador | Completada | Un comando genera un proyecto completo y seguro |
+| 5 | Corregir wizard, documentos y referencias | En curso — wizard congelado | No existen archivos o rutas prometidas ausentes |
 | 6 | Validar Skills, stacks y agentes | Pendiente | Solo se descubren Skills activas y las guias estan comprobadas |
 | 7 | Incorporar pruebas y CI | Pendiente | Matriz automatica aprobada en plataformas soportadas |
 | 8 | Ejecutar pilotos y publicar `v1.0.0` | Pendiente | Dos pilotos exitosos y release reproducible |
@@ -101,6 +101,27 @@ La clasificacion confirmo que `_dryrun2/` era una salida generada para `proyecto
 - No existe una suite automatica que demuestre una instalacion reproducible.
 
 ## 7. Registro de avance
+
+### 2026-08-26 — Rev 7
+
+**Completado:**
+
+- Se creo `scripts/crear_proyecto.py` como comando de entrada desde el meta-repositorio.
+- El creador rechaza destinos existentes y destinos ubicados dentro del propio framework.
+- La copia se prepara en un directorio temporal hermano y solo se renombra al destino final cuando el inicializador termina correctamente.
+- Un fallo elimina exclusivamente el temporal validado y no deja un proyecto parcial.
+
+**Prueba aislada:**
+
+- Se creo `Proyecto Comercial` mediante un solo comando hacia un destino temporal inexistente.
+- Se verifico la creacion del proyecto y el rechazo de un segundo intento sobre el mismo destino.
+- No quedaron directorios temporales huerfanos.
+- Las huellas SHA-256 de todas las Skills coincidieron entre `plantilla/` y el proyecto generado.
+- El proyecto temporal se elimino despues de la prueba.
+
+**Resultado:**
+
+La Fase 4 queda completada. El wizard `iniciar-proyecto` no se actualiza porque pertenece al conjunto de Skills congeladas; la CLI Python constituye mientras tanto la ruta comprobada y soportada.
 
 ### 2026-08-26 — Rev 6
 
@@ -242,7 +263,7 @@ El usuario indico que otras Skills tambien pueden contener adaptaciones de produ
 
 ## 8. Siguiente paso exacto
 
-Versionar el inicializador interno reconstruido. Despues se creara el comando raiz `scripts/crear_proyecto.py` para copiar la plantilla a un destino seguro y completar el flujo de un solo comando.
+Versionar el creador de proyectos. Despues se agregaran los documentos y verificadores ausentes fuera de `.agents/skills`, y se corregira el README para presentar la CLI Python como ruta soportada mientras el wizard permanezca congelado.
 
 ## 9. Bloqueos
 
