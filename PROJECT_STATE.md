@@ -1,7 +1,7 @@
 # Estado del proyecto: agent-framework
 
-**Ultima actualizacion:** 2026-08-26 (rev 9)
-**Estado general:** Plantilla funcional en proceso de endurecimiento
+**Ultima actualizacion:** 2026-08-26 (rev 10)
+**Estado general:** Plantilla funcional con memoria operativa verificable
 **Fase activa:** Fase 5 — documentos y referencias externas a Skills
 
 ## 1. Objetivo
@@ -44,7 +44,7 @@ agent-framework/
 | `firmware-esp32` | desarrollar-firmware, diagnosticar-hardware | Extraido de entrevoces |
 | `frontend-nextjs` | nextjs-fullstack, typescript-react | Creado para el framework |
 | `ia-llm` | rag-local, fine-tuning-llm, agentes-multiagent | Creado para el framework |
-| `mobile-flutter` | flutter-state-management, flutter-performance, flutter-animations | Adaptado de spjoshis/claude-code-plugins (MIT) |
+| `mobile-flutter` | flutter-state-management, flutter-performance, flutter-animations | Adaptado de spjoshis/claude-code-plugins (licencia pendiente de verificacion) |
 
 Cada stack tiene LEEME.md con reglas adicionales, terminos tecnicos y procedimiento de instalacion.
 
@@ -61,7 +61,7 @@ Cada stack tiene LEEME.md con reglas adicionales, terminos tecnicos y procedimie
 9. **Plan de correcciones formalizado.** `ESTADO_CORRECCIONES.md` conserva el avance, las evidencias, los bloqueos y el siguiente paso del endurecimiento hasta `v1.0.0`.
 10. **Rama de estabilizacion aislada.** Las correcciones se realizan en `codex/estabilizacion-framework` para preservar el arbol de trabajo preexistente sin resets ni eliminaciones.
 11. **Linea base versionada por grupos.** El core y los stacks se registraron en `1aeed87`; el inicializador alfa se registro en `f845050`. La documentacion del meta-repositorio se mantiene separada para facilitar la revision.
-12. **Fase 1 completada localmente.** La rama local `main` apunta a `1274132`, rastrea `origin/main` y se valido mediante un clon temporal limpio. La publicacion remota se difiere hasta cerrar seguridad y licencia.
+12. **Fase 1 completada localmente.** La rama local `main` rastrea `origin/main` y se valido mediante un clon temporal limpio. La rama de estabilizacion contiene correcciones posteriores que se integraran por fast-forward al cerrar la revision. La publicacion remota se difiere hasta cerrar seguridad y licencia.
 13. **Licencia externa pendiente de verificacion.** La fuente atribuida al stack `mobile-flutter` no mostro una licencia primaria en el arbol publico revisado; no se asumira MIT para una eventual redistribucion comercial sin evidencia adicional.
 14. **Skills congeladas por procedencia.** Por decision del usuario no se modifican, agregan ni eliminan Skills hasta completar el inventario de fuentes, versiones y licencias. Los riesgos se documentan en `ATRIBUCIONES.md`.
 15. **Protecciones Git instaladas.** La raiz y `plantilla/` incluyen `.gitignore` y `.gitattributes`; `.env` queda ignorado, `.env.ejemplo` permanece versionable y los archivos de texto principales usan finales LF.
@@ -72,6 +72,8 @@ Cada stack tiene LEEME.md con reglas adicionales, terminos tecnicos y procedimie
 20. **Inmutabilidad de Skills comprobada.** Una prueba temporal comparo SHA-256 antes y despues de inicializar; todas las Skills permanecieron identicas.
 21. **Creacion de un comando verificada.** `scripts/crear_proyecto.py` copia hacia un temporal, ejecuta el inicializador contractual y publica el destino solo al terminar. Rechaza sobrescrituras y conserva las Skills byte por byte.
 22. **Wizard temporalmente no soportado para correcciones.** La Skill `iniciar-proyecto` permanece congelada; hasta completar su auditoria, la CLI Python es la ruta soportada para crear proyectos.
+23. **Memoria operativa completa.** La plantilla incorpora plan de desarrollo, documentacion tecnica y guia de operacion. `scripts/verificar_memoria_proyecto.py` comprueba la existencia, el contenido y la ausencia de placeholders configurables pendientes en los documentos obligatorios.
+24. **Prueba documental reproducible.** Un proyecto temporal se genero con 14 archivos configurados y cero pendientes; sus siete documentos obligatorios pasaron el verificador y las 32 huellas de Skills coincidieron con la plantilla.
 
 ## 5. Que falta
 
@@ -82,4 +84,4 @@ Cada stack tiene LEEME.md con reglas adicionales, terminos tecnicos y procedimie
 
 ## 6. Siguiente paso logico
 
-Versionar el creador y completar los documentos y verificadores ausentes fuera de Skills. Corregir el README para documentar la CLI Python como ruta soportada.
+Corregir el README para documentar la CLI Python como ruta soportada, eliminar inventarios contradictorios y señalar expresamente el estado congelado del wizard.

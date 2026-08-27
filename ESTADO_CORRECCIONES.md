@@ -1,7 +1,7 @@
 # Estado de correcciones de agent-framework
 
-**Ultima actualizacion:** 2026-08-26 (rev 7)
-**Estado general:** Flujo de un comando verificado
+**Ultima actualizacion:** 2026-08-26 (rev 8)
+**Estado general:** Memoria operativa verificable
 **Fase activa:** Fase 5 — documentos y referencias externas a Skills
 **Rama de trabajo:** `codex/estabilizacion-framework`
 
@@ -101,6 +101,28 @@ La clasificacion confirmo que `_dryrun2/` era una salida generada para `proyecto
 - No existe una suite automatica que demuestre una instalacion reproducible.
 
 ## 7. Registro de avance
+
+### 2026-08-26 — Rev 8
+
+**Completado:**
+
+- Se agregaron `PLAN_DESARROLLO.md`, `DOCUMENTACION_TECNICA.md` y `GUIA_OPERACION.md` a la plantilla.
+- Los tres documentos se incorporaron al contrato canonico de placeholders.
+- Se creo `plantilla/scripts/verificar_memoria_proyecto.py` con salida legible y JSON para comprobar los siete documentos obligatorios.
+- El verificador rechaza archivos ausentes, archivos vacios y placeholders configurables pendientes.
+- Se comprobo que el contrato sigue siendo valido y que el script posee sintaxis Python valida.
+
+**Prueba aislada:**
+
+- Se genero `Proyecto Documentado` en un directorio temporal mediante la CLI soportada.
+- Se configuraron 14 archivos y no quedaron datos pendientes.
+- Los siete documentos de memoria existieron, contuvieron texto y no conservaron placeholders configurables.
+- Las huellas SHA-256 de los 32 archivos bajo `.agents/skills` coincidieron antes y despues de generar el proyecto.
+- El directorio temporal se elimino despues de completar las verificaciones.
+
+**Resultado:**
+
+Las referencias documentales obligatorias ya existen y pueden comprobarse de forma automatizada. La Fase 5 continua con la correccion del README; el wizard permanece congelado y fuera del alcance de estos cambios.
 
 ### 2026-08-26 — Rev 7
 
@@ -263,7 +285,7 @@ El usuario indico que otras Skills tambien pueden contener adaptaciones de produ
 
 ## 8. Siguiente paso exacto
 
-Versionar el creador de proyectos. Despues se agregaran los documentos y verificadores ausentes fuera de `.agents/skills`, y se corregira el README para presentar la CLI Python como ruta soportada mientras el wizard permanezca congelado.
+Corregir el README para presentar la CLI Python como ruta soportada, eliminar inventarios contradictorios y marcar el wizard congelado como no verificado para el flujo actual.
 
 ## 9. Bloqueos
 

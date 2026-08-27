@@ -12,6 +12,9 @@
     ".agents/rules/claude.md",
     ".agents/rules/excepciones_nominales.md",
     "documentacion/INDICE_LECTURA_AGENTES.md",
+    "documentacion/PLAN_DESARROLLO.md",
+    "documentacion/DOCUMENTACION_TECNICA.md",
+    "documentacion/GUIA_OPERACION.md",
     "documentacion/REGISTRO_CAMBIOS.md",
     "documentacion/prompts/*.md"
   ],
