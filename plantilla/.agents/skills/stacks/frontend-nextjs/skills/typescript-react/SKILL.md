@@ -285,6 +285,6 @@ function renderEstado<T>(estado: EstadoAsync<T>, renderDatos: (datos: T) => Reac
 - No usar `any` — usar `unknown` + type narrowing, o `z.infer<>` para datos externos.
 - Tipar explicitamente: props de componentes, return de hooks, respuestas de API.
 - No tipar lo que TS infiere correctamente (variables locales simples, return de funciones puras obvias).
-- Nombres de tipos/interfaces en {{IDIOMA_NOMBRES}}: `PropsTarjetaProducto`, `EstadoAsync`, `ResultadoAccion`.
+- Los nombres de tipos e interfaces de negocio respetan el idioma declarado en `AGENTS.md`.
 - Nombres de tipos del framework en ingles: `React.ReactNode`, `NextRequest`, `FormData`.
 - Preferir `interface` para props y objetos de dominio. Usar `type` para unions y utilidades.

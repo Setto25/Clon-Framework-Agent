@@ -1,8 +1,8 @@
 # Estado de correcciones de agent-framework
 
-**Ultima actualizacion:** 2026-08-26 (rev 13)
-**Estado general:** Skills congeladas con inventario reproducible; publicacion bloqueada
-**Fase activa:** Fase 2 — auditoria de procedencia de solo lectura
+**Ultima actualizacion:** 2026-08-26 (rev 14)
+**Estado general:** Skills endurecidas para uso personal; pilotos y procedencia pendientes
+**Fase activa:** Fase 6 — validacion funcional de Skills y stacks
 **Rama de trabajo:** `codex/estabilizacion-framework`
 
 ## 1. Proposito
@@ -33,7 +33,7 @@ El framework debe llegar a una version `v1.0.0` que cumpla estas condiciones:
 - La Skill `iniciar-proyecto` actuara como interfaz conversacional del inicializador y no duplicara su logica.
 - `AGENTS.md` sera el contrato comun; los deltas por agente solo contendran diferencias comprobadas.
 - Los cambios materiales deben actualizar este archivo y `PROJECT_STATE.md`.
-- Las Skills permanecen congeladas por decision del usuario hasta completar su auditoria de procedencia; cualquier defecto se registra sin editar esos archivos.
+- Las Skills pueden corregirse para uso personal con autorizacion del usuario, sin eliminarlas, preservando procedencia, inventario y pruebas. No se redistribuyen mientras su licencia siga pendiente.
 
 ## 4. Plan y avance
 
@@ -44,7 +44,7 @@ El framework debe llegar a una version `v1.0.0` que cumpla estas condiciones:
 | 3 | Contrato unico de plantilla y placeholders | Completada | Manifiesto valido y placeholders sin duplicidad |
 | 4 | Reconstruir el inicializador | Completada | Un comando genera un proyecto completo y seguro |
 | 5 | Corregir wizard, documentos y referencias | Completada — CLI soportada | No existen archivos o rutas prometidas ausentes |
-| 6 | Validar Skills, stacks y agentes | En espera — Skills congeladas | Solo se descubren Skills activas y las guias estan comprobadas |
+| 6 | Validar Skills, stacks y agentes | En curso — estructura aprobada | Solo se descubren Skills activas y las guias estan comprobadas |
 | 7 | Incorporar pruebas y CI | En curso — local aprobada | Matriz automatica aprobada en plataformas soportadas |
 | 8 | Ejecutar pilotos y publicar `v1.0.0` | Pendiente | Dos pilotos exitosos y release reproducible |
 
@@ -101,6 +101,36 @@ La clasificacion confirmo que `_dryrun2/` era una salida generada para `proyecto
 - No existe una suite automatica que demuestre una instalacion reproducible.
 
 ## 7. Registro de avance
+
+### 2026-08-26 — Rev 14
+
+**Autorizacion:**
+
+- El usuario autorizo modificar las Skills cuando la mejora aumente su eficacia, eficiencia o seguridad.
+- Se mantiene la prohibicion de eliminar Skills sin confirmacion y de redistribuir contenido con procedencia pendiente.
+
+**Completado:**
+
+- Se aplico la guia oficial `skill-creator` para reducir instrucciones genericas, preservar alcance y ajustar detalle al riesgo.
+- `iniciar-proyecto` se reconstruyo como interfaz conversacional del contrato y la CLI Python; se eliminaron el catalogo duplicado, los placeholders antiguos, los movimientos y los borrados recursivos.
+- `agentes-multiagent` se redujo de una implementacion extensa e incompleta a criterios de arquitectura, limites de autoridad, aislamiento, observabilidad y evaluacion adversarial.
+- `fastapi-setup` ahora exige secretos sin valor predeterminado, valida `uv.lock` y evita afirmaciones promocionales no comprobadas.
+- `nextjs-fullstack` declara cache de forma explicita para no depender de valores predeterminados que cambiaron entre versiones.
+- `rag-local` y `fine-tuning-llm` eliminan precios, modelos, licencias, VRAM y tamaños de dataset presentados como universales.
+- Los placeholders de idioma no procesados se reemplazaron por la regla canonica de `AGENTS.md`.
+- La atribucion de `mobile-flutter` ya no afirma MIT como hecho verificado.
+- Se agrego `pruebas/prueba_calidad_skills.py` y se regenero el inventario SHA-256.
+
+**Evidencia:**
+
+- Las 17 Skills aprobaron `quick_validate.py` de `skill-creator`.
+- El contrato de la plantilla aprobo.
+- Ocho pruebas automaticas aprobaron, incluida una creacion completa con copia byte por byte de las Skills modificadas.
+- El barrido no encontro borrado recursivo, secretos predeterminados, placeholders contractuales, precios rigidos ni referencias al wizard Bash dentro de `SKILL.md`.
+
+**Resultado:**
+
+La validacion estructural y las invariantes de seguridad quedan aprobadas. Todavia no se declara eficacia funcional: faltan pilotos comparativos por Skill y la auditoria de procedencia continua bloqueando la redistribucion.
 
 ### 2026-08-26 — Rev 13
 
@@ -377,7 +407,7 @@ El usuario indico que otras Skills tambien pueden contener adaptaciones de produ
 
 ## 8. Siguiente paso exacto
 
-Clasificar los 17 manifiestos por autoria probable y evidencia disponible, sin editar Skills. Para cada posible fuente externa se debe buscar URL, revision y licencia primaria antes de decidir su tratamiento.
+Ejecutar pilotos aislados de `iniciar-proyecto`, `fastapi-setup` y `agentes-multiagent`, comparando resultado, tiempo, errores y seguridad frente a una ejecucion sin Skill.
 
 ## 9. Bloqueos
 

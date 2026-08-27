@@ -1,6 +1,6 @@
 ---
 name: fastapi-setup
-description: Setup y estructura de proyectos FastAPI con uv como gestor de dependencias. Cubre estructura de directorios, integracion con Alembic, patrones de router/schema/service y TDD con pytest. Usar al iniciar un proyecto FastAPI nuevo o al migrar de pip+venv a uv.
+description: Configura proyectos FastAPI con uv, SQLAlchemy, Alembic y pytest mediante una estructura tipada y verificable. Usar al iniciar un backend nuevo o migrar un proyecto existente despues de confirmar sus versiones y restricciones.
 ---
 
 # FastAPI Setup (con uv)
@@ -12,17 +12,11 @@ description: Setup y estructura de proyectos FastAPI con uv como gestor de depen
 - Incorporar Alembic al proyecto (migraciones de base de datos).
 - Definir la estructura de carpetas antes de escribir el primer endpoint.
 
-## Por que uv y no pip/poetry
+## Decidir antes de configurar
 
-| Criterio | pip + venv | poetry | uv |
-|---|---|---|---|
-| Velocidad de instalacion | Lenta (resolucion serial) | Media | **10-100x mas rapido** (escrito en Rust, paralelo) |
-| Lock file confiable | No (requirements.txt manual) | Si (poetry.lock) | **Si (uv.lock)** — reproducible en CI |
-| pyproject.toml nativo | Requiere setup.py extra | Si | **Si** — compatible con proyectos existentes |
-| Sin herramienta extra en produccion | No (pip en imagen) | Requiere poetry | **Solo Python** — `uv sync --frozen` basta |
-| Gestion de version de Python | No | Parcial | **Si** — `uv python install 3.12` |
+Respetar el gestor existente cuando el proyecto ya tenga uno y su migracion no forme parte de la tarea. Usar uv cuando se haya elegido explicitamente o cuando el proyecto sea nuevo.
 
-Si el proyecto ya tiene `pyproject.toml`, uv lo adopta: `uv add` agrega dependencias al `[project.dependencies]` existente sin reescribir el archivo. No es necesario correr `uv init` en un proyecto ya inicializado.
+Antes de ejecutar comandos, comprobar la version instalada de Python y uv, leer `pyproject.toml` si existe y revisar el diff que producira la migracion. En CI se prefiere `uv sync --locked`: valida que `uv.lock` siga alineado con `pyproject.toml`. `--frozen` omite esa comprobacion y se reserva para capas parciales donde faltan metadatos del workspace.
 
 ## Paso 1: Inicializar proyecto
 
@@ -35,7 +29,7 @@ cd nombre-proyecto
 uv add fastapi "uvicorn[standard]" sqlalchemy alembic pydantic-settings email-validator
 
 # Agregar dependencias de desarrollo
-uv add --dev pytest pytest-asyncio httpx
+uv add --dev pytest pytest-asyncio pytest-cov httpx
 
 # Instalar todo (genera uv.lock — commitear al repo)
 uv sync
@@ -210,11 +204,12 @@ target_metadata = Base.metadata
 
 ```python
 # app/core/config.py
+from pydantic import SecretStr
 from pydantic_settings import BaseSettings
 
 class Settings(BaseSettings):
     database_url: str = "sqlite:///./dev.db"
-    api_secret_key: str = "cambiar-en-produccion"
+    api_secret_key: SecretStr
 
     model_config = {"env_file": ".env"}
 
@@ -223,12 +218,14 @@ settings = Settings()
 
 ```python
 # app/core/database.py
+from collections.abc import Generator
+
 from sqlalchemy import create_engine
 from sqlalchemy.orm import DeclarativeBase, sessionmaker
 from app.core.config import settings
 
-# connect_args solo necesario para SQLite (no thread-safe por defecto)
-connect_args = {"check_same_thread": False} if "sqlite" in settings.database_url else {}
+# Aplica el ajuste unicamente a conexiones SQLite.
+connect_args = {"check_same_thread": False} if settings.database_url.startswith("sqlite") else {}
 engine = create_engine(settings.database_url, connect_args=connect_args)
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
@@ -236,7 +233,7 @@ SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 class Base(DeclarativeBase):
     pass
 
-def get_db():
+def get_db() -> Generator[Session, None, None]:
     db = SessionLocal()
     try:
         yield db
@@ -261,7 +258,8 @@ uv run pytest --cov=app --cov-report=term-missing
 
 - Toda logica de negocio en `services/`, no en los routers. Los routers solo traducen HTTP ↔ dominio.
 - Schemas Pydantic para entrada y salida. Nunca retornar modelos SQLAlchemy directamente al cliente.
-- `uv.lock` se commitea al repo — garantiza reproducibilidad en CI y otros equipos.
+- `uv.lock` se versiona y CI ejecuta `uv lock --check` o `uv sync --locked` para detectar divergencias.
+- Los secretos son obligatorios y no tienen valores predeterminados utilizables. La aplicacion debe fallar al iniciar si falta uno.
 - `uv run <comando>` en vez de activar el venv manualmente. El entorno esta aislado por defecto.
 - Para tests con DB: usar SQLite en memoria en `conftest.py` (override de `get_db` con fixture).
-- Nombres de variables, funciones y rutas en `{{IDIOMA_NOMBRES}}`.
+- Los nombres de negocio respetan el idioma declarado en `AGENTS.md`.

@@ -4,7 +4,7 @@ Framework agentico reutilizable para crear proyectos con agentes de IA, memoria 
 
 Extraido inicialmente del proyecto entrevoces. El creador y los verificadores tienen pruebas locales reproducibles; todavia falta validarlo en proyectos piloto reales.
 
-> **Estado de Skills:** todos los archivos bajo `plantilla/.agents/skills/` estan congelados mientras se auditan su procedencia y sus licencias. La CLI de Python es la unica ruta de inicializacion soportada durante esta etapa. El wizard `$iniciar-proyecto` se conserva como material existente, pero no se considera verificado ni debe modificarse por ahora.
+> **Estado de Skills:** las 17 Skills fueron revisadas estructuralmente y las de mayor riesgo se endurecieron para uso personal. Su procedencia sigue incompleta, por lo que no se recomienda redistribuirlas. La CLI Python conserva la logica de inicializacion; `$iniciar-proyecto` solo actua como interfaz conversacional y no mueve ni elimina Skills.
 
 ---
 
@@ -27,7 +27,7 @@ plantilla/
 │   ├── rules/                   → Reglas base (superpowers, idioma, excepciones)
 │   └── skills/
 │       ├── cerrar-modulo/       ┐
-│       ├── evaluar-agente/      │ Skills de core incluidas en la copia y congeladas
+│       ├── evaluar-agente/      │ Skills de core incluidas y validadas estructuralmente
 │       ├── iniciar-proyecto/    │ (no hay carpeta "core/" literal)
 │       ├── lecciones-aprendidas/┘
 │       ├── stacks/
@@ -137,7 +137,7 @@ python scripts\inicializar_proyecto.py "Mi Proyecto" "español" --configuracion 
 
 No se recomienda copiar carpetas sueltas ni omitir `.agents`, `.gitignore`, `.gitattributes`, `.env.ejemplo`, `.plantilla-framework` o `configuracion_plantilla.json`: todos forman parte del contrato de la instancia.
 
-El respaldo `scripts/inicializar_proyecto.sh` permanece deprecado y no se considera validado en Windows. El wizard `$iniciar-proyecto` permanece congelado y no forma parte del flujo soportado actual.
+El respaldo `scripts/inicializar_proyecto.sh` permanece deprecado y no se considera validado en Windows. `$iniciar-proyecto` puede guiar la recopilacion y ejecutar la misma CLI Python, pero no reemplaza su contrato ni administra el catalogo de Skills.
 
 ---
 
@@ -149,7 +149,7 @@ El contrato comun consiste en leer `AGENTS.md` y `PROJECT_STATE.md` antes de act
 
 - Se debe confirmar que `AGENTS.md` este presente en el contexto efectivo.
 - `.agents/rules/claude.md` contiene el delta previsto para esta herramienta.
-- Las Skills se usan solo como documentacion existente y permanecen congeladas durante su auditoria.
+- Las Skills se usan como guias revisadas; las acciones externas o sensibles conservan los limites de autoridad del usuario.
 - `PROJECT_STATE.md` conserva el estado entre sesiones.
 
 ```
@@ -170,7 +170,7 @@ No se asume compatibilidad automatica sin una prueba en la version concreta de l
 
 - `SYSTEM_PROMPT_DELTA_CODEX.md` documenta el delta previsto.
 - Se debe confirmar la lectura efectiva de `AGENTS.md` y `PROJECT_STATE.md`.
-- Las Skills se pueden aportar como contexto de referencia cuando finalice su auditoria.
+- Las Skills se pueden aportar como contexto de referencia cuando la tarea coincida con su descripcion.
 
 ### VS Code con extension de agente (Copilot, Continue, etc.)
 
@@ -209,11 +209,11 @@ Estos archivos son los del **proyecto instanciado**, no los de `agent-framework/
 
 ## 6. Inventario de skills
 
-### Core incluido (congelado durante la auditoria)
+### Core incluido
 
 | Skill | Que hace | Cuando invocar |
 |---|---|---|
-| `iniciar-proyecto` | Wizard historico congelado y no verificado en el flujo actual | No invocar hasta completar su auditoria |
+| `iniciar-proyecto` | Interfaz conversacional de la CLI Python y su contrato canonico | Al crear o configurar una instancia nueva |
 | `cerrar-modulo` | Documenta modulo terminado: actualiza PROJECT_STATE, plan, registro de cambios | Cuando las pruebas pasan o el usuario aprueba un componente |
 | `evaluar-agente` | Evalua un agente: intenciones, tool-use, prompt injection, limites de autoridad | Al crear/modificar prompts o tool-calling |
 | `probar-e2e` | Pruebas end-to-end del MVP entre componentes | Al verificar flujos completos (cliente-servidor-dispositivo) |
@@ -305,7 +305,7 @@ python scripts\validar_contrato_plantilla.py
 python -m unittest discover -s pruebas -p "prueba_*.py" -v
 ```
 
-La suite comprueba creacion completa, memoria pendiente, limpieza atomica, rechazo de sobrescritura, proteccion de `.env`, identidad byte por byte de Skills y vigencia de su inventario congelado. El workflow `.github/workflows/validacion.yml` ejecuta la misma validacion en Windows y Ubuntu con Python 3.9 y 3.12.
+La suite comprueba creacion completa, memoria pendiente, limpieza atomica, rechazo de sobrescritura, proteccion de `.env`, copia byte por byte de Skills, vigencia del inventario y ausencia de instrucciones obsoletas o destructivas. El workflow `.github/workflows/validacion.yml` ejecuta la misma validacion en Windows y Ubuntu con Python 3.9 y 3.12.
 
 ---
 
@@ -392,7 +392,8 @@ Desde la raiz del meta-repositorio tambien existen:
 - `scripts/inventariar_skills.py`: inventariador determinista y de solo lectura;
 - `ejemplos/configuracion_proyecto.ejemplo.json`: punto de partida para una configuracion completa;
 - `pruebas/prueba_creacion_proyecto.py`: suite integral con biblioteca estandar;
-- `pruebas/prueba_inventario_skills.py`: control de vigencia del inventario congelado;
+- `pruebas/prueba_inventario_skills.py`: control de vigencia del inventario de Skills;
+- `pruebas/prueba_calidad_skills.py`: invariantes estructurales y operativas de las 17 Skills;
 - `.github/workflows/validacion.yml`: matriz de CI para Windows, Ubuntu y dos versiones de Python;
-- `auditoria/inventario_skills.json`: rutas, tamaños y huellas del contenido congelado;
+- `auditoria/inventario_skills.json`: rutas, tamaños y huellas del contenido auditado;
 - `ATRIBUCIONES.md`: inventario de procedencia y licencias pendientes.

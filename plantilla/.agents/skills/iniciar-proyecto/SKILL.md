@@ -1,191 +1,105 @@
 ---
 name: iniciar-proyecto
-description: Guia interactiva para inicializar un nuevo proyecto desde la plantilla. Pregunta al usuario los datos necesarios, rellena todos los placeholders y deja el proyecto listo para trabajar. Usar al copiar la plantilla a un directorio nuevo o cuando el usuario quiera arrancar un proyecto desde cero.
+description: Inicializa una instancia nueva de agent-framework mediante la CLI Python y su contrato canonico. Usar al crear un proyecto desde la plantilla o completar su configuracion inicial. No usar para reorganizar, mover ni eliminar Skills.
 ---
 
 # Iniciar proyecto
 
-## Contexto
+Esta Skill actua como interfaz conversacional de los scripts soportados. No duplica placeholders, no edita el contrato y no selecciona Skills mediante movimientos de carpetas.
 
-La plantilla contiene placeholders `{{CLAVE}}` distribuidos en varios archivos. Este skill guia al usuario con preguntas claras y rellena cada placeholder con sus respuestas, eliminando la necesidad de buscarlos manualmente.
+## Identificar el contexto
 
-## Fase 1: Preguntas obligatorias (automatizables por script)
+Antes de actuar, comprobar una sola de estas situaciones:
 
-Preguntar al usuario y registrar sus respuestas:
+1. **Meta-repositorio:** existen `plantilla/` y `scripts/crear_proyecto.py`. Se crea un destino nuevo fuera de `agent-framework`.
+2. **Copia sin inicializar:** existen `.plantilla-framework`, `configuracion_plantilla.json` y `scripts/inicializar_proyecto.py`. Se inicializa esa copia una sola vez.
+3. **Proyecto inicializado:** existe `.estado-plantilla.json`. No se vuelve a ejecutar el inicializador; se informa que el proyecto ya fue configurado.
 
-| # | Pregunta | Placeholder | Default |
-|---|----------|-------------|---------|
-| 1 | "¿Cómo se llama el proyecto?" | `{{NOMBRE_PROYECTO}}` | — |
-| 2 | "¿En qué idioma se nombran archivos, clases y variables?" | `{{IDIOMA_NOMBRES}}` | español |
+Si las rutas no corresponden a ninguno de esos contextos, detenerse y pedir la ruta correcta.
 
-Con la respuesta 1, derivar automáticamente:
-- `{{PROYECTO}}` = mismo valor que NOMBRE_PROYECTO
-- `{{PREFIJO_VARIABLES}}` = NOMBRE_PROYECTO en MAYUSCULAS, guiones reemplazados por guion bajo
+## Recopilar datos
 
-## Fase 2: Preguntas de contenido (requieren input del usuario)
+Leer `configuracion_plantilla.json` como fuente unica de claves. No mantener una lista paralela en esta Skill.
 
-Preguntar una por una. Si el usuario no tiene respuesta aun, marcar como `TODO` y continuar:
+Solicitar solamente los valores obligatorios que falten. Se pueden agrupar en una sola pregunta:
 
-| # | Pregunta | Placeholder | Ejemplo de respuesta |
-|---|----------|-------------|---------------------|
-| 3 | "Describe el producto en una linea." | `{{DESCRIPCION_PRODUCTO_UNA_LINEA}}` | "Asistente de voz para adultos mayores" |
-| 4 | "Describe el producto en un parrafo completo (qué hace, para quién, qué problema resuelve)." | `{{DESCRIPCION_PRODUCTO_COMPLETA}}` | — |
-| 5 | "¿Cuál es el objetivo inmediato? (ej: completar MVP, lanzar beta)" | `{{OBJETIVO_INMEDIATO}}` | "Completar MVP funcional" |
-| 6 | "Lista las prioridades del MVP en orden (una por linea)." | `{{LISTA_PRIORIDADES_NUMERADA}}` | "1. Audio funcional\n2. Backend estable\n3. Tests E2E" |
-| 7 | "¿Qué queda explícitamente FUERA del MVP?" | `{{EXCLUSIONES_MVP}}` | "Multi-idioma, dashboard admin, notificaciones push" |
-| 8 | "Describe la arquitectura obligatoria (capas, restricciones, diagrama si aplica)." | `{{SECCION_ARQUITECTURA}}` | — |
-| 9 | "¿Hay reglas de arquitectura adicionales? (ej: 'todo pasa por el servicio, nunca acceder al repo directo')" | `{{REGLAS_ARQUITECTURA}}` | — |
-| 10 | "Lista las prioridades cortas para AGENTS.md (misma lista u otra version resumida)." | `{{LISTA_PRIORIDADES}}` | — |
-| 11 | "¿Algo que excluir del MVP en AGENTS.md?" | `{{EXCLUSIONES_MVP}}` | (reutiliza respuesta 7 si aplica) |
+- nombre visible e idioma;
+- zona horaria;
+- objetivo del producto;
+- alcance obligatorio y excluido;
+- siguiente paso;
+- reglas de arquitectura.
 
-## Fase 3: Preguntas opcionales
+Los valores opcionales pueden conservar sus predeterminados. No se inventan datos del producto.
 
-| # | Pregunta | Placeholder | Cuando preguntar |
-|---|----------|-------------|-----------------|
-| 12 | "¿Zona horaria del equipo?" | `{{ZONA_HORARIA}}` | Siempre |
-| 13 | "¿Estado inicial del proyecto?" | `{{ESTADO_BREVE}}` | Siempre, default: "Inicializando" |
-| 14 | "¿Fase activa?" | `{{FASE_ACTIVA}}` | Siempre, default: "Fase 0 — Setup" |
-| 15 | "¿Hay infraestructura o hardware confirmado?" | `{{HARDWARE_O_INFRA}}` | Solo si aplica |
-| 16 | "¿Decisiones técnicas ya tomadas? (una por linea)" | `{{LISTA_DECISIONES_NUMERADA}}` | Solo si el usuario las tiene |
-| 17 | "¿Tecnologías ya decididas?" | `{{LISTA_TECNOLOGIAS}}` | Solo si el usuario las tiene |
+## Confirmar antes de escribir
 
-## Fase 4: Ejecucion
+Mostrar al usuario:
 
-Una vez recopiladas las respuestas:
+- contexto detectado;
+- destino exacto, cuando corresponda;
+- nombre visible;
+- claves que se completaran;
+- claves que quedarian pendientes;
+- si se creara `.env`.
 
-1. Si el script `scripts/inicializar_proyecto.sh` existe y el centinela `.plantilla-framework` esta presente, ejecutar:
-   ```bash
-   ./scripts/inicializar_proyecto.sh "<NOMBRE_PROYECTO>" "<IDIOMA_NOMBRES>"
-   ```
-   Esto cubre los placeholders de Fase 1.
+La confirmacion autoriza solamente la creacion o configuracion descrita. No autoriza borrar, mover o publicar contenido.
 
-2. Reemplazar manualmente (con edicion de archivos) los placeholders de Fase 2 y 3 en:
-   - `AGENTS.md`
-   - `PROJECT_STATE.md`
-   - `documentacion/prompts/SYSTEM_PROMPT_BASE.md`
-   - `.agents/rules/excepciones_nominales.md`
+## Ejecutar la ruta soportada
 
-3. Para respuestas marcadas como `TODO`, dejar el placeholder con formato:
-   ```
-   <!-- TODO: {{PLACEHOLDER}} — completar cuando se defina -->
-   ```
+### Desde el meta-repositorio
 
-4. Crear `.env` desde `.env.ejemplo` si no existe.
+Preparar un JSON temporal o usar `--valor CLAVE=VALOR`, y ejecutar:
 
-5. Verificar que no queden `{{` sin resolver (excepto los marcados como TODO):
-   ```bash
-   grep -rn "{{" --include="*.md" --include="*.yaml" | grep -v "TODO"
-   ```
-
-## Fase 5: Seleccion de skills
-
-### Fuente de datos
-
-Leer `.agents/skills/catalogo_skills.json` (generado por `scripts/inicializar_proyecto.sh`).
-Si el catalogo no existe, generarlo ejecutando:
-```bash
-./scripts/inicializar_proyecto.sh "<NOMBRE_PROYECTO>" "<IDIOMA_NOMBRES>"
-```
-O escanear manualmente la estructura de `.agents/skills/` siguiendo la misma logica.
-
-El catalogo tiene esta estructura:
-```json
-{
-  "core": [{"nombre": "...", "ruta": "...", "descripcion": "..."}],
-  "opcional": [{"nombre": "...", "ruta": "...", "descripcion": "..."}],
-  "stacks": [
-    {
-      "stack": "firmware-esp32",
-      "descripcion": "Proyectos con dispositivos embebidos...",
-      "skills": [{"nombre": "...", "ruta": "...", "descripcion": "..."}]
-    }
-  ]
-}
+```powershell
+python scripts\crear_proyecto.py <DESTINO_NUEVO> "<NOMBRE_VISIBLE>" --configuracion <CONFIGURACION_JSON>
 ```
 
-### Paso 1: Confirmar skills core
+El destino no debe existir ni quedar dentro de `agent-framework`.
 
-Mostrar al usuario las skills core descubiertas y confirmar que se mantienen activas.
-No preguntar una por una — solo informar: "Estas skills core quedan activas: [lista]".
+### Desde una copia sin inicializar
 
-### Paso 2: Preguntar por stacks (agrupado)
+Ejecutar desde la raiz de la copia:
 
-Para cada stack en `catalogo_skills.json["stacks"]`:
-
-1. Presentar el stack con su descripcion:
-   "¿Tu proyecto involucra [descripcion del stack]? (ej: firmware-esp32)"
-
-2. Si el usuario dice SI:
-   - Listar las skills del stack: "Este stack incluye: [nombre — descripcion] por cada skill"
-   - Preguntar: "¿Activo todas, o solo algunas?"
-   - Activar las seleccionadas (mover a `.agents/skills/`)
-   - Leer el LEEME.md del stack y presentar las reglas adicionales recomendadas
-   - Preguntar: "¿Agrego estas reglas a AGENTS.md ahora?"
-
-3. Si el usuario dice NO:
-   - Seguir al siguiente stack (no preguntar si eliminar todavia)
-
-### Paso 3: Preguntar por skills opcionales
-
-Para cada skill en `catalogo_skills.json["opcional"]`:
-- Presentar: "[nombre] — [descripcion]. ¿Lo necesitas?"
-- Si: mover de `opcional/[nombre]/` a `.agents/skills/[nombre]/`
-- No: dejar en `opcional/`
-
-### Paso 4: Limpieza
-
-Preguntar UNA VEZ al final:
-"¿Elimino los stacks y skills opcionales que no seleccionaste, o los conservo por si los necesitas despues?"
-- Eliminar: borrar carpetas no activadas de `stacks/` y `opcional/`
-- Conservar: dejar todo en su lugar
-
-### Ejecucion de movimientos
-
-```bash
-# Activar skill opcional
-mv .agents/skills/opcional/<nombre>/ .agents/skills/<nombre>/
-
-# Activar skill de un stack
-mv .agents/skills/stacks/<stack>/<skill>/ .agents/skills/<skill>/
-
-# Eliminar stack no usado
-rm -rf .agents/skills/stacks/<stack>/
-
-# Eliminar directorio opcional si queda vacio
-rmdir .agents/skills/opcional/ 2>/dev/null || true
-
-# Eliminar directorio stacks si queda vacio
-rmdir .agents/skills/stacks/ 2>/dev/null || true
-
-# Eliminar catalogo (ya cumplio su funcion)
-rm -f .agents/skills/catalogo_skills.json
+```powershell
+python scripts\inicializar_proyecto.py "<NOMBRE_VISIBLE>" "<IDIOMA>" --configuracion <CONFIGURACION_JSON>
 ```
 
-Despues de mover skills, verificar el arbol resultante:
-```bash
-ls .agents/skills/
+No usar el respaldo Bash mientras permanezca deprecado.
+
+### Configuracion incompleta
+
+`--permitir-pendientes` solo se usa cuando el usuario acepta una instancia provisional. Los marcadores generados deben completarse antes de considerar lista la memoria del proyecto.
+
+## Verificar
+
+Ejecutar en la instancia resultante:
+
+```powershell
+python scripts\verificar_memoria_proyecto.py .
 ```
 
-## Fase 6: Confirmacion
+La inicializacion se considera correcta cuando:
 
-Mostrar al usuario un resumen:
-- Nombre del proyecto
-- Placeholders completados (cantidad)
-- Placeholders pendientes como TODO (listarlos)
-- Skills activadas (listar con descripcion)
-- Skills conservadas sin activar (listar)
-- Stacks instalados / eliminados / conservados
-- Reglas adicionales agregadas a AGENTS.md (si aplica)
-- Archivos modificados
-- Siguiente paso recomendado
+- el comando termina con codigo cero;
+- no quedan placeholders ni TODO de inicializacion;
+- `.env` esta ignorado por Git;
+- `.estado-plantilla.json` registra la version de origen;
+- Git muestra solamente los archivos esperados de la nueva instancia.
 
-## Reglas
+## Skills y stacks
 
-- No inventar respuestas. Si el usuario dice "no sé aun", marcar como TODO.
-- No saltar preguntas de Fase 1 — son obligatorias.
-- Agrupar preguntas relacionadas si el usuario prefiere ir rapido (ej: "dame nombre, idioma y descripcion corta de una vez").
-- Si el usuario ya proporciono informacion antes de invocar este skill, no re-preguntar lo que ya se sabe.
-- Confirmar antes de ejecutar los reemplazos y movimientos de skills.
-- No eliminar stacks ni skills sin confirmacion explicita del usuario.
-- Si el usuario no esta seguro sobre un stack, conservarlo — es mas facil activar despues que recuperar algo eliminado.
-- El catalogo JSON es la fuente de verdad para el descubrimiento. No hardcodear nombres de skills en este documento.
+La inicializacion conserva `.agents/skills/` byte por byte. No se activan Skills moviendolas ni se eliminan stacks.
+
+Si el usuario solicita curar el catalogo despues de crear el proyecto, tratarlo como una tarea separada: inventariar, evaluar compatibilidad y pedir autorizacion antes de cualquier cambio. Nunca usar rutas con placeholders en comandos destructivos.
+
+## Entrega
+
+Informar:
+
+- destino creado o copia configurada;
+- archivos configurados;
+- resultado del verificador;
+- existencia y proteccion de `.env`;
+- pendientes reales, si el usuario los permitio;
+- siguiente paso indicado por `PROJECT_STATE.md`.

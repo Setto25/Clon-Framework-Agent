@@ -58,9 +58,9 @@ Estos terminos se conservan en ingles dentro de proyectos que activen este stack
 | `revalidate` | — | Cache de Next.js |
 | `slug` | — | Parametro de ruta dinamica |
 
-## Adaptacion a {{IDIOMA_NOMBRES}}
+## Adaptacion al idioma del proyecto
 
-Los nombres del framework (`useEffect`, `ServerComponent`, `revalidatePath`) se conservan en ingles. Los nombres de **negocio** del proyecto SI se escriben en {{IDIOMA_NOMBRES}}:
+Los nombres del framework (`useEffect`, `ServerComponent`, `revalidatePath`) se conservan en ingles. Los nombres de negocio respetan el idioma declarado en `AGENTS.md`:
 
 ```typescript
 // Correcto: API Next.js en ingles + negocio en idioma del proyecto

@@ -8,36 +8,29 @@ description: Fine-tuning de modelos de lenguaje con LoRA/QLoRA y PEFT. Cubre pre
 ## Cuando usar
 
 - El modelo base no rinde lo suficiente en una tarea especifica despues de optimizar el prompt.
-- Se necesita consistencia de formato/estilo que prompting no puede garantizar.
-- Se tiene un dataset de >100 ejemplos de alta calidad del dominio.
+- Una evaluacion demuestra que prompting y salidas estructuradas no alcanzan la consistencia requerida.
+- Se dispone de ejemplos representativos, con derechos de uso y una particion de evaluacion independiente.
 - Se quiere reducir latencia/costo usando un modelo mas pequeno especializado.
 
 ## Cuando NO usar
 
 - El prompt engineering con few-shot ya da resultados aceptables — fine-tuning es caro y fragil.
-- El dataset tiene <50 ejemplos — overfitting garantizado.
+- El conjunto es demasiado pequeño o poco diverso para demostrar generalizacion.
 - Los datos cambian frecuentemente — el modelo se desactualiza rapido.
 - Se necesita conocimiento factual actualizado — mejor RAG.
-- No se tiene GPU con >= 16GB VRAM (ni acceso a cloud con GPU).
+- No se ha medido que el modelo, la cuantizacion y el lote quepan en los recursos disponibles.
 
-## Matriz de decision: metodo de fine-tuning
+## Seleccionar metodo y modelo
 
-| Metodo | VRAM minima | Parametros entrenados | Calidad | Usar cuando |
-|---|---|---|---|---|
-| LoRA | 16 GB | 0.1-1% | Alta | Default — mejor balance costo/calidad |
-| QLoRA (4-bit) | 8 GB | 0.1-1% | Alta (-2% vs LoRA) | GPU limitada, modelos grandes (>13B) |
-| Full fine-tune | 4× modelo | 100% | Maxima | Presupuesto ilimitado, dataset enorme (>100k) |
-| Adapters (IA3) | 12 GB | <0.01% | Media-alta | Multiples tareas con un solo modelo base |
+Comparar LoRA, cuantizacion y entrenamiento completo mediante una prueba corta en el hardware real. La memoria depende del modelo, precision, optimizador, longitud de secuencia, lote y checkpointing; no usar cifras universales de VRAM.
 
-## Matriz de decision: modelo base
+Antes de descargar un modelo base, verificar en su fuente oficial:
 
-| Modelo | Parametros | Licencia | Usar cuando |
-|---|---|---|---|
-| Llama 3.1 8B | 8B | Meta (comercial) | Default para tareas generales |
-| Mistral 7B | 7B | Apache 2.0 | Latencia critica, razonamiento medio |
-| Phi-3 mini | 3.8B | MIT | Edge/movil, tareas simples |
-| Gemma 2 9B | 9B | Google (comercial) | Multilingue, instrucciones |
-| Qwen 2.5 7B | 7B | Apache 2.0 | Codigo, multilingue (CN/ES/EN) |
+- revision inmutable y hashes disponibles;
+- licencia aplicable al uso y a los pesos derivados;
+- arquitectura compatible con la version instalada de las librerias;
+- contexto, tokenizer y formato conversacional;
+- evaluacion base que permita medir mejora y regresion.
 
 ## Pipeline de fine-tuning (4 fases)
 
@@ -300,7 +293,7 @@ output/                       # Checkpoints y modelo final (gitignore)
 ## Reglas
 
 - No fine-tunear sin antes agotar prompt engineering + few-shot. Fine-tuning es el ultimo recurso, no el primero.
-- Dataset minimo: 50 ejemplos para clasificacion, 200+ para generacion abierta.
+- El tamaño del dataset se decide mediante curvas de aprendizaje y resultados del conjunto de evaluacion, no por un umbral universal.
 - Siempre separar eval set ANTES de entrenar. Nunca evaluar con datos de entrenamiento.
 - Monitorear `eval_loss` — si diverge de `train_loss` por >20%, hay overfitting.
 - No subir modelos fine-tuneados a repos publicos sin verificar que no memorizaron datos sensibles del dataset.

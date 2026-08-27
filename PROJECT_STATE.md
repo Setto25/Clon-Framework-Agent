@@ -1,8 +1,8 @@
 # Estado del proyecto: agent-framework
 
-**Ultima actualizacion:** 2026-08-26 (rev 15)
-**Estado general:** Skills congeladas con inventario reproducible; publicacion bloqueada
-**Fase activa:** Fase 2 — auditoria de procedencia de solo lectura
+**Ultima actualizacion:** 2026-08-26 (rev 16)
+**Estado general:** Skills endurecidas para uso personal; pilotos y procedencia pendientes
+**Fase activa:** Fase 6 — validacion funcional de Skills y stacks
 
 ## 1. Objetivo
 
@@ -84,14 +84,19 @@ Cada stack tiene LEEME.md con reglas adicionales, terminos tecnicos y procedimie
 32. **Integracion local lineal.** Se comprobo que `main` era ancestro directo de `codex/estabilizacion-framework`, con siete commits adicionales y sin cambios de Skills respecto de `main`. La rama local `main` se adelanto por fast-forward sin eliminar ramas ni publicar cambios.
 33. **Inventario congelado reproducible.** `scripts/inventariar_skills.py` registra 32 archivos, 17 manifiestos `SKILL.md`, tamaños, SHA-256 y declaraciones locales de procedencia en `auditoria/inventario_skills.json`. Una quinta prueba impide que el inventario quede desactualizado.
 34. **Declaracion local insuficiente.** El analisis mecanico detecto una sola declaracion explicita de procedencia, en `mobile-flutter`; afirma MIT, pero esa afirmacion continua sin evidencia primaria verificada.
+35. **Modificacion autorizada para uso personal.** El usuario autorizo mejorar las Skills sin eliminarlas. La restriccion anterior de congelacion queda reemplazada por una politica de cambios probados, inventariados y sin redistribucion mientras la procedencia siga incompleta.
+36. **Skills criticas reconstruidas.** `iniciar-proyecto` ahora delega en la CLI Python, no duplica placeholders y no mueve ni borra Skills. `agentes-multiagent` prioriza soluciones simples, autorizacion externa al modelo, aislamiento real y evaluaciones adversariales.
+37. **Guias tecnicas endurecidas.** FastAPI exige secretos sin valor predeterminado y lock validado; Next.js usa cache explicita; RAG y fine-tuning eliminan precios, modelos, VRAM y umbrales universales. Los nombres de negocio leen el idioma desde `AGENTS.md` en vez de placeholders no procesados.
+38. **Validacion estructural completa.** Las 17 Skills aprobaron `quick_validate.py`. La suite tiene ocho pruebas y controla cantidad, frontmatter, inventario, copia byte por byte y ausencia de instrucciones obsoletas o destructivas.
 
 ## 5. Que falta
 
 - **Validacion con proyecto real.** Ningun proyecto ha consumido la plantilla todavia. El primer uso real revelara friccion en el wizard de iniciar-proyecto, gaps en las reglas, y skills que sobran o faltan.
 - **Stack backend-fastapi.** Creado con skill `fastapi-setup`. Sin validacion en proyecto real todavia.
-- **Auditoria de Skills.** La procedencia, licencia y calidad individual de las Skills debe resolverse antes de modificarlas o presentarlas como contenido redistribuible.
+- **Procedencia de Skills.** La fuente y licencia deben resolverse antes de cualquier redistribucion. Las correcciones para uso personal quedan permitidas y registradas.
+- **Validacion funcional.** La estructura y las invariantes de seguridad estan probadas, pero cada Skill tecnica necesita un escenario piloto que mida si mejora el resultado frente a trabajar sin ella.
 - **Estabilizacion previa al piloto.** Antes de consumir la plantilla en un proyecto real se deben corregir la linea base Git, la seguridad de `.env`, el contrato de placeholders, el inicializador y las referencias ausentes. El avance detallado vive en `ESTADO_CORRECCIONES.md`.
 
 ## 6. Siguiente paso logico
 
-Clasificar, sin editar Skills, los 17 manifiestos por autoria probable y evidencia disponible. Cada fuente externa debera registrar URL, revision y licencia primaria antes de considerar una publicacion.
+Ejecutar pilotos aislados de `iniciar-proyecto`, `fastapi-setup` y `agentes-multiagent`, comparando resultado, tiempo, errores y seguridad frente a una ejecucion sin Skill. Mantener bloqueada la redistribucion hasta completar procedencia y licencia.

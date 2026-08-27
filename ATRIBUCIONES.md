@@ -1,7 +1,7 @@
 # Atribuciones y procedencia
 
 **Ultima revision:** 2026-08-26
-**Estado:** Inventario incompleto; Skills congeladas
+**Estado:** Inventario incompleto; uso personal y redistribucion bloqueada
 
 ## 1. Proposito
 
@@ -11,24 +11,25 @@ Este registro no reemplaza los avisos de licencia exigidos por cada fuente. Cuan
 
 ## 2. Politica temporal
 
-- No se modifican, agregan ni eliminan Skills mientras su procedencia se encuentre en revision.
+- Se permiten correcciones tecnicas para uso personal cuando conservan la procedencia conocida y quedan registradas en el inventario.
+- No se elimina ninguna Skill sin confirmacion explicita del propietario del proyecto.
 - No se publica una licencia global sobre el conjunto completo hasta delimitar el contenido original y el contenido derivado.
 - No se prepara una distribucion comercial de las Skills con procedencia pendiente.
-- Los defectos encontrados dentro de una Skill congelada se registran sin editar su contenido.
-- Una Skill solo sale de la congelacion cuando dispone de fuente, revision o commit, licencia comprobada y descripcion de las modificaciones realizadas.
+- Cada modificacion debe regenerar el inventario, ejecutar las pruebas y conservar las fuentes declaradas.
+- Una Skill solo puede redistribuirse cuando dispone de fuente, revision o commit, licencia comprobada y descripcion de las modificaciones realizadas.
 
 ## 3. Inventario conocido
 
-El inventario mecanico reproducible vive en `auditoria/inventario_skills.json`. Registra los 32 archivos congelados, los 17 manifiestos `SKILL.md`, sus tamaños, sus huellas SHA-256 y las declaraciones locales de procedencia detectadas. `scripts/inventariar_skills.py` lo regenera sin escribir dentro de `.agents/skills`, y la suite automatica exige coincidencia byte por byte.
+El inventario mecanico reproducible vive en `auditoria/inventario_skills.json`. Registra los 32 archivos auditados, los 17 manifiestos `SKILL.md`, sus tamaños, sus huellas SHA-256 y las declaraciones locales de procedencia detectadas. `scripts/inventariar_skills.py` lo regenera sin escribir dentro de `.agents/skills`, y la suite automatica exige coincidencia byte por byte.
 
 | Grupo | Procedencia declarada | Estado de licencia | Tratamiento |
 |---|---|---|---|
-| Core historico y firmware ESP32 | Extraido del proyecto personal `entrevoces` | Pendiente de confirmar autoria exclusiva | Congelado hasta completar inventario |
+| Core historico y firmware ESP32 | Extraido del proyecto personal `entrevoces` | Pendiente de confirmar autoria exclusiva | Uso personal; no redistribuir hasta completar inventario |
 | `mobile-flutter` | Adaptado de `spjoshis/claude-code-plugins`, plugin `flutter-development` | La declaracion MIT local no pudo verificarse en el arbol publico revisado | No distribuir comercialmente; conservar sin cambios |
-| `backend-fastapi` | Declarado como creado para este framework, con influencia posible de plugins evaluados | Procedencia detallada no registrada | Congelado hasta reconstruir trazabilidad |
-| `frontend-nextjs` | Declarado como creado para este framework, con influencia posible de `nodejs-development` | Fuente y licencia exactas no registradas | Congelado hasta reconstruir trazabilidad |
-| `ia-llm` | Declarado como creado para este framework, con influencia posible de `rag-cli` y `custom-plugin-ai-engineer` | Fuentes y licencias exactas no registradas | Congelado hasta reconstruir trazabilidad |
-| `delegar-entre-agentes` | Extraido del proyecto personal `entrevoces` | Pendiente de confirmar autoria exclusiva | Congelado hasta completar inventario |
+| `backend-fastapi` | Declarado como creado para este framework, con influencia posible de plugins evaluados | Procedencia detallada no registrada | Uso personal; reconstruir trazabilidad antes de redistribuir |
+| `frontend-nextjs` | Declarado como creado para este framework, con influencia posible de `nodejs-development` | Fuente y licencia exactas no registradas | Uso personal; reconstruir trazabilidad antes de redistribuir |
+| `ia-llm` | Declarado como creado para este framework, con influencia posible de `rag-cli` y `custom-plugin-ai-engineer` | Fuentes y licencias exactas no registradas | Uso personal; reconstruir trazabilidad antes de redistribuir |
+| `delegar-entre-agentes` | Extraido del proyecto personal `entrevoces` | Pendiente de confirmar autoria exclusiva | Uso personal; no redistribuir hasta completar inventario |
 
 ## 4. Fuente externa identificada
 

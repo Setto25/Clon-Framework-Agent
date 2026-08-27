@@ -277,6 +277,6 @@ class PaginaCarrito extends StatelessWidget {
 
 - Elegir UNA solucion por proyecto y documentar la decision en PROJECT_STATE.md §4.
 - Escribir el test del Bloc/Notifier ANTES de la implementacion.
-- Nombres de negocio (eventos, estados, blocs) en {{IDIOMA_NOMBRES}}.
+- Los nombres de negocio de eventos, estados y blocs respetan el idioma declarado en `AGENTS.md`.
 - Nombres del framework (`Bloc`, `Emitter`, `AsyncNotifier`, `ConsumerWidget`) en ingles.
 - No poner logica de negocio en widgets — solo en Blocs/Notifiers/Controllers.

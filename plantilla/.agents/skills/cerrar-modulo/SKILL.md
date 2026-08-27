@@ -24,7 +24,7 @@ description: Cierra y documenta un módulo terminado después de implementar cua
 ## Comando
 
 ```powershell
-python scripts/verificar_memoria_proyecto.py {{RUTA_RAIZ_PROYECTO}} --json
+python scripts/verificar_memoria_proyecto.py . --json
 ```
 
 ## Salida

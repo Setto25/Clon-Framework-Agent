@@ -42,9 +42,9 @@ Estos terminos se conservan en ingles dentro de proyectos que activen este stack
 | `fixture` | — | pytest |
 | `lock file` | — | uv.lock |
 
-## Adaptacion a {{IDIOMA_NOMBRES}}
+## Adaptacion al idioma del proyecto
 
-Los nombres del framework (`BaseModel`, `APIRouter`, `Depends`) se conservan en ingles. Los nombres de **negocio** del proyecto SI se escriben en {{IDIOMA_NOMBRES}}:
+Los nombres del framework (`BaseModel`, `APIRouter`, `Depends`) se conservan en ingles. Los nombres de negocio respetan el idioma declarado en `AGENTS.md`:
 
 ```python
 # Correcto: API FastAPI en ingles + negocio en idioma del proyecto

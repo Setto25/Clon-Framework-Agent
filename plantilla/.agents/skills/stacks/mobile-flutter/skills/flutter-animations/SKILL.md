@@ -272,4 +272,4 @@ class _Estado extends State<AnimacionSpring>
 - Envolver animaciones costosas en `RepaintBoundary`.
 - Usar `const` en el `child` de `AnimatedBuilder` para evitar rebuilds.
 - Probar animaciones en dispositivos reales — el emulador no refleja rendimiento real.
-- Nombres de clases animadas en {{IDIOMA_NOMBRES}}: `TarjetaExpandible`, `AnimacionEscalonada`.
+- Los nombres de clases de negocio respetan el idioma declarado en `AGENTS.md`.

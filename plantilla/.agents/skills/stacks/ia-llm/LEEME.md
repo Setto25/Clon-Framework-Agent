@@ -58,9 +58,9 @@ Estos terminos se conservan en ingles dentro de proyectos que activen este stack
 | `temperature` | — | Parametro de generacion |
 | `top-k` / `top-p` | — | Parametros de sampling |
 
-## Adaptacion a {{IDIOMA_NOMBRES}}
+## Adaptacion al idioma del proyecto
 
-Los nombres de APIs y parametros de modelos se conservan en ingles. Los nombres de **negocio** del proyecto SI se escriben en {{IDIOMA_NOMBRES}}:
+Los nombres de APIs y parametros de modelos se conservan en ingles. Los nombres de negocio respetan el idioma declarado en `AGENTS.md`:
 
 ```python
 # Correcto: terminos LLM en ingles + negocio en idioma del proyecto

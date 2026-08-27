@@ -2,7 +2,7 @@
 
 **Tipo:** Stack tecnologico (Capa 2)
 **Para:** Proyectos moviles multiplataforma con Flutter y Dart.
-**Basado en:** [spjoshis/claude-code-plugins](https://github.com/spjoshis/claude-code-plugins) (plugin flutter-development, MIT). Adaptado: fusionado, reordenado a TDD, comprimido, traducido y alineado con las reglas del framework.
+**Basado en:** [spjoshis/claude-code-plugins](https://github.com/spjoshis/claude-code-plugins), plugin `flutter-development`. La licencia de la revision usada no esta verificada. Adaptado: fusionado, reordenado a TDD, comprimido, traducido y alineado con las reglas del framework.
 
 ## Que agrega al core
 
@@ -56,9 +56,9 @@ Estos terminos se conservan en ingles dentro de proyectos que activen este stack
 | `pubspec` | — | Archivo de dependencias |
 | `devtools` | — | Herramientas de diagnostico |
 
-## Adaptacion a {{IDIOMA_NOMBRES}}
+## Adaptacion al idioma del proyecto
 
-Los nombres del framework Flutter (`StatelessWidget`, `BlocProvider`, `AnimationController`) se conservan tal cual. Los nombres de **negocio** del proyecto SI se escriben en {{IDIOMA_NOMBRES}}:
+Los nombres del framework Flutter (`StatelessWidget`, `BlocProvider`, `AnimationController`) se conservan tal cual. Los nombres de negocio respetan el idioma declarado en `AGENTS.md`:
 
 ```dart
 // Correcto: terminos Flutter en ingles + negocio en idioma del proyecto

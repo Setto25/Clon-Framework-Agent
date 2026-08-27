@@ -1,6 +1,6 @@
 ---
 name: nextjs-fullstack
-description: Patrones de desarrollo fullstack con Next.js 14+ App Router. Cubre Server Components, Server Actions, API routes, caching, layouts y manejo de errores. Usar al implementar paginas, mutaciones, fetching de datos o rutas de API en un proyecto Next.js.
+description: Implementa flujos fullstack con Next.js App Router, Server Components, acciones, Route Handlers y cache explicita. Usar despues de confirmar la version instalada porque los valores predeterminados del framework cambian entre versiones mayores.
 ---
 
 # Next.js Fullstack (App Router)
@@ -251,13 +251,13 @@ export default function ProductoNoEncontrado() {
 ## Patron 5: Caching y revalidacion
 
 ```typescript
-// Fetch con cache estatico (default — SSG)
-const datos = await fetch(url); // cache: 'force-cache' implicito
+// Solicita cache persistente de forma explicita.
+const datos = await fetch(url, { cache: 'force-cache' });
 
 // Fetch con revalidacion por tiempo (ISR)
 const datos = await fetch(url, { next: { revalidate: 60 } });
 
-// Fetch sin cache (SSR en cada request)
+// Solicita datos nuevos en cada renderizado del servidor.
 const datos = await fetch(url, { cache: 'no-store' });
 
 // Revalidar por tag (on-demand)
@@ -271,6 +271,8 @@ revalidateTag('productos');
 import { revalidatePath } from 'next/cache';
 revalidatePath('/productos');
 ```
+
+No inferir cache a partir de ejemplos de otra version de Next.js. Comprobar la version del proyecto y la documentacion oficial de `fetch`, Route Handlers y revalidacion antes de elegir el comportamiento.
 
 ## Estructura de archivos recomendada
 
@@ -306,5 +308,4 @@ components/
 - Validar con Zod en el boundary (Server Action o Route Handler), no en el componente.
 - Fetch de datos en Server Components, no en Client Components con `useEffect`.
 - Usar los archivos convencionales del App Router (`loading.tsx`, `error.tsx`) en vez de logica manual.
-- Nombres de archivos de paginas/rutas: en {{IDIOMA_NOMBRES}} (`app/productos/page.tsx`, no `app/products/page.tsx`).
-- Nombres de Server Actions: verbos en {{IDIOMA_NOMBRES}} (`crearPedido`, `eliminarUsuario`).
+- Los nombres de archivos, rutas y acciones de negocio respetan el idioma declarado en `AGENTS.md`.

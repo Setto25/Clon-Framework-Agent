@@ -14,7 +14,7 @@ description: Pipeline de Retrieval Augmented Generation local. Cubre chunking, e
 
 ## Cuando NO usar
 
-- El corpus cabe completo en el context window del modelo (< 100k tokens) — pasar directo es mas simple.
+- El corpus cabe en la ventana efectiva del modelo con margen suficiente para instrucciones y respuesta; una llamada directa medida resulta mas simple.
 - Se necesita razonamiento sobre relaciones entre documentos (mejor: grafos de conocimiento).
 - Los documentos cambian cada minuto (mejor: busqueda en tiempo real, no indexacion batch).
 
@@ -85,13 +85,14 @@ def fragmentar_documento(
 
 ### Matriz de decision
 
-| Proveedor | Local | Costo | Calidad | Dimensiones | Usar cuando |
-|---|---|---|---|---|---|
-| `sentence-transformers` (all-MiniLM-L6-v2) | Si | Gratis | Buena | 384 | Desarrollo, corpus < 100k docs |
-| `sentence-transformers` (multilingual-e5-large) | Si | Gratis | Alta | 1024 | Corpus multilingue |
-| Ollama (nomic-embed-text) | Si | Gratis | Alta | 768 | Produccion local, GPU disponible |
-| OpenAI (text-embedding-3-small) | No | $0.02/1M tokens | Alta | 1536 | Produccion cloud, presupuesto disponible |
-| Cohere (embed-v3) | No | $0.1/1M tokens | Muy alta | 1024 | Maxima calidad, multilingue |
+| Criterio | Opcion local | API administrada |
+|---|---|---|
+| Privacidad | Los documentos no salen del entorno | Requiere revisar tratamiento y retencion de datos |
+| Operacion | Exige recursos, actualizaciones y observabilidad propias | Simplifica infraestructura, con costo variable |
+| Latencia | Depende del hardware y concurrencia local | Depende de red, region y limites del proveedor |
+| Calidad | Se mide con el corpus y consultas reales | Se mide con el mismo conjunto de evaluacion |
+
+Seleccionar un modelo concreto solo despues de verificar documentacion, licencia, dimensiones, longitud maxima y precio vigentes. No comparar calidad mediante etiquetas subjetivas sin una evaluacion del corpus real.
 
 ### Implementacion (interfaz desacoplada)
 
