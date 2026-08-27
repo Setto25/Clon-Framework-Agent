@@ -1,7 +1,7 @@
 # Estado de correcciones de agent-framework
 
-**Ultima actualizacion:** 2026-08-26 (rev 10)
-**Estado general:** Suite automatica local aprobada; CI remota pendiente
+**Ultima actualizacion:** 2026-08-26 (rev 11)
+**Estado general:** Clon limpio aprobado; CI remota pendiente
 **Fase activa:** Fase 7 — pruebas automaticas y CI
 **Rama de trabajo:** `codex/estabilizacion-framework`
 
@@ -101,6 +101,20 @@ La clasificacion confirmo que `_dryrun2/` era una salida generada para `proyecto
 - No existe una suite automatica que demuestre una instalacion reproducible.
 
 ## 7. Registro de avance
+
+### 2026-08-26 — Rev 11
+
+**Completado:**
+
+- Se registro la suite y la matriz de CI en el commit `864ba88`.
+- Se creo un clon local limpio de `codex/estabilizacion-framework` en un directorio temporal.
+- El clon apunto exactamente a `864ba88`, mantuvo el arbol limpio y aprobo el validador del contrato.
+- Las cuatro pruebas integrales aprobaron desde el clon sin depender de archivos sin versionar del arbol original.
+- El clon temporal se elimino despues de completar la verificacion.
+
+**Resultado:**
+
+La reproducibilidad local de la rama queda comprobada. La Fase 7 solo conserva como pendiente la ejecucion real de la matriz en GitHub Actions; esa ejecucion no justifica publicar sin una decision expresa sobre el riesgo de licencia.
 
 ### 2026-08-26 — Rev 10
 
@@ -327,7 +341,7 @@ El usuario indico que otras Skills tambien pueden contener adaptaciones de produ
 
 ## 8. Siguiente paso exacto
 
-Registrar la suite y comprobar la rama desde un clon limpio local. Despues se podra preparar la integracion local por fast-forward sin publicar cambios remotos.
+Revisar el historial consolidado y preparar la integracion local por fast-forward en `main`. No publicar la rama ni ejecutar una release mientras la procedencia y licencia de Skills permanezcan pendientes.
 
 ## 9. Bloqueos
 

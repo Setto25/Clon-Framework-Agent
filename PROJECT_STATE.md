@@ -1,7 +1,7 @@
 # Estado del proyecto: agent-framework
 
-**Ultima actualizacion:** 2026-08-26 (rev 12)
-**Estado general:** Suite automatica local aprobada; CI remota pendiente
+**Ultima actualizacion:** 2026-08-26 (rev 13)
+**Estado general:** Clon limpio aprobado; CI remota pendiente
 **Fase activa:** Fase 7 — pruebas automaticas y CI
 
 ## 1. Objetivo
@@ -80,6 +80,7 @@ Cada stack tiene LEEME.md con reglas adicionales, terminos tecnicos y procedimie
 28. **Suite permanente incorporada.** `pruebas/prueba_creacion_proyecto.py` cubre creacion completa, pendientes, limpieza tras fallo, rechazo de sobrescritura, proteccion de `.env` e inmutabilidad de Skills con `unittest` y sin dependencias externas.
 29. **Matriz de CI definida.** `.github/workflows/validacion.yml` ejecuta el contrato y la suite en Windows y Ubuntu con Python 3.9 y 3.12. Su aprobacion remota queda pendiente hasta publicar la rama y ejecutar GitHub Actions.
 30. **Skills preservadas por prueba.** La suite calcula y compara SHA-256 del arbol congelado; no escribe ni corrige contenido bajo `.agents/skills`.
+31. **Reproducibilidad desde Git comprobada.** Se creo un clon temporal limpio del commit `864ba88`; el contrato y las cuatro pruebas aprobaron fuera del arbol de trabajo. El clon se elimino despues de la comprobacion.
 
 ## 5. Que falta
 
@@ -90,4 +91,4 @@ Cada stack tiene LEEME.md con reglas adicionales, terminos tecnicos y procedimie
 
 ## 6. Siguiente paso logico
 
-Registrar la suite y ejecutar una comprobacion en un clon limpio local. Despues, integrar la rama por fast-forward en `main` cuando la revision local quede cerrada; la publicacion y CI remota requieren una decision posterior.
+Revisar el conjunto de commits de `codex/estabilizacion-framework` y, si no aparecen defectos locales adicionales, integrarlo por fast-forward en `main`. No publicar mientras la licencia de Skills siga pendiente; la CI remota solo podra comprobarse despues de una publicacion autorizada.
