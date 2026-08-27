@@ -20,7 +20,11 @@ Claude comunica qué leyó antes de actuar.
 
 ---
 
-## 2. Disciplina de proceso (basado en superpowers)
+## 2. Disciplina de proceso — Nivel 0 (siempre activo)
+
+> **Nota:** Este bloque es comportamiento base, no un skill. No aparece en el catalogo de stacks/ ni en opcional/. No se invoca con `$`. Se aplica automaticamente en cada sesion. No confundir con skills opcionales como `delegar-entre-agentes`.
+
+### Superpowers
 
 ### Brainstorming estructurado
 
@@ -143,6 +147,20 @@ Cuando una decision no bloquea, adoptar la opcion mas simple y reversible.
 
 ---
 
-## 9. Compatibilidad con otros agentes
+## 9. Lecciones aprendidas
+
+Tras resolver un error que requirio **2 o mas intentos fallidos**:
+
+1. Registrar la leccion en `.agents/skills/lecciones-aprendidas/referencias/<stack>.md`
+2. Agregar fila en la tabla indice de `lecciones-aprendidas/SKILL.md`
+3. Formato: sintoma, contexto, causa raiz, solucion, intentos fallidos
+
+Antes de depurar un error no trivial, consultar el archivo de referencia del stack relevante.
+
+No registrar errores triviales (typos, imports, sintaxis obvia). Solo registrar cuando la causa raiz no era deducible del mensaje de error.
+
+---
+
+## 10. Compatibilidad con otros agentes
 
 Estas reglas son compatibles con Antigravity, Codex y otros agentes que usen `AGENTS.md` como base. Las secciones de arquitectura, idioma y autoridad se aplican via `AGENTS.md` directamente — no se duplican aqui.

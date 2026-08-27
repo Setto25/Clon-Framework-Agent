@@ -1,16 +1,18 @@
 ---
 name: delegar-entre-agentes
-description: "OPCIONAL — Prepara un handoff entre agentes (Claude Code/Antigravity/Codex) documentando contexto, decisiones pendientes y siguiente acción concreta. Usar cuando se detecte que la continuidad vía PROJECT_STATE.md no es suficiente (pérdida de contexto entre sesiones, decisiones que se repiten). No incluir en proyectos nuevos hasta que el problema se manifieste."
+description: "OPCIONAL — Sin evidencia de uso real (extraido de entrevoces, 6 hitos sin handoffs formales). Usar cuando el limite de contexto dentro de una sesion hace que el agente pierda decisiones importantes que PROJECT_STATE.md no captura — por ejemplo, un razonamiento en curso o una decision a medias. En la practica, PROJECT_STATE.md suele ser suficiente para el handoff entre sesiones, asi que este skill rara vez se necesita. No activar por defecto en proyectos nuevos."
 ---
 
 # Delegar entre agentes
 
-## Cuándo delegar
+> **Skill opcional — rara vez necesario.** Antes de usarlo, verifica que `PROJECT_STATE.md §8` (Siguiente paso logico) este completo. En la mayoria de los casos eso es suficiente para que un agente nuevo retome sin perdida. Usa este skill solo si hay razonamiento en curso o decisiones a medias que no caben en PROJECT_STATE.md.
 
-- El contexto actual está saturado y se necesita sesión fresca con estado limpio.
-- La tarea se beneficia del descubrimiento automático de Skills (→ Antigravity).
-- Se necesita ejecución autónoma en background sin supervisión (→ Codex).
-- Se necesita análisis profundo con contexto largo y edición iterativa (→ Claude Code).
+## Cuando delegar
+
+- El contexto del agente se agoto en medio de una tarea compleja y hay decisiones activas que PROJECT_STATE.md no puede capturar en su formato.
+- La tarea se beneficia del descubrimiento automatico de Skills (→ Antigravity).
+- Se necesita ejecucion autonoma en background sin supervision (→ Codex).
+- Se necesita analisis profundo con contexto largo y edicion iterativa (→ Claude Code).
 - El usuario cambia de herramienta por preferencia o disponibilidad.
 
 ## Protocolo de handoff
