@@ -1,6 +1,6 @@
 # Estado del proyecto: agent-framework
 
-**Ultima actualizacion:** 2026-08-27 (rev 25)
+**Ultima actualizacion:** 2026-08-27 (rev 26)
 **Estado general:** Limites de rutas y enlaces endurecidos; pilotos y procedencia pendientes
 **Fase activa:** Fase 6 — validacion interna previa a pilotos
 
@@ -118,6 +118,7 @@ Cada stack tiene LEEME.md con reglas adicionales, terminos tecnicos y procedimie
 66. **Arboles locales regulares.** La version `0.2.0-alpha.6` rechaza enlaces simbolicos, junctions, reparse points y cambios de dispositivo dentro de la plantilla fuente o de una copia manual antes de leer el contrato o copiar archivos.
 67. **Destino lexico y resuelto protegido.** El creador comprueba tanto la ruta escrita por el usuario como su resolucion real. Un destino que existe como enlace roto se considera ocupado y no se sigue ni reemplaza.
 68. **Regresion de enlaces comprobada.** La suite tiene 30 pruebas. Los dos casos de enlace se ejecutaron en Windows sin omisiones: el archivo externo permanecio intacto y el destino roto no creo su objetivo.
+69. **Exportacion de rutas aprobada.** El commit `6214737` aprobo el contrato y las 30 pruebas desde un `git archive` limpio; los enlaces adversariales se probaron de nuevo y los temporales se eliminaron.
 
 ## 5. Que falta
 

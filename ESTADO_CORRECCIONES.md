@@ -1,6 +1,6 @@
 # Estado de correcciones de agent-framework
 
-**Ultima actualizacion:** 2026-08-27 (rev 23)
+**Ultima actualizacion:** 2026-08-27 (rev 24)
 **Estado general:** Limites de rutas y enlaces endurecidos; pilotos y procedencia pendientes
 **Fase activa:** Fase 6 — validacion interna previa a pilotos
 **Rama de trabajo:** `codex/estabilizacion-framework`
@@ -101,6 +101,23 @@ La clasificacion confirmo que `_dryrun2/` era una salida generada para `proyecto
 - No existe una suite automatica que demuestre una instalacion reproducible.
 
 ## 7. Registro de avance
+
+### 2026-08-27 — Rev 24
+
+**Completado:**
+
+- La proteccion de rutas y enlaces se registro en el commit `6214737`.
+- Se valido una exportacion limpia del commit y se eliminaron sus temporales.
+
+**Evidencia:**
+
+- El contrato aprobo desde la exportacion limpia.
+- Las 30 pruebas automaticas aprobaron desde la exportacion limpia y sin omisiones.
+- Los dos escenarios con enlaces volvieron a ejecutarse correctamente fuera del arbol activo.
+
+**Resultado:**
+
+Las defensas de limites del sistema de archivos son reproducibles desde Git y no dependen del checkout de desarrollo.
 
 ### 2026-08-27 — Rev 23
 
