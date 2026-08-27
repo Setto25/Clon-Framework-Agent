@@ -1,7 +1,7 @@
 # Estado de correcciones de agent-framework
 
-**Ultima actualizacion:** 2026-08-26 (rev 11)
-**Estado general:** Clon limpio aprobado; CI remota pendiente
+**Ultima actualizacion:** 2026-08-26 (rev 12)
+**Estado general:** `main` local estabilizada; publicacion y CI remota pendientes
 **Fase activa:** Fase 7 — pruebas automaticas y CI
 **Rama de trabajo:** `codex/estabilizacion-framework`
 
@@ -101,6 +101,21 @@ La clasificacion confirmo que `_dryrun2/` era una salida generada para `proyecto
 - No existe una suite automatica que demuestre una instalacion reproducible.
 
 ## 7. Registro de avance
+
+### 2026-08-26 — Rev 12
+
+**Completado:**
+
+- Se reviso el historial consolidado de la rama de estabilizacion.
+- Git confirmo que `main` era ancestro directo de `codex/estabilizacion-framework`.
+- La diferencia contenia siete commits adicionales y ninguna modificacion bajo `plantilla/.agents/skills/`.
+- La rama local `main` se adelanto por fast-forward hasta `17a86c0`.
+- Se conservaron `codex/estabilizacion-framework`, `master` y el worktree preexistente; no se elimino ni reescribio ninguna referencia.
+- No se ejecuto ningun `push`.
+
+**Resultado:**
+
+La linea principal local contiene la estabilizacion comprobada. `origin/main` permanece sin cambios y la publicacion sigue bloqueada por la auditoria de procedencia y licencia de Skills.
 
 ### 2026-08-26 — Rev 11
 
@@ -341,7 +356,7 @@ El usuario indico que otras Skills tambien pueden contener adaptaciones de produ
 
 ## 8. Siguiente paso exacto
 
-Revisar el historial consolidado y preparar la integracion local por fast-forward en `main`. No publicar la rama ni ejecutar una release mientras la procedencia y licencia de Skills permanezcan pendientes.
+Construir fuera de `.agents/skills` un inventario reproducible y de solo lectura con rutas, huellas, fuentes declaradas y licencias declaradas. No modificar ni agregar Skills y no publicar cambios remotos.
 
 ## 9. Bloqueos
 

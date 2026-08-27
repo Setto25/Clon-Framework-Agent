@@ -1,7 +1,7 @@
 # Estado del proyecto: agent-framework
 
-**Ultima actualizacion:** 2026-08-26 (rev 13)
-**Estado general:** Clon limpio aprobado; CI remota pendiente
+**Ultima actualizacion:** 2026-08-26 (rev 14)
+**Estado general:** `main` local estabilizada; publicacion y CI remota pendientes
 **Fase activa:** Fase 7 — pruebas automaticas y CI
 
 ## 1. Objetivo
@@ -81,6 +81,7 @@ Cada stack tiene LEEME.md con reglas adicionales, terminos tecnicos y procedimie
 29. **Matriz de CI definida.** `.github/workflows/validacion.yml` ejecuta el contrato y la suite en Windows y Ubuntu con Python 3.9 y 3.12. Su aprobacion remota queda pendiente hasta publicar la rama y ejecutar GitHub Actions.
 30. **Skills preservadas por prueba.** La suite calcula y compara SHA-256 del arbol congelado; no escribe ni corrige contenido bajo `.agents/skills`.
 31. **Reproducibilidad desde Git comprobada.** Se creo un clon temporal limpio del commit `864ba88`; el contrato y las cuatro pruebas aprobaron fuera del arbol de trabajo. El clon se elimino despues de la comprobacion.
+32. **Integracion local lineal.** Se comprobo que `main` era ancestro directo de `codex/estabilizacion-framework`, con siete commits adicionales y sin cambios de Skills respecto de `main`. La rama local `main` se adelanto por fast-forward sin eliminar ramas ni publicar cambios.
 
 ## 5. Que falta
 
@@ -91,4 +92,4 @@ Cada stack tiene LEEME.md con reglas adicionales, terminos tecnicos y procedimie
 
 ## 6. Siguiente paso logico
 
-Revisar el conjunto de commits de `codex/estabilizacion-framework` y, si no aparecen defectos locales adicionales, integrarlo por fast-forward en `main`. No publicar mientras la licencia de Skills siga pendiente; la CI remota solo podra comprobarse despues de una publicacion autorizada.
+Mantener la publicacion bloqueada hasta resolver la procedencia y licencia de Skills. El siguiente trabajo seguro consiste en construir un inventario de auditoria de solo lectura fuera de `.agents/skills`; la CI remota solo podra comprobarse despues de una publicacion autorizada.
