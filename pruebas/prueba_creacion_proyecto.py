@@ -4,15 +4,19 @@
 from __future__ import annotations
 
 import hashlib
+import importlib.util
 import json
 import os
 import re
 import shutil
+import stat
 import subprocess
 import sys
 import tempfile
 import unittest
 from pathlib import Path
+from types import ModuleType
+from unittest import mock
 
 
 RAIZ_FRAMEWORK = Path(__file__).resolve().parent.parent
@@ -61,6 +65,21 @@ def descubrir_skills(raiz: Path) -> dict[str, Path]:
             raise AssertionError(f"Nombre de Skill duplicado: {nombre}")
         resultado[nombre] = manifiesto.parent
     return resultado
+
+
+def cargar_modulo_creador() -> ModuleType:
+    """Carga el creador y permite probar sus limites sin ejecutar la CLI."""
+    ruta_scripts = str(CREADOR.parent)
+    sys.path.insert(0, ruta_scripts)
+    try:
+        especificacion = importlib.util.spec_from_file_location("crear_proyecto_pruebas", CREADOR)
+        if especificacion is None or especificacion.loader is None:
+            raise RuntimeError("No se pudo cargar scripts/crear_proyecto.py")
+        modulo = importlib.util.module_from_spec(especificacion)
+        especificacion.loader.exec_module(modulo)
+        return modulo
+    finally:
+        sys.path.remove(ruta_scripts)
 
 
 class PruebasCreacionProyecto(unittest.TestCase):
@@ -143,7 +162,7 @@ class PruebasCreacionProyecto(unittest.TestCase):
         instaladas = estado.get("skills_instaladas") if isinstance(estado, dict) else None
         self.assertEqual(set(instaladas) if isinstance(instaladas, list) else set(), CORE_AUTOMATICO)
         registro = (destino / "documentacion" / "REGISTRO_CAMBIOS.md").read_text(encoding="utf-8")
-        self.assertIn("agent-framework 0.2.0-alpha.6", registro)
+        self.assertIn("agent-framework 0.2.0-alpha.7", registro)
         for nombre in CORE_AUTOMATICO:
             with self.subTest(skill_registrada=nombre):
                 self.assertIn(f"- `{nombre}`", registro)
@@ -384,6 +403,157 @@ class PruebasCreacionProyecto(unittest.TestCase):
         self.assertTrue(os.path.lexists(destino))
         self.assertFalse(objetivo_inexistente.exists())
         self.assertEqual(list(self.raiz_temporal.glob(".proyecto-temporal-*")), [])
+
+    def test_rechaza_destino_aparecido_antes_de_publicar(self) -> None:
+        """Confirma que la publicacion tardia no reemplace un destino nuevo."""
+        modulo = cargar_modulo_creador()
+        temporal = self.raiz_temporal / ".proyecto-temporal-publicacion"
+        destino = self.raiz_temporal / "destino-aparecido"
+        temporal.mkdir()
+        destino.mkdir()
+        with self.assertRaisesRegex(ValueError, "aparecio durante la creacion"):
+            modulo.publicar_temporal(temporal, destino, self.raiz_temporal)
+        self.assertTrue(temporal.is_dir())
+        self.assertTrue(destino.is_dir())
+
+    def test_normaliza_permisos_del_temporal(self) -> None:
+        """Confirma que la copia publicada quede editable por su propietario."""
+        modulo = cargar_modulo_creador()
+        temporal = self.raiz_temporal / "temporal-permisos"
+        temporal.mkdir()
+        archivo = temporal / "solo-lectura.txt"
+        archivo.write_text("Contenido preservado.\n", encoding="utf-8", newline="\n")
+        contenido_antes = archivo.read_bytes()
+        archivo.chmod(stat.S_IREAD)
+        modulo.normalizar_permisos_arbol(temporal)
+        self.assertTrue(stat.S_IMODE(archivo.stat().st_mode) & stat.S_IWUSR)
+        self.assertEqual(archivo.read_bytes(), contenido_antes)
+
+    def test_aplica_limites_acumulados_del_arbol(self) -> None:
+        """Confirma limites de cantidad y tamaño total sin consumir recursos reales."""
+        modulo = cargar_modulo_creador()
+        arbol = self.raiz_temporal / "arbol-limitado"
+        arbol.mkdir()
+        (arbol / "a.txt").write_text("a", encoding="utf-8")
+        (arbol / "b.txt").write_text("b", encoding="utf-8")
+        with mock.patch.object(modulo, "MAXIMO_ENTRADAS_ARBOL", 1):
+            with self.assertRaisesRegex(ValueError, "supera el maximo de 1 entradas"):
+                modulo.validar_arbol_sin_enlaces(arbol)
+        with mock.patch.object(modulo, "MAXIMO_BYTES_TOTALES", 1):
+            with self.assertRaisesRegex(ValueError, "supera el maximo total de 1 bytes"):
+                modulo.validar_arbol_sin_enlaces(arbol)
+
+    def test_rechaza_cache_generada_en_copia_manual(self) -> None:
+        """Impide inicializar residuos ignorados que una copia manual incluiria."""
+        destino = self.copiar_plantilla("copia-cache-generada")
+        cache = destino / "scripts" / "__pycache__"
+        cache.mkdir()
+        (cache / "residuo.pyc").write_bytes(b"bytecode no confiable")
+        huellas_antes = calcular_huellas(destino)
+        resultado = ejecutar(
+            [
+                sys.executable,
+                str(destino / "scripts" / "inicializar_proyecto.py"),
+                "Proyecto Cache",
+                "español",
+                "--configuracion",
+                str(CONFIGURACION_EJEMPLO),
+            ],
+            destino,
+        )
+        self.assertNotEqual(resultado.returncode, 0)
+        self.assertIn("artefacto generado no permitido", resultado.stderr)
+        self.assertEqual(calcular_huellas(destino), huellas_antes)
+        self.assertFalse((destino / ".git").exists())
+
+    def test_rechaza_archivo_excesivo_en_copia_manual(self) -> None:
+        """Impide consumir recursos sin limite al inspeccionar una copia manipulada."""
+        destino = self.copiar_plantilla("copia-archivo-excesivo")
+        archivo_grande = destino / "archivo-excesivo.bin"
+        with archivo_grande.open("wb") as flujo:
+            flujo.truncate(20 * 1024 * 1024 + 1)
+        resultado = ejecutar(
+            [
+                sys.executable,
+                str(destino / "scripts" / "inicializar_proyecto.py"),
+                "Proyecto Grande",
+                "español",
+                "--configuracion",
+                str(CONFIGURACION_EJEMPLO),
+            ],
+            destino,
+        )
+        self.assertNotEqual(resultado.returncode, 0)
+        self.assertIn("archivo mayor", resultado.stderr)
+        self.assertEqual(archivo_grande.stat().st_size, 20 * 1024 * 1024 + 1)
+        self.assertTrue((destino / ".plantilla-framework").is_file())
+        self.assertFalse((destino / ".git").exists())
+
+    def test_rechaza_archivo_administrado_solo_lectura(self) -> None:
+        """Devuelve un error claro antes de modificar una copia no escribible."""
+        destino = self.copiar_plantilla("copia-solo-lectura")
+        archivo = destino / ".env.ejemplo"
+        archivo.chmod(stat.S_IREAD)
+        try:
+            resultado = ejecutar(
+                [
+                    sys.executable,
+                    str(destino / "scripts" / "inicializar_proyecto.py"),
+                    "Proyecto Lectura",
+                    "español",
+                    "--configuracion",
+                    str(CONFIGURACION_EJEMPLO),
+                ],
+                destino,
+            )
+            self.assertNotEqual(resultado.returncode, 0)
+            self.assertIn("no permite escritura del propietario", resultado.stderr)
+            self.assertTrue((destino / ".plantilla-framework").is_file())
+            self.assertFalse((destino / ".git").exists())
+        finally:
+            archivo.chmod(stat.S_IREAD | stat.S_IWRITE)
+
+    def test_rechaza_configuracion_json_excesiva(self) -> None:
+        """Impide cargar en memoria una configuracion externa sin limite."""
+        destino = self.raiz_temporal / "proyecto-json-excesivo"
+        configuracion = self.raiz_temporal / "configuracion-excesiva.json"
+        with configuracion.open("wb") as flujo:
+            flujo.truncate(1024 * 1024 + 1)
+        resultado = ejecutar(
+            [
+                sys.executable,
+                str(CREADOR),
+                str(destino),
+                "Proyecto JSON",
+                "--configuracion",
+                str(configuracion),
+            ]
+        )
+        self.assertNotEqual(resultado.returncode, 0)
+        self.assertIn("configuracion de proyecto supera el maximo", resultado.stderr)
+        self.assertFalse(destino.exists())
+        self.assertEqual(list(self.raiz_temporal.glob(".proyecto-temporal-*")), [])
+
+    def test_rechaza_valor_de_configuracion_excesivo(self) -> None:
+        """Impide multiplicar contenido desproporcionado durante los reemplazos."""
+        destino = self.raiz_temporal / "proyecto-valor-excesivo"
+        configuracion = self.escribir_configuracion(
+            "configuracion-valor-excesivo.json",
+            {"DESCRIPCION_OBJETIVO": "x" * 100_001},
+        )
+        resultado = ejecutar(
+            [
+                sys.executable,
+                str(CREADOR),
+                str(destino),
+                "Proyecto Valor",
+                "--configuracion",
+                str(configuracion),
+            ]
+        )
+        self.assertNotEqual(resultado.returncode, 0)
+        self.assertIn("supera el maximo de 100000 caracteres", resultado.stderr)
+        self.assertFalse(destino.exists())
 
     def test_rechaza_contratos_incompatibles_sin_escribir(self) -> None:
         """Confirma que versiones, rutas, claves y origenes fallen sin mutar."""

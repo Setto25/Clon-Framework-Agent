@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import json
 import re
+import stat
 import sys
 from pathlib import Path, PurePosixPath
 from typing import TypedDict, cast
@@ -45,6 +46,7 @@ CLAVES_CONTRATO: frozenset[str] = frozenset(
     }
 )
 CLAVES_CAMPO_PLACEHOLDER: frozenset[str] = frozenset({"obligatorio", "origen", "descripcion"})
+MAXIMO_BYTES_JSON = 1024 * 1024
 
 
 def cargar_json_sin_duplicados(contenido: str, nombre: str) -> object:
@@ -58,6 +60,18 @@ def cargar_json_sin_duplicados(contenido: str, nombre: str) -> object:
         return resultado
 
     return cast(object, json.loads(contenido, object_pairs_hook=construir_objeto))
+
+
+def leer_json_limitado(ruta: Path, nombre: str) -> str:
+    """Lee solamente archivos JSON regulares dentro del limite permitido."""
+    informacion = ruta.stat()
+    if not stat.S_ISREG(informacion.st_mode):
+        raise ValueError(f"{nombre} debe ser un archivo regular")
+    with ruta.open("rb") as flujo:
+        contenido = flujo.read(MAXIMO_BYTES_JSON + 1)
+    if len(contenido) > MAXIMO_BYTES_JSON:
+        raise ValueError(f"{nombre} supera el maximo de {MAXIMO_BYTES_JSON} bytes")
+    return contenido.decode("utf-8")
 
 
 def exigir_diccionario(valor: object, nombre: str) -> dict[str, object]:
@@ -105,7 +119,7 @@ def validar_rutas_contrato(rutas: list[str], nombre: str) -> list[str]:
 
 def cargar_configuracion(ruta: Path) -> ConfiguracionPlantilla:
     """Carga y valida la estructura minima del contrato."""
-    contenido = cargar_json_sin_duplicados(ruta.read_text(encoding="utf-8"), str(ruta))
+    contenido = cargar_json_sin_duplicados(leer_json_limitado(ruta, "contrato"), str(ruta))
     datos = exigir_diccionario(contenido, "configuracion")
     exigir_claves_exactas(datos, CLAVES_CONTRATO, "configuracion")
 
@@ -220,7 +234,7 @@ def main() -> int:
     raiz_repositorio = Path(__file__).resolve().parent.parent
     try:
         errores = validar(raiz_repositorio)
-    except (OSError, UnicodeError, json.JSONDecodeError, ValueError) as error:
+    except (OSError, UnicodeError, json.JSONDecodeError, RecursionError, ValueError) as error:
         print(f"ERROR: no se pudo validar el contrato: {error}", file=sys.stderr)
         return 1
 

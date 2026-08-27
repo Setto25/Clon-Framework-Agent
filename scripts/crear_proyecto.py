@@ -17,6 +17,28 @@ from catalogo_skills import CORE_AUTOMATICO, RegistroSkill, descubrir_skills
 
 
 ATRIBUTO_REPARSE_POINT = getattr(stat, "FILE_ATTRIBUTE_REPARSE_POINT", 0x400)
+MAXIMO_ENTRADAS_ARBOL = 20_000
+MAXIMO_BYTES_TOTALES = 100 * 1024 * 1024
+MAXIMO_BYTES_ARCHIVO = 20 * 1024 * 1024
+NOMBRES_ARTEFACTOS_GENERADOS: frozenset[str] = frozenset(
+    {
+        "__pycache__",
+        ".pytest_cache",
+        ".mypy_cache",
+        ".ruff_cache",
+        ".venv",
+        "node_modules",
+        ".next",
+        ".dart_tool",
+        "build",
+        "coverage",
+        "htmlcov",
+        ".DS_Store",
+        "Thumbs.db",
+    }
+)
+SUFIJOS_ARTEFACTOS_GENERADOS: tuple[str, ...] = (".pyc", ".pyo")
+TIEMPO_MAXIMO_INICIALIZACION_SEGUNDOS = 120
 
 
 def crear_argumentos() -> argparse.Namespace:
@@ -60,26 +82,70 @@ def validar_arbol_sin_enlaces(
     rutas_omitidas: frozenset[str] = frozenset(),
 ) -> None:
     """Rechaza redirecciones y montajes que saquen contenido del arbol esperado."""
+    if es_enlace_o_reparse(raiz):
+        raise ValueError("La raiz de la plantilla no puede ser un enlace o reparse point")
     raiz_resuelta = raiz.resolve(strict=True)
-    dispositivo_raiz = raiz_resuelta.lstat().st_dev
+    informacion_raiz = raiz_resuelta.lstat()
+    dispositivo_raiz = informacion_raiz.st_dev
+    entradas_contadas = 0
+    bytes_contados = 0
 
     def recorrer(directorio: Path) -> None:
+        nonlocal entradas_contadas, bytes_contados
         with os.scandir(directorio) as entradas:
             for entrada in entradas:
                 ruta = Path(entrada.path)
                 relativa = ruta.relative_to(raiz_resuelta).as_posix()
+                entradas_contadas += 1
+                if entradas_contadas > MAXIMO_ENTRADAS_ARBOL:
+                    raise ValueError(
+                        f"La plantilla supera el maximo de {MAXIMO_ENTRADAS_ARBOL} entradas"
+                    )
+                if entrada.name in NOMBRES_ARTEFACTOS_GENERADOS or entrada.name.endswith(
+                    SUFIJOS_ARTEFACTOS_GENERADOS
+                ):
+                    raise ValueError(f"La plantilla contiene un artefacto generado no permitido: {relativa}")
                 if es_enlace_o_reparse(ruta):
                     raise ValueError(f"La plantilla contiene un enlace o reparse point no permitido: {relativa}")
                 informacion = ruta.lstat()
+                if stat.S_ISREG(informacion.st_mode) and informacion.st_mode & (
+                    stat.S_ISUID | stat.S_ISGID
+                ):
+                    raise ValueError(f"La plantilla contiene permisos especiales no permitidos: {relativa}")
                 if informacion.st_dev != dispositivo_raiz:
                     raise ValueError(f"La plantilla cruza a otro sistema de archivos: {relativa}")
                 ruta_resuelta = ruta.resolve(strict=True)
                 if not esta_dentro(ruta_resuelta, raiz_resuelta):
                     raise ValueError(f"La plantilla contiene una ruta fuera de su raiz: {relativa}")
-                if entrada.is_dir(follow_symlinks=False) and relativa not in rutas_omitidas:
+                if stat.S_ISREG(informacion.st_mode):
+                    if informacion.st_size > MAXIMO_BYTES_ARCHIVO:
+                        raise ValueError(
+                            f"La plantilla contiene un archivo mayor a {MAXIMO_BYTES_ARCHIVO} bytes: {relativa}"
+                        )
+                    bytes_contados += informacion.st_size
+                    if bytes_contados > MAXIMO_BYTES_TOTALES:
+                        raise ValueError(
+                            f"La plantilla supera el maximo total de {MAXIMO_BYTES_TOTALES} bytes"
+                        )
+                elif not stat.S_ISDIR(informacion.st_mode):
+                    raise ValueError(f"La plantilla contiene un archivo especial no permitido: {relativa}")
+                if stat.S_ISDIR(informacion.st_mode) and relativa not in rutas_omitidas:
                     recorrer(ruta)
 
     recorrer(raiz_resuelta)
+
+
+def normalizar_permisos_arbol(raiz: Path) -> None:
+    """Retira permisos especiales y garantiza escritura del propietario."""
+    rutas = [raiz, *sorted(raiz.rglob("*"))]
+    for ruta in rutas:
+        informacion = ruta.lstat()
+        modo = stat.S_IMODE(informacion.st_mode)
+        modo &= ~(stat.S_ISUID | stat.S_ISGID | stat.S_ISVTX)
+        modo |= stat.S_IRUSR | stat.S_IWUSR
+        if stat.S_ISDIR(informacion.st_mode):
+            modo |= stat.S_IXUSR
+        os.chmod(ruta, modo)
 
 
 def validar_destino(destino: Path, raiz_framework: Path) -> tuple[Path, Path]:
@@ -193,6 +259,16 @@ def eliminar_temporal(destino_temporal: Path, padre: Path) -> None:
     shutil.rmtree(temporal_resuelto)
 
 
+def publicar_temporal(destino_temporal: Path, destino: Path, padre: Path) -> None:
+    """Publica el temporal solo si el destino continua libre y bien delimitado."""
+    temporal_resuelto = destino_temporal.resolve(strict=True)
+    if temporal_resuelto.parent != padre or not temporal_resuelto.name.startswith(".proyecto-temporal-"):
+        raise ValueError(f"Se rechazo publicar un temporal inesperado: {temporal_resuelto}")
+    if os.path.lexists(destino):
+        raise ValueError(f"El destino aparecio durante la creacion y no sera reemplazado: {destino}")
+    os.replace(temporal_resuelto, destino)
+
+
 def crear_proyecto(argumentos: argparse.Namespace) -> tuple[Path, list[str]]:
     """Copia, inicializa y publica localmente el proyecto de forma atomica."""
     raiz_framework = Path(__file__).resolve().parent.parent
@@ -216,9 +292,15 @@ def crear_proyecto(argumentos: argparse.Namespace) -> tuple[Path, list[str]]:
             destino_temporal / ".agents" / "skills",
             skills_seleccionadas,
         )
+        normalizar_permisos_arbol(destino_temporal)
         comando = construir_comando_inicializador(destino_temporal, argumentos, nombres_skills)
-        subprocess.run(comando, cwd=destino_temporal, check=True)
-        os.replace(destino_temporal, destino)
+        subprocess.run(
+            comando,
+            cwd=destino_temporal,
+            check=True,
+            timeout=TIEMPO_MAXIMO_INICIALIZACION_SEGUNDOS,
+        )
+        publicar_temporal(destino_temporal, destino, padre)
     except (OSError, subprocess.SubprocessError, ValueError):
         eliminar_temporal(destino_temporal, padre)
         raise

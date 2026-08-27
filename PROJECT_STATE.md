@@ -1,7 +1,7 @@
 # Estado del proyecto: agent-framework
 
-**Ultima actualizacion:** 2026-08-27 (rev 26)
-**Estado general:** Limites de rutas y enlaces endurecidos; pilotos y procedencia pendientes
+**Ultima actualizacion:** 2026-08-27 (rev 27)
+**Estado general:** Publicacion y recursos acotados; pilotos y procedencia pendientes
 **Fase activa:** Fase 6 — validacion interna previa a pilotos
 
 ## 1. Objetivo
@@ -119,6 +119,11 @@ Cada stack tiene LEEME.md con reglas adicionales, terminos tecnicos y procedimie
 67. **Destino lexico y resuelto protegido.** El creador comprueba tanto la ruta escrita por el usuario como su resolucion real. Un destino que existe como enlace roto se considera ocupado y no se sigue ni reemplaza.
 68. **Regresion de enlaces comprobada.** La suite tiene 30 pruebas. Los dos casos de enlace se ejecutaron en Windows sin omisiones: el archivo externo permanecio intacto y el destino roto no creo su objetivo.
 69. **Exportacion de rutas aprobada.** El commit `6214737` aprobo el contrato y las 30 pruebas desde un `git archive` limpio; los enlaces adversariales se probaron de nuevo y los temporales se eliminaron.
+70. **Residuos locales excluidos.** Se retiro `plantilla/scripts/__pycache__/`, artefacto ignorado por Git que `copytree` podia incorporar. Cachés, bytecode y archivos especiales ahora provocan un error antes de copiar o inicializar.
+71. **Recursos con limites generosos.** La version `0.2.0-alpha.7` limita cada arbol a 20 000 entradas, 100 MiB totales y 20 MiB por archivo; cada JSON a 1 MiB y cada valor a 100 000 caracteres.
+72. **Permisos controlados.** El temporal publicado conserva contenido y ejecutabilidad, elimina bits especiales y garantiza lectura y escritura del propietario. Una copia manual con archivos administrados de solo lectura falla antes de crear Git.
+73. **Publicacion revalidada.** El destino se comprueba inmediatamente antes de `os.replace`; si aparecio durante la creacion se conserva y el temporal propio se elimina. La proteccion es de mejor esfuerzo ante una carrera hostil ocurrida entre esa comprobacion y la llamada atomica.
+74. **Operaciones con tiempo finito.** Cada comando Git dispone de 30 segundos y el inicializador invocado por el creador de 120 segundos. La suite tiene 38 pruebas y cubre limites acumulados, JSON, valores, permisos, caché y publicacion tardia.
 
 ## 5. Que falta
 
@@ -130,4 +135,4 @@ Cada stack tiene LEEME.md con reglas adicionales, terminos tecnicos y procedimie
 
 ## 6. Siguiente paso logico
 
-Mientras los pilotos permanezcan pospuestos, auditar carreras de publicacion, permisos, tamaños y consumo de recursos frente a arboles o configuraciones manipuladas. Ejecutar un piloto real solo cuando el usuario decida crear un proyecto.
+Mientras los pilotos permanezcan pospuestos, auditar coherencia entre validaciones duplicadas, compatibilidad declarada con Python y estados Git preexistentes. Ejecutar un piloto real solo cuando el usuario decida crear un proyecto.

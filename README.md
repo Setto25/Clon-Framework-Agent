@@ -114,6 +114,10 @@ Las entradas son estrictas: el JSON, los argumentos posicionales y cada `--valor
 
 La plantilla fuente y una copia manual deben ser árboles locales regulares. El creador rechaza enlaces simbólicos, junctions, reparse points y cruces hacia otro sistema de archivos antes de copiar. El destino tampoco puede existir previamente, incluso si solo es un enlace roto. Esta restricción evita leer contenido externo o publicar fuera de los límites resueltos.
 
+La inspección admite como máximo 20 000 entradas, 100 MiB acumulados y 20 MiB por archivo. Los JSON se leen hasta 1 MiB y cada valor configurable admite 100 000 caracteres. Cachés, bytecode, archivos especiales y archivos regulares con `setuid` o `setgid` se rechazan. El creador sanea permisos del temporal, Git dispone de 30 segundos por operación y la inicialización completa de 120 segundos.
+
+Antes del reemplazo final se comprueba nuevamente que el destino siga libre. Esto evita reemplazos accidentales y creaciones concurrentes observables, pero no constituye aislamiento frente a un proceso hostil capaz de modificar el mismo directorio padre exactamente entre la comprobación y la operación atómica del sistema.
+
 4. Verifica la memoria generada antes del primer commit:
 
 ```powershell

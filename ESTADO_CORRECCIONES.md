@@ -1,7 +1,7 @@
 # Estado de correcciones de agent-framework
 
-**Ultima actualizacion:** 2026-08-27 (rev 24)
-**Estado general:** Limites de rutas y enlaces endurecidos; pilotos y procedencia pendientes
+**Ultima actualizacion:** 2026-08-27 (rev 25)
+**Estado general:** Publicacion y recursos acotados; pilotos y procedencia pendientes
 **Fase activa:** Fase 6 — validacion interna previa a pilotos
 **Rama de trabajo:** `codex/estabilizacion-framework`
 
@@ -101,6 +101,29 @@ La clasificacion confirmo que `_dryrun2/` era una salida generada para `proyecto
 - No existe una suite automatica que demuestre una instalacion reproducible.
 
 ## 7. Registro de avance
+
+### 2026-08-27 — Rev 25
+
+**Completado:**
+
+- Se retiro un `__pycache__` ignorado que podia filtrarse en copias creadas desde el arbol activo.
+- Se rechazan cachés, bytecode, archivos especiales, archivos regulares con `setuid` o `setgid` y arboles desproporcionados.
+- Se acotaron archivos, suma total, cantidad de entradas, JSON y valores configurables.
+- El creador normaliza permisos del temporal y el inicializador directo exige escritura del propietario en artefactos administrados.
+- El destino se vuelve a comprobar inmediatamente antes de publicar.
+- Git y el subproceso inicializador tienen tiempos maximos.
+- El framework avanzo a `0.2.0-alpha.7`.
+
+**Evidencia:**
+
+- El contrato aprobo.
+- Las 38 pruebas automaticas aprobaron.
+- Se probaron limites individual, acumulado, cantidad de entradas, JSON y valor configurable.
+- Se probaron temporal de solo lectura, copia manual no escribible, caché generada y destino aparecido antes de publicar.
+
+**Resultado:**
+
+La creacion dispone de limites previsibles y no reemplaza un destino observado al final del proceso. Permanece la limitacion inevitable de mejor esfuerzo frente a una carrera hostil entre la comprobacion final y la llamada atomica del sistema.
 
 ### 2026-08-27 — Rev 24
 
@@ -646,7 +669,7 @@ El usuario indico que otras Skills tambien pueden contener adaptaciones de produ
 
 ## 8. Siguiente paso exacto
 
-Auditar carreras de publicacion, permisos, tamaños y consumo de recursos frente a arboles o configuraciones manipuladas. Mantener los pilotos pendientes de una decision explicita del usuario.
+Auditar coherencia entre validaciones duplicadas, compatibilidad declarada con Python y estados Git preexistentes. Mantener los pilotos pendientes de una decision explicita del usuario.
 
 ## 9. Bloqueos
 

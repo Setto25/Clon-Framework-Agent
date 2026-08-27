@@ -55,6 +55,30 @@ CLAVES_CONTRATO: frozenset[str] = frozenset(
 )
 CLAVES_CAMPO_PLACEHOLDER: frozenset[str] = frozenset({"obligatorio", "origen", "descripcion"})
 ATRIBUTO_REPARSE_POINT = getattr(stat, "FILE_ATTRIBUTE_REPARSE_POINT", 0x400)
+MAXIMO_ENTRADAS_ARBOL = 20_000
+MAXIMO_BYTES_TOTALES = 100 * 1024 * 1024
+MAXIMO_BYTES_ARCHIVO = 20 * 1024 * 1024
+NOMBRES_ARTEFACTOS_GENERADOS: frozenset[str] = frozenset(
+    {
+        "__pycache__",
+        ".pytest_cache",
+        ".mypy_cache",
+        ".ruff_cache",
+        ".venv",
+        "node_modules",
+        ".next",
+        ".dart_tool",
+        "build",
+        "coverage",
+        "htmlcov",
+        ".DS_Store",
+        "Thumbs.db",
+    }
+)
+SUFIJOS_ARTEFACTOS_GENERADOS: tuple[str, ...] = (".pyc", ".pyo")
+MAXIMO_BYTES_JSON = 1024 * 1024
+MAXIMO_CARACTERES_VALOR = 100_000
+TIEMPO_MAXIMO_GIT_SEGUNDOS = 30
 VALORES_PREDETERMINADOS: dict[str, str] = {
     "ESTADO_BREVE": "Inicializando",
     "FASE_ACTIVA": "Fase 0 — Setup",
@@ -79,6 +103,18 @@ def cargar_json_sin_duplicados(contenido: str, nombre: str) -> object:
         return resultado
 
     return cast(object, json.loads(contenido, object_pairs_hook=construir_objeto))
+
+
+def leer_json_limitado(ruta: Path, nombre: str) -> str:
+    """Lee solamente archivos JSON regulares dentro del limite permitido."""
+    informacion = ruta.stat()
+    if not stat.S_ISREG(informacion.st_mode):
+        raise ValueError(f"{nombre} debe ser un archivo regular")
+    with ruta.open("rb") as flujo:
+        contenido = flujo.read(MAXIMO_BYTES_JSON + 1)
+    if len(contenido) > MAXIMO_BYTES_JSON:
+        raise ValueError(f"{nombre} supera el maximo de {MAXIMO_BYTES_JSON} bytes")
+    return contenido.decode("utf-8")
 
 
 def configurar_salida_utf8() -> None:
@@ -123,26 +159,71 @@ def validar_arbol_sin_enlaces(
     rutas_omitidas: frozenset[str] = frozenset(),
 ) -> None:
     """Rechaza redirecciones y montajes que saquen contenido de la copia."""
+    if es_enlace_o_reparse(raiz):
+        raise ValueError("La raiz de la copia no puede ser un enlace o reparse point")
     raiz_resuelta = raiz.resolve(strict=True)
-    dispositivo_raiz = raiz_resuelta.lstat().st_dev
+    informacion_raiz = raiz_resuelta.lstat()
+    dispositivo_raiz = informacion_raiz.st_dev
+    entradas_contadas = 0
+    bytes_contados = 0
 
     def recorrer(directorio: Path) -> None:
+        nonlocal entradas_contadas, bytes_contados
         with os.scandir(directorio) as entradas:
             for entrada in entradas:
                 ruta = Path(entrada.path)
                 relativa = ruta.relative_to(raiz_resuelta).as_posix()
+                entradas_contadas += 1
+                if entradas_contadas > MAXIMO_ENTRADAS_ARBOL:
+                    raise ValueError(f"La copia supera el maximo de {MAXIMO_ENTRADAS_ARBOL} entradas")
+                if entrada.name in NOMBRES_ARTEFACTOS_GENERADOS or entrada.name.endswith(
+                    SUFIJOS_ARTEFACTOS_GENERADOS
+                ):
+                    raise ValueError(f"La copia contiene un artefacto generado no permitido: {relativa}")
                 if es_enlace_o_reparse(ruta):
                     raise ValueError(f"La copia contiene un enlace o reparse point no permitido: {relativa}")
                 informacion = ruta.lstat()
+                if stat.S_ISREG(informacion.st_mode) and informacion.st_mode & (
+                    stat.S_ISUID | stat.S_ISGID
+                ):
+                    raise ValueError(f"La copia contiene permisos especiales no permitidos: {relativa}")
                 if informacion.st_dev != dispositivo_raiz:
                     raise ValueError(f"La copia cruza a otro sistema de archivos: {relativa}")
                 ruta_resuelta = ruta.resolve(strict=True)
                 if not esta_dentro(ruta_resuelta, raiz_resuelta):
                     raise ValueError(f"La copia contiene una ruta fuera de su raiz: {relativa}")
-                if entrada.is_dir(follow_symlinks=False) and relativa not in rutas_omitidas:
+                if stat.S_ISREG(informacion.st_mode):
+                    if informacion.st_size > MAXIMO_BYTES_ARCHIVO:
+                        raise ValueError(
+                            f"La copia contiene un archivo mayor a {MAXIMO_BYTES_ARCHIVO} bytes: {relativa}"
+                        )
+                    bytes_contados += informacion.st_size
+                    if bytes_contados > MAXIMO_BYTES_TOTALES:
+                        raise ValueError(
+                            f"La copia supera el maximo total de {MAXIMO_BYTES_TOTALES} bytes"
+                        )
+                elif not stat.S_ISDIR(informacion.st_mode):
+                    raise ValueError(f"La copia contiene un archivo especial no permitido: {relativa}")
+                if stat.S_ISDIR(informacion.st_mode) and relativa not in rutas_omitidas:
                     recorrer(ruta)
 
     recorrer(raiz_resuelta)
+
+
+def validar_permisos_inicializacion(raiz: Path, centinela: Path, archivos: list[Path]) -> None:
+    """Comprueba que los artefactos administrados permitan escritura del propietario."""
+    objetivos: set[Path] = {raiz, centinela, *archivos}
+    for archivo in archivos:
+        actual = archivo.parent
+        while esta_dentro(actual, raiz) and actual != raiz:
+            objetivos.add(actual)
+            actual = actual.parent
+    for objetivo in sorted(objetivos):
+        modo = stat.S_IMODE(objetivo.lstat().st_mode)
+        if not modo & stat.S_IWUSR:
+            raise ValueError(
+                f"La copia no permite escritura del propietario: {objetivo.relative_to(raiz)}"
+            )
 
 
 def exigir_claves_exactas(
@@ -176,7 +257,7 @@ def validar_rutas_contrato(rutas: list[str], nombre: str) -> list[str]:
 
 def cargar_contrato(ruta: Path) -> ContratoPlantilla:
     """Carga el contrato y valida su estructura minima."""
-    contenido = cargar_json_sin_duplicados(ruta.read_text(encoding="utf-8"), str(ruta))
+    contenido = cargar_json_sin_duplicados(leer_json_limitado(ruta, "contrato"), str(ruta))
     datos = exigir_diccionario(contenido, "contrato")
     exigir_claves_exactas(datos, CLAVES_CONTRATO, "contrato")
     version_contrato = datos.get("version_contrato")
@@ -237,6 +318,10 @@ def cargar_contrato(ruta: Path) -> ContratoPlantilla:
 def validar_caracteres_configuracion(valor: str, clave: str) -> str:
     """Normaliza saltos y rechaza controles capaces de alterar artefactos."""
     normalizado = valor.replace("\r\n", "\n").replace("\r", "\n").strip()
+    if len(normalizado) > MAXIMO_CARACTERES_VALOR:
+        raise ValueError(
+            f"El valor de {clave} supera el maximo de {MAXIMO_CARACTERES_VALOR} caracteres"
+        )
     controles = [
         caracter
         for caracter in normalizado
@@ -256,7 +341,8 @@ def normalizar_valor(valor: object, clave: str) -> str:
         normalizados = [validar_caracteres_configuracion(elemento, clave) for elemento in elementos]
         if any("\n" in elemento for elemento in normalizados):
             raise ValueError(f"La lista de {clave} debe contener elementos de una sola linea")
-        return "\n".join(f"- {elemento}" for elemento in normalizados if elemento)
+        combinado = "\n".join(f"- {elemento}" for elemento in normalizados if elemento)
+        return validar_caracteres_configuracion(combinado, clave)
     raise ValueError(f"El valor de {clave} debe ser una cadena o una lista de cadenas")
 
 
@@ -264,7 +350,10 @@ def cargar_valores(ruta: Path | None) -> dict[str, str]:
     """Carga valores de proyecto desde un archivo JSON opcional."""
     if ruta is None:
         return {}
-    contenido = cargar_json_sin_duplicados(ruta.read_text(encoding="utf-8"), str(ruta))
+    contenido = cargar_json_sin_duplicados(
+        leer_json_limitado(ruta, "configuracion de proyecto"),
+        str(ruta),
+    )
     datos = exigir_diccionario(contenido, "configuracion de proyecto")
     return {clave: normalizar_valor(valor, clave) for clave, valor in datos.items()}
 
@@ -463,6 +552,7 @@ def ejecutar_git(argumentos: list[str], raiz: Path, comprobar: bool = True) -> s
         text=True,
         encoding="utf-8",
         errors="replace",
+        timeout=TIEMPO_MAXIMO_GIT_SEGUNDOS,
     )
 
 
@@ -647,6 +737,7 @@ def main() -> int:
         )
         valores_completos, pendientes = completar_valores(contrato, valores, argumentos.permitir_pendientes)
         archivos = resolver_archivos(raiz, contrato["archivos_incluidos"])
+        validar_permisos_inicializacion(raiz, centinela, archivos)
         cambios = preparar_cambios(archivos, valores_completos)
 
         politica_skills = (
@@ -672,7 +763,14 @@ def main() -> int:
             crear_env=not argumentos.sin_env,
         )
 
-    except (OSError, UnicodeError, json.JSONDecodeError, ValueError, subprocess.SubprocessError) as error:
+    except (
+        OSError,
+        UnicodeError,
+        json.JSONDecodeError,
+        RecursionError,
+        ValueError,
+        subprocess.SubprocessError,
+    ) as error:
         print(f"ERROR: {error}", file=sys.stderr)
         return 1
 
