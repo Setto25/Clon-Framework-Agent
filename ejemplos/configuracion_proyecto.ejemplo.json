@@ -1,0 +1,13 @@
+{
+  "ZONA_HORARIA": "America/Santiago",
+  "DESCRIPCION_OBJETIVO": "Describe el producto, sus destinatarios y el resultado que debe conseguir.",
+  "LISTA_OBLIGATORIOS": "- Implementar el flujo principal.\n- Incorporar pruebas reproducibles.",
+  "LISTA_DESEABLES": "- Agregar una mejora que no bloquee el MVP.",
+  "LISTA_EXCLUIDOS": "- Excluir integraciones que no pertenezcan al primer hito.",
+  "HARDWARE_O_INFRA": "- Registrar solo infraestructura confirmada.",
+  "LISTA_DECISIONES_NUMERADA": "1. Registrar la primera decision tecnica y su fundamento.",
+  "LISTA_TECNOLOGIAS": "- Registrar tecnologia y version cuando se confirmen.",
+  "SIGUIENTE_PASO": "Implementar y verificar el primer modulo.",
+  "REGLAS_ARQUITECTURA": "- Mantener limites explicitos entre dominio, aplicacion e infraestructura.",
+  "EXCEPCIONES_ADICIONALES": "- Sin excepciones adicionales."
+}

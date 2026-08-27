@@ -1,12 +1,12 @@
 # Estado del proyecto: agent-framework
 
-**Ultima actualizacion:** 2026-08-26 (rev 10)
-**Estado general:** Plantilla funcional con memoria operativa verificable
-**Fase activa:** Fase 5 — documentos y referencias externas a Skills
+**Ultima actualizacion:** 2026-08-26 (rev 11)
+**Estado general:** Flujo soportado documentado y verificable
+**Fase activa:** Fase 7 — pruebas automaticas y CI
 
 ## 1. Objetivo
 
-Framework agentico reutilizable extraido del proyecto "entrevoces". Provee una plantilla completa (core + stacks + domain-packs) que cualquier proyecto nuevo puede consumir via el skill `iniciar-proyecto`.
+Framework agentico reutilizable extraido del proyecto "entrevoces". Provee una plantilla completa (core + stacks + domain-packs) que un proyecto nuevo puede consumir mediante la CLI Python de la raiz.
 
 ## 2. Estructura del repo
 
@@ -74,14 +74,17 @@ Cada stack tiene LEEME.md con reglas adicionales, terminos tecnicos y procedimie
 22. **Wizard temporalmente no soportado para correcciones.** La Skill `iniciar-proyecto` permanece congelada; hasta completar su auditoria, la CLI Python es la ruta soportada para crear proyectos.
 23. **Memoria operativa completa.** La plantilla incorpora plan de desarrollo, documentacion tecnica y guia de operacion. `scripts/verificar_memoria_proyecto.py` comprueba la existencia, el contenido y la ausencia de placeholders configurables pendientes en los documentos obligatorios.
 24. **Prueba documental reproducible.** Un proyecto temporal se genero con 14 archivos configurados y cero pendientes; sus siete documentos obligatorios pasaron el verificador y las 32 huellas de Skills coincidieron con la plantilla.
+25. **Verificacion estricta de pendientes.** El verificador distingue placeholders sin resolver y marcadores TODO creados por `--permitir-pendientes`; solo una memoria completamente configurada obtiene salida valida.
+26. **README alineado con la implementacion.** La guia principal presenta el creador atomico como ruta soportada, incluye una configuracion de ejemplo, relega la copia manual a contingencia y no promete seleccion automatica de stacks.
+27. **Fase documental cerrada.** Todos los documentos prometidos fuera de Skills existen y el flujo descrito se probo de punta a punta. El wizard permanece congelado y excluido del flujo soportado.
 
 ## 5. Que falta
 
 - **Validacion con proyecto real.** Ningun proyecto ha consumido la plantilla todavia. El primer uso real revelara friccion en el wizard de iniciar-proyecto, gaps en las reglas, y skills que sobran o faltan.
 - **Stack backend-fastapi.** Creado con skill `fastapi-setup`. Sin validacion en proyecto real todavia.
-- **Automatizacion del wizard.** `iniciar-proyecto` existe como SKILL.md pero no como script ejecutable. Es manual (el agente sigue los pasos).
+- **Auditoria de Skills.** La procedencia, licencia y calidad individual de las Skills debe resolverse antes de modificarlas o presentarlas como contenido redistribuible.
 - **Estabilizacion previa al piloto.** Antes de consumir la plantilla en un proyecto real se deben corregir la linea base Git, la seguridad de `.env`, el contrato de placeholders, el inicializador y las referencias ausentes. El avance detallado vive en `ESTADO_CORRECCIONES.md`.
 
 ## 6. Siguiente paso logico
 
-Corregir el README para documentar la CLI Python como ruta soportada, eliminar inventarios contradictorios y señalar expresamente el estado congelado del wizard.
+Crear pruebas automaticas permanentes para el contrato, la generacion atomica, el rechazo de pendientes y la inmutabilidad de Skills, sin editar el contenido congelado.

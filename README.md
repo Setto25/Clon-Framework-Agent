@@ -1,8 +1,10 @@
 # agent-framework
 
-Framework agentico reutilizable para arrancar proyectos con agentes de IA (Claude Code, Antigravity, Codex CLI, VS Code con agentes) con disciplina de proceso, documentacion y skills desde el dia uno.
+Framework agentico reutilizable para crear proyectos con agentes de IA, memoria operativa y reglas de desarrollo desde el primer commit.
 
-Extraido del proyecto entrevoces. Probado con Claude Code. Pendiente validacion con segundo proyecto real.
+Extraido inicialmente del proyecto entrevoces. El creador y los verificadores tienen pruebas locales reproducibles; todavia falta validarlo en proyectos piloto reales.
+
+> **Estado de Skills:** todos los archivos bajo `plantilla/.agents/skills/` estan congelados mientras se auditan su procedencia y sus licencias. La CLI de Python es la unica ruta de inicializacion soportada durante esta etapa. El wizard `$iniciar-proyecto` se conserva como material existente, pero no se considera verificado ni debe modificarse por ahora.
 
 ---
 
@@ -12,22 +14,25 @@ Un conjunto de archivos que se copian a cualquier proyecto nuevo para darle al a
 
 - **Reglas de proceso — "superpowers" (Nivel 0, siempre activo)**: brainstorming estructurado, TDD red-green-refactor, depuracion sistematica en 4 fases. Viven en `.agents/rules/claude.md §2`. Se decidio no implementarlos como skill separado: son comportamiento base que aplica en toda sesion sin invocacion. No aparecen en el catalogo de stacks/ ni en opcional/. No confundir con skills opcionales como `delegar-entre-agentes`.
 - **Estructura de documentacion**: AGENTS.md, PROJECT_STATE.md, REGISTRO_CAMBIOS.md, PLAN_DESARROLLO.md y otros como convencion.
-- **Skills vetados por stack**: guias de implementacion con patrones TDD, cobertura actual en Flutter, Next.js, ESP32/firmware y LLM/RAG.
+- **Skills agrupados por stack**: guias existentes para FastAPI, Flutter, Next.js, ESP32/firmware y LLM/RAG, pendientes de auditoria individual.
 - **Memoria de errores**: skill `lecciones-aprendidas` para no repetir ciclos de depuracion ya resueltos.
-- **Wizard de inicializacion**: skill `iniciar-proyecto` que pregunta stack, idioma y prioridades, y activa solo lo relevante.
+- **Creacion segura**: una CLI copia la plantilla, resuelve su contrato, protege `.env`, registra la version de origen e inicializa Git mediante una operacion atomica.
+- **Verificacion de memoria**: un comando comprueba documentos obligatorios, placeholders y datos iniciales pendientes.
 
 Niveles de estructura:
 
 ```
 plantilla/
 ├── .agents/
-│   ├── rules/                   → Reglas siempre activas (superpowers, idioma, excepciones)
+│   ├── rules/                   → Reglas base (superpowers, idioma, excepciones)
 │   └── skills/
 │       ├── cerrar-modulo/       ┐
-│       ├── evaluar-agente/      │ Skills de core — universales, siempre disponibles
+│       ├── evaluar-agente/      │ Skills de core incluidas en la copia y congeladas
 │       ├── iniciar-proyecto/    │ (no hay carpeta "core/" literal)
 │       ├── lecciones-aprendidas/┘
 │       ├── stacks/
+│       │   ├── backend-fastapi/
+│       │   │   └── skills/       → fastapi-setup
 │       │   ├── firmware-esp32/
 │       │   │   ├── skills/       → desarrollar-firmware, diagnosticar-hardware
 │       │   │   └── domain-packs/ → audio-embebido (stub — sin contenido real todavia)
@@ -39,7 +44,7 @@ plantilla/
 │       │       └── skills/       → flutter-state-management, performance, animations
 │       └── opcional/
 │           └── delegar-entre-agentes/ → Aspiracional, sin uso real probado
-└── documentacion/               → AGENTS.md, PROJECT_STATE.md, PLAN_DESARROLLO.md, etc.
+└── documentacion/               → Plan, documentacion tecnica, operacion y prompts
 ```
 
 ---
@@ -56,19 +61,19 @@ plantilla/
 
 ### NO hace
 
-- No genera codigo por si mismo — es contexto y guias para el agente.
+- No genera el producto por si mismo: crea su base de trabajo, memoria y contexto.
 - No reemplaza revision humana del codigo generado.
 - **Domain-packs son stubs**: solo hay estructura reservada, sin contenido operativo.
 - **`delegar-entre-agentes` es aspiracional**: vive en `opcional/`, sin evidencia de uso real en entrevoces, y no se activa por defecto. Util solo cuando el agente pierde decisiones importantes que PROJECT_STATE.md no captura (razonamiento en curso, decision a medias). En la practica, PROJECT_STATE.md suele ser suficiente.
-- No cubre todos los stacks: faltan backend-fastapi (hay reglas generales pero no skill dedicado), Prisma, pandas/ML, Go, Rust, infraestructura/DevOps.
+- No selecciona ni elimina Skills por stack todavia: la copia conserva el arbol completo, byte por byte.
+- No certifica las Skills existentes: su calidad, procedencia y licencia siguen pendientes de auditoria.
+- No cubre Prisma, pandas/ML, Go, Rust ni infraestructura/DevOps con Skills dedicadas.
 
 ---
 
-## 3. Flujo recomendado: como iniciar un proyecto nuevo
+## 3. Como iniciar un proyecto nuevo
 
-### Concepto clave
-
-`agent-framework/` se queda intacto como fuente. Para cada proyecto nuevo se crea un directorio separado y se copia el contenido de `plantilla/` ahi. **No se renombra `plantilla/`, no se trabaja dentro de `agent-framework/`.**
+`agent-framework/` se conserva como fuente. Cada proyecto se crea en un directorio nuevo, separado y fuera de este repositorio. No se debe copiar por carpetas manualmente en el flujo normal: el creador prepara un temporal, valida la inicializacion y solo publica el destino cuando toda la operacion termina.
 
 ```
 d:\PROYECTOS\
@@ -81,123 +86,91 @@ d:\PROYECTOS\
     └── ...
 ```
 
-### Paso a paso (PowerShell / cmd / terminal de VS Code)
+### Flujo recomendado: configuracion completa
 
-**Paso 1 — Crear el directorio del proyecto nuevo**
-
-En PowerShell:
-```powershell
-New-Item -ItemType Directory -Path "d:\PROYECTOS\nombre-del-proyecto"
-```
-
-En cmd:
-```cmd
-mkdir d:\PROYECTOS\nombre-del-proyecto
-```
-
-**Paso 2 — Copiar el contenido de `plantilla/` al proyecto nuevo**
-
-En PowerShell (conserva archivos ocultos como `.agents/` y `.env.ejemplo`):
-```powershell
-$origen = "d:\PROYECTOS\agent-framework\plantilla"
-$destino = "d:\PROYECTOS\nombre-del-proyecto"
-
-# Copiar todos los archivos y carpetas, incluyendo ocultos
-Get-ChildItem -Path $origen -Force | ForEach-Object {
-    Copy-Item -Path $_.FullName -Destination $destino -Recurse -Force
-}
-```
-
-O si prefieres Explorer: copia manualmente el contenido de `plantilla\` (no la carpeta en si, sino todo lo que hay dentro) al directorio del proyecto nuevo. Asegurate de activar "mostrar archivos ocultos" para que `.agents\` se incluya.
-
-> **Importante — usar siempre `Copy-Item` de PowerShell, no `cp -r` de Git Bash.** Se confirmo con prueba A/B que `cp -r` de Git Bash omite archivos de `.agents\rules\` de forma silenciosa en Windows (sin mensaje de error), resultando en una copia incompleta. `Copy-Item -Recurse -Force` copia todos los archivos correctamente.
-
-**Paso 3 — Abrir el proyecto en tu editor**
+1. Copia el ejemplo fuera del repositorio y edita sus valores.
 
 ```powershell
-cd d:\PROYECTOS\nombre-del-proyecto
-code .    # VS Code
+Copy-Item .\ejemplos\configuracion_proyecto.ejemplo.json D:\PROYECTOS\configuracion-mi-proyecto.json
 ```
 
-**Paso 4 — Inicializar git**
+2. Desde la raiz de `agent-framework`, ejecuta:
 
 ```powershell
-git init
+python scripts\crear_proyecto.py D:\PROYECTOS\mi-proyecto "Mi Proyecto" --configuracion D:\PROYECTOS\configuracion-mi-proyecto.json
+```
+
+El destino no debe existir. El nombre visible puede contener espacios o acentos; el inicializador deriva por separado los identificadores tecnicos. El comando copia la plantilla completa, crea `.env` ignorado por Git, sustituye los valores declarados, registra `.estado-plantilla.json` e inicializa un repositorio Git sin realizar commits.
+
+3. Verifica la memoria generada antes del primer commit:
+
+```powershell
+python D:\PROYECTOS\mi-proyecto\scripts\verificar_memoria_proyecto.py D:\PROYECTOS\mi-proyecto
+```
+
+4. Revisa `.env`, abre el proyecto y crea el primer commit:
+
+```powershell
+Set-Location D:\PROYECTOS\mi-proyecto
+git status
 git add -A
-git commit -m "init: proyecto nombre-del-proyecto desde agent-framework"
+git commit -m "init: crea la base del proyecto"
 ```
 
-**Paso 5 — Reemplazar placeholders con el agente**
+### Flujo exploratorio con datos pendientes
 
-Abre el proyecto en tu agente de preferencia y escribe:
-
-```
-$iniciar-proyecto
-```
-
-El skill `iniciar-proyecto` guia al agente para preguntar:
-- Nombre real del proyecto
-- Idioma de nombres (español, ingles, etc.)
-- Stack tecnologico a activar
-- Prioridades del MVP
-
-Y rellena todos los `{{placeholders}}` automaticamente.
-
-> **Sin agente disponible:** reemplaza manualmente en estos archivos:
-> `AGENTS.md`, `PROJECT_STATE.md`, `documentacion/PLAN_DESARROLLO.md`, `.agents/rules/excepciones_nominales.md`
-> Busca `{{` para encontrar todos.
-
-**Paso 6 (alternativa al Paso 5, no adicional) — Script Python para automatizar el reemplazo**
-
-> Si prefieres automatizar el reemplazo sin pasar por el wizard conversacional del agente, usa este script **en lugar del Paso 5, no ademas de el**. Haciendo ambos se duplicara el trabajo y podria generar conflictos en los placeholders.
-
-El script Python funciona directamente desde PowerShell, cmd o la terminal de VS Code — sin necesidad de Git Bash ni perl:
+Se puede generar una instancia provisional con:
 
 ```powershell
-cd d:\PROYECTOS\nombre-del-proyecto
-python scripts/inicializar_proyecto.py "nombre-del-proyecto" "español"
+python scripts\crear_proyecto.py D:\PROYECTOS\mi-proyecto "Mi Proyecto" --permitir-pendientes
 ```
 
-Requiere Python 3.9+ instalado (`python --version` para verificar).
+Los datos obligatorios faltantes se convierten en marcadores `TODO` y quedan registrados en `.estado-plantilla.json`. El verificador devuelve error hasta que se completen; esta modalidad no debe usarse como base de un primer commit comercial.
 
-> `.plantilla-framework` ya viene incluido en `plantilla/` y se copia en el Paso 2 junto con el resto (`Get-ChildItem -Force` incluye archivos ocultos). No es necesario crearlo manualmente.
+### Contingencia: copia manual
 
-> `scripts/inicializar_proyecto.sh` existe como respaldo (deprecado) para quienes prefieran bash. Requiere Git Bash + perl. Ver comentario de deprecacion al inicio del archivo.
+Si no puede usarse el creador raiz, se puede copiar **todo** el contenido de `plantilla/`, incluidos los archivos ocultos, hacia un directorio nuevo y ejecutar allí:
+
+```powershell
+python scripts\inicializar_proyecto.py "Mi Proyecto" "español" --configuracion D:\PROYECTOS\configuracion-mi-proyecto.json
+```
+
+No se recomienda copiar carpetas sueltas ni omitir `.agents`, `.gitignore`, `.gitattributes`, `.env.ejemplo`, `.plantilla-framework` o `configuracion_plantilla.json`: todos forman parte del contrato de la instancia.
+
+El respaldo `scripts/inicializar_proyecto.sh` permanece deprecado y no se considera validado en Windows. El wizard `$iniciar-proyecto` permanece congelado y no forma parte del flujo soportado actual.
 
 ---
 
-## 4. Uso con cada agente (agnóstico por diseño)
+## 4. Uso con cada agente (agnostico por diseño)
 
-El framework funciona igual con cualquier agente porque el contrato es simple: leer `AGENTS.md` antes de actuar. Los mecanismos difieren segun el agente:
+El contrato comun consiste en leer `AGENTS.md` y `PROJECT_STATE.md` antes de actuar. El descubrimiento automatico de reglas o Skills depende de cada herramienta y de su version; si no ocurre, los archivos deben adjuntarse como contexto de forma explicita.
 
 ### Claude Code
 
-- `AGENTS.md` se carga automaticamente como contexto del proyecto.
-- `.agents/rules/claude.md` se carga automaticamente desde `.agents/rules/`.
-- Skills: el agente los lee como documentacion cuando la tarea coincide. Se invocan explicitamente escribiendo `$nombre-del-skill` en el chat.
-- `PROJECT_STATE.md` se lee al inicio de cada sesion por la regla §1 de `claude.md`.
+- Se debe confirmar que `AGENTS.md` este presente en el contexto efectivo.
+- `.agents/rules/claude.md` contiene el delta previsto para esta herramienta.
+- Las Skills se usan solo como documentacion existente y permanecen congeladas durante su auditoria.
+- `PROJECT_STATE.md` conserva el estado entre sesiones.
 
 ```
-# Flujo tipico en Claude Code
-> $iniciar-proyecto        ← Wizard de setup
+# Flujo posterior a la creacion por CLI
 > $cerrar-modulo           ← Al terminar un componente
 > $lecciones-aprendidas    ← Antes de depurar algo complejo
 ```
 
 ### Antigravity
 
-- Descubre skills automaticamente en `.agents/skills/` usando el frontmatter YAML (`name`, `description`).
-- Aplica reglas de `.agents/rules/` automaticamente en cada sesion.
-- Invocacion: `$nombre-skill` igual que en Claude Code.
-- `AGENTS.md` se carga como contexto base.
+- `SYSTEM_PROMPT_DELTA_ANTIGRAVITY.md` documenta el delta previsto.
+- Se debe comprobar en la version utilizada si descubre `.agents/skills/` y `.agents/rules/` automaticamente.
+- Si no los descubre, se deben adjuntar `AGENTS.md` y las reglas relevantes como contexto.
 
-No requiere configuracion adicional — la estructura de carpetas es el contrato.
+No se asume compatibilidad automatica sin una prueba en la version concreta de la herramienta.
 
 ### Codex CLI
 
-- Lee `AGENTS.md` al inicio del proyecto.
-- Skills se usan como documentacion de referencia (Codex los lee cuando se los pasas como contexto o cuando coincide con la tarea).
-- Mismo flujo manual que Claude Code para invocar skills.
+- `SYSTEM_PROMPT_DELTA_CODEX.md` documenta el delta previsto.
+- Se debe confirmar la lectura efectiva de `AGENTS.md` y `PROJECT_STATE.md`.
+- Las Skills se pueden aportar como contexto de referencia cuando finalice su auditoria.
 
 ### VS Code con extension de agente (Copilot, Continue, etc.)
 
@@ -207,7 +180,7 @@ No requiere configuracion adicional — la estructura de carpetas es el contrato
 
 ### Regla general
 
-Si el agente lee `AGENTS.md` al inicio, el framework funciona. Si no lo hace automaticamente, pasalo como primer mensaje de contexto.
+Si el agente no lee `AGENTS.md` automaticamente, se debe pasar como primer archivo de contexto junto con `PROJECT_STATE.md`.
 
 ---
 
@@ -236,11 +209,11 @@ Estos archivos son los del **proyecto instanciado**, no los de `agent-framework/
 
 ## 6. Inventario de skills
 
-### Core (siempre activos en todo proyecto)
+### Core incluido (congelado durante la auditoria)
 
 | Skill | Que hace | Cuando invocar |
 |---|---|---|
-| `iniciar-proyecto` | Wizard interactivo: rellena placeholders, selecciona stack, configura proyecto | Al crear un proyecto nuevo desde plantilla |
+| `iniciar-proyecto` | Wizard historico congelado y no verificado en el flujo actual | No invocar hasta completar su auditoria |
 | `cerrar-modulo` | Documenta modulo terminado: actualiza PROJECT_STATE, plan, registro de cambios | Cuando las pruebas pasan o el usuario aprueba un componente |
 | `evaluar-agente` | Evalua un agente: intenciones, tool-use, prompt injection, limites de autoridad | Al crear/modificar prompts o tool-calling |
 | `probar-e2e` | Pruebas end-to-end del MVP entre componentes | Al verificar flujos completos (cliente-servidor-dispositivo) |
@@ -316,27 +289,25 @@ Prisma, pandas/scikit-learn, Go, Rust, Java, Kubernetes, Terraform, Storybook, t
 
 | Requisito | Para que | Notas |
 |---|---|---|
-| Git | Control de versiones, safety check del script | Obligatorio |
+| Git | Inicializar y controlar la instancia generada | Obligatorio |
 | Agente compatible con AGENTS.md | Usar el framework | Claude Code, Antigravity, Codex CLI, o cualquier agente que lea el archivo |
-| PowerShell / cmd | Copiar la plantilla, inicializar git | Incluido en Windows |
-| Python 3.9+ | Correr `inicializar_proyecto.py` (recomendado) | Funciona desde PowerShell/cmd/terminal de VS Code sin configuracion extra |
-| Git Bash (opcional) | Correr `inicializar_proyecto.sh` si se prefiere la version bash | Incluido en Git for Windows. El script Python cubre lo mismo sin necesitar bash. |
-| perl (opcional) | Solo necesario para `inicializar_proyecto.sh` | Incluido en Git for Windows. No requerido si se usa el script Python. |
+| Python 3.9+ | Ejecutar el creador y los verificadores soportados | Funciona desde PowerShell, cmd o la terminal del editor |
+| PowerShell / cmd | Ejecutar los comandos en Windows | No realiza la logica de inicializacion |
 
-El framework funciona sin ningun script — el wizard del agente (`$iniciar-proyecto`) hace lo mismo de forma interactiva.
+El flujo soportado requiere Python. Git Bash y perl solo corresponden al respaldo Bash deprecado, que no forma parte de la ruta verificada.
 
 ---
 
 ## 10. Estado actual y proxima validacion pendiente
 
-Extraido de un unico proyecto real (entrevoces). **Todavia no fue probado en un segundo proyecto.**
+Extraido de un unico proyecto real (entrevoces). **Todavia no fue probado en un segundo proyecto.** La creacion atomica, la configuracion completa, el rechazo de pendientes y la inmutabilidad de Skills si fueron comprobados en directorios temporales.
 
 La proxima vez que se use:
-1. Documentar fricciones del wizard o del flujo de copia en [`/PROJECT_STATE.md`](PROJECT_STATE.md) §"Que falta".
-2. Si un error se repite con causa raiz no obvia, registrar en `.agents/skills/lecciones-aprendidas/referencias/<stack>.md` del proyecto.
-3. Si un skill resulta inadecuado, actualizar su `SKILL.md` directamente en `agent-framework/plantilla/`.
+1. Documentar las fricciones de la CLI y del proyecto generado en [`PROJECT_STATE.md`](PROJECT_STATE.md), seccion "Que falta".
+2. Registrar cualquier defecto de una Skill sin editarla, indicando ruta, fuente probable y efecto observado.
+3. Completar la auditoria de procedencia y licencia antes de modificar, agregar, eliminar o redistribuir Skills.
 
-El objetivo es que tras 2-3 proyectos reales la plantilla se estabilice.
+El objetivo es que dos proyectos piloto completen el flujo antes de publicar `v1.0.0`.
 
 ---
 
@@ -348,8 +319,11 @@ plantilla/
 ├── PROJECT_STATE.md                            ← Estado del proyecto (template vacio)
 ├── .env.ejemplo                                ← Variables de entorno de referencia
 ├── .plantilla-framework                        ← Centinela para el script de init
+├── configuracion_plantilla.json                 ← Contrato canonico de placeholders
 ├── scripts/
-│   └── inicializar_proyecto.sh                 ← Script de inicializacion (requiere bash)
+│   ├── inicializar_proyecto.py                 ← Inicializador interno soportado
+│   ├── verificar_memoria_proyecto.py           ← Valida memoria y pendientes
+│   └── inicializar_proyecto.sh                 ← Respaldo deprecado sin validacion actual
 ├── .agents/
 │   ├── rules/
 │   │   ├── claude.md                           ← Reglas especificas para Claude
@@ -365,6 +339,9 @@ plantilla/
 │       ├── opcional/
 │       │   └── delegar-entre-agentes/SKILL.md
 │       └── stacks/
+│           ├── backend-fastapi/
+│           │   ├── LEEME.md
+│           │   └── skills/fastapi-setup/SKILL.md
 │           ├── firmware-esp32/
 │           │   ├── LEEME.md
 │           │   ├── skills/desarrollar-firmware/SKILL.md
@@ -392,5 +369,14 @@ plantilla/
     ├── GUIA_OPERACION.md
     └── prompts/
         ├── SYSTEM_PROMPT_BASE.md
-        └── SYSTEM_PROMPT_ENTREVOCES.md         ← Ejemplo de delta por proyecto
+        ├── SYSTEM_PROMPT_DELTA_ANTIGRAVITY.md
+        ├── SYSTEM_PROMPT_DELTA_CLAUDE.md
+        └── SYSTEM_PROMPT_DELTA_CODEX.md
 ```
+
+Desde la raiz del meta-repositorio tambien existen:
+
+- `scripts/crear_proyecto.py`: creador atomico de una instancia nueva;
+- `scripts/validar_contrato_plantilla.py`: validador del contrato de la plantilla;
+- `ejemplos/configuracion_proyecto.ejemplo.json`: punto de partida para una configuracion completa;
+- `ATRIBUCIONES.md`: inventario de procedencia y licencias pendientes.

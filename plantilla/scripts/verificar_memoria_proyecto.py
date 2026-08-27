@@ -26,6 +26,7 @@ class ResultadoVerificacion(TypedDict):
     raiz: str
     archivos: list[ResultadoArchivo]
     placeholders_configurables: dict[str, list[str]]
+    pendientes_inicializacion: dict[str, list[str]]
 
 
 ARCHIVOS_OBLIGATORIOS: tuple[str, ...] = (
@@ -38,6 +39,7 @@ ARCHIVOS_OBLIGATORIOS: tuple[str, ...] = (
     "documentacion/REGISTRO_CAMBIOS.md",
 )
 PATRON_PLACEHOLDER = re.compile(r"\{\{([A-Z0-9_]+)\}\}")
+PATRON_PENDIENTE = re.compile(r"<!-- TODO: ([A-Z0-9_]+) — completar cuando se defina -->")
 
 
 def crear_argumentos() -> argparse.Namespace:
@@ -56,15 +58,19 @@ def verificar_archivo(raiz: Path, ruta_relativa: str) -> ResultadoArchivo:
     return ResultadoArchivo(ruta=ruta_relativa, existe=existe, no_vacio=no_vacio)
 
 
-def buscar_placeholders(raiz: Path, resultados: list[ResultadoArchivo]) -> dict[str, list[str]]:
-    """Busca placeholders configurables en archivos existentes."""
+def buscar_patron(
+    raiz: Path,
+    resultados: list[ResultadoArchivo],
+    patron: re.Pattern[str],
+) -> dict[str, list[str]]:
+    """Busca un patron de configuracion en archivos existentes."""
     encontrados: dict[str, list[str]] = {}
     for resultado in resultados:
         if not resultado["existe"]:
             continue
         ruta_relativa = resultado["ruta"]
         contenido = (raiz / ruta_relativa).read_text(encoding="utf-8")
-        for clave in PATRON_PLACEHOLDER.findall(contenido):
+        for clave in patron.findall(contenido):
             encontrados.setdefault(clave, []).append(ruta_relativa)
     return encontrados
 
@@ -73,13 +79,19 @@ def verificar(raiz: Path) -> ResultadoVerificacion:
     """Construye el informe de memoria del proyecto."""
     raiz_resuelta = raiz.expanduser().resolve()
     resultados = [verificar_archivo(raiz_resuelta, ruta) for ruta in ARCHIVOS_OBLIGATORIOS]
-    placeholders = buscar_placeholders(raiz_resuelta, resultados)
-    valido = all(resultado["existe"] and resultado["no_vacio"] for resultado in resultados) and not placeholders
+    placeholders = buscar_patron(raiz_resuelta, resultados, PATRON_PLACEHOLDER)
+    pendientes = buscar_patron(raiz_resuelta, resultados, PATRON_PENDIENTE)
+    valido = (
+        all(resultado["existe"] and resultado["no_vacio"] for resultado in resultados)
+        and not placeholders
+        and not pendientes
+    )
     return ResultadoVerificacion(
         valido=valido,
         raiz=str(raiz_resuelta),
         archivos=resultados,
         placeholders_configurables=placeholders,
+        pendientes_inicializacion=pendientes,
     )
 
 
@@ -90,6 +102,8 @@ def imprimir_texto(resultado: ResultadoVerificacion) -> None:
         print(f"[{estado}] {archivo['ruta']}")
     for clave, rutas in sorted(resultado["placeholders_configurables"].items()):
         print(f"[PENDIENTE] {clave}: {', '.join(rutas)}")
+    for clave, rutas in sorted(resultado["pendientes_inicializacion"].items()):
+        print(f"[TODO INICIAL] {clave}: {', '.join(rutas)}")
     print("Memoria valida." if resultado["valido"] else "Memoria incompleta.")
 
 

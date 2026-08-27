@@ -1,8 +1,8 @@
 # Estado de correcciones de agent-framework
 
-**Ultima actualizacion:** 2026-08-26 (rev 8)
-**Estado general:** Memoria operativa verificable
-**Fase activa:** Fase 5 — documentos y referencias externas a Skills
+**Ultima actualizacion:** 2026-08-26 (rev 9)
+**Estado general:** Flujo soportado documentado y verificable
+**Fase activa:** Fase 7 — pruebas automaticas y CI
 **Rama de trabajo:** `codex/estabilizacion-framework`
 
 ## 1. Proposito
@@ -43,9 +43,9 @@ El framework debe llegar a una version `v1.0.0` que cumpla estas condiciones:
 | 2 | Seguridad, `.gitignore`, licencia y atribuciones | En curso — procedencia | `.env` protegido, licencia y atribuciones completas |
 | 3 | Contrato unico de plantilla y placeholders | Completada | Manifiesto valido y placeholders sin duplicidad |
 | 4 | Reconstruir el inicializador | Completada | Un comando genera un proyecto completo y seguro |
-| 5 | Corregir wizard, documentos y referencias | En curso — wizard congelado | No existen archivos o rutas prometidas ausentes |
-| 6 | Validar Skills, stacks y agentes | Pendiente | Solo se descubren Skills activas y las guias estan comprobadas |
-| 7 | Incorporar pruebas y CI | Pendiente | Matriz automatica aprobada en plataformas soportadas |
+| 5 | Corregir wizard, documentos y referencias | Completada — CLI soportada | No existen archivos o rutas prometidas ausentes |
+| 6 | Validar Skills, stacks y agentes | En espera — Skills congeladas | Solo se descubren Skills activas y las guias estan comprobadas |
+| 7 | Incorporar pruebas y CI | En curso | Matriz automatica aprobada en plataformas soportadas |
 | 8 | Ejecutar pilotos y publicar `v1.0.0` | Pendiente | Dos pilotos exitosos y release reproducible |
 
 ## 5. Linea base Git observada
@@ -101,6 +101,27 @@ La clasificacion confirmo que `_dryrun2/` era una salida generada para `proyecto
 - No existe una suite automatica que demuestre una instalacion reproducible.
 
 ## 7. Registro de avance
+
+### 2026-08-26 — Rev 9
+
+**Completado:**
+
+- Se corrigio el verificador para detectar los marcadores TODO que crea `--permitir-pendientes`.
+- Se comprobo que una configuracion completa obtiene resultado valido y que una configuracion parcial obtiene error con las seis claves pendientes y sus rutas.
+- Se reescribio el flujo de inicio del README para usar `scripts/crear_proyecto.py` como entrada soportada.
+- Se agrego `ejemplos/configuracion_proyecto.ejemplo.json` para evitar comandos extensos y facilitar una configuracion completa.
+- El README ahora distingue el creador soportado, la copia manual de contingencia, el respaldo Bash deprecado y el wizard congelado.
+- Se corrigieron el inventario contradictorio de FastAPI, la estructura documental y las afirmaciones no verificadas sobre descubrimiento automatico por agente.
+
+**Prueba aislada:**
+
+- Se ejecuto literalmente el flujo documentado con la configuracion de ejemplo.
+- El proyecto resultante configuro 14 archivos, paso la verificacion de memoria, inicializo Git y mantuvo `.env` ignorado.
+- El destino temporal se elimino despues de completar las comprobaciones.
+
+**Resultado:**
+
+La Fase 5 queda completada para todo el alcance externo a Skills. La Skill `iniciar-proyecto` permanece congelada, no se modifica y no forma parte del flujo soportado. La Fase 6 queda en espera por la misma restriccion y el trabajo avanza a pruebas automaticas y CI.
 
 ### 2026-08-26 — Rev 8
 
@@ -285,8 +306,8 @@ El usuario indico que otras Skills tambien pueden contener adaptaciones de produ
 
 ## 8. Siguiente paso exacto
 
-Corregir el README para presentar la CLI Python como ruta soportada, eliminar inventarios contradictorios y marcar el wizard congelado como no verificado para el flujo actual.
+Crear una suite automatica permanente que cubra el contrato, el creador atomico, el rechazo de pendientes y la inmutabilidad de Skills, sin editar el contenido congelado.
 
 ## 9. Bloqueos
 
-No existe un bloqueo tecnico activo.
+La Fase 6 y el cierre legal de la Fase 2 dependen de la futura auditoria de procedencia autorizada por el usuario. Esta restriccion no bloquea las pruebas automaticas ni la CI fuera de Skills.
