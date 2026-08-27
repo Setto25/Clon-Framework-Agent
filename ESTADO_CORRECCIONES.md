@@ -1,6 +1,6 @@
 # Estado de correcciones de agent-framework
 
-**Ultima actualizacion:** 2026-08-27 (rev 21)
+**Ultima actualizacion:** 2026-08-27 (rev 22)
 **Estado general:** Contrato y entradas estrictas; pilotos y procedencia pendientes
 **Fase activa:** Fase 6 — validacion interna previa a pilotos
 **Rama de trabajo:** `codex/estabilizacion-framework`
@@ -101,6 +101,23 @@ La clasificacion confirmo que `_dryrun2/` era una salida generada para `proyecto
 - No existe una suite automatica que demuestre una instalacion reproducible.
 
 ## 7. Registro de avance
+
+### 2026-08-27 — Rev 22
+
+**Completado:**
+
+- El endurecimiento contractual se registro en el commit `dfb20d7`.
+- Se valido una exportacion limpia del commit y se eliminaron sus temporales.
+
+**Evidencia:**
+
+- El contrato aprobo desde la exportacion limpia.
+- Las 28 pruebas automaticas aprobaron desde la exportacion limpia.
+- El arbol de trabajo quedo limpio despues del commit funcional.
+
+**Resultado:**
+
+Las validaciones estrictas de contrato y entradas son reproducibles desde Git y no dependen del arbol activo.
 
 ### 2026-08-27 — Rev 21
 

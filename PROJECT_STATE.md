@@ -1,6 +1,6 @@
 # Estado del proyecto: agent-framework
 
-**Ultima actualizacion:** 2026-08-27 (rev 23)
+**Ultima actualizacion:** 2026-08-27 (rev 24)
 **Estado general:** Contrato y entradas estrictas; pilotos y procedencia pendientes
 **Fase activa:** Fase 6 — validacion interna previa a pilotos
 
@@ -114,6 +114,7 @@ Cada stack tiene LEEME.md con reglas adicionales, terminos tecnicos y procedimie
 62. **Precedencia ambigua eliminada.** Una clave no puede repetirse entre JSON, argumentos posicionales o `--valor`; los campos derivados se calculan internamente y no aceptan suplantacion externa.
 63. **Texto de configuracion endurecido.** Los saltos multilinea y tabulaciones legitimos se conservan, mientras controles Unicode invisibles y listas con elementos multilinea se rechazan antes de escribir.
 64. **Regresion de entradas ampliada.** La suite tiene 28 pruebas e incluye contratos futuros o deformados, valores derivados externos, duplicados entre fuentes y controles Unicode.
+65. **Exportacion contractual aprobada.** El commit `dfb20d7` aprobo el contrato y las 28 pruebas desde un `git archive` limpio; la copia y el archivo temporal se eliminaron al finalizar.
 
 ## 5. Que falta
 
