@@ -3,13 +3,15 @@
 **Tipo:** Stack tecnologico (Capa 2)
 **Para:** Proyectos que integran modelos de lenguaje (LLM), agentes, RAG, tool-use o procesamiento de lenguaje natural.
 
-## Que agrega al core
+## Que ofrece el catalogo fuente
 
 - Skills: `rag-local`, `fine-tuning-llm`, `agentes-multiagent`
 - Reglas adicionales de implementacion (ver abajo)
 - Terminos tecnicos del stack
 
-## Estructura
+Una instancia generada contiene solamente las Skills confirmadas de esta lista.
+
+## Estructura en el catalogo fuente
 
 ```
 stacks/ia-llm/
@@ -72,12 +74,12 @@ class AlmacenVectorial(Protocol):
     def buscar_similares(self, embedding: list[float], top_k: int) -> list[Resultado]: ...
 ```
 
-## Como instalar
+## Como seleccionar
 
-La instalacion es automatica via `$iniciar-proyecto`. Si necesitas hacerlo manualmente:
+Desde la raiz de `agent-framework`, cada Skill se confirma por separado al crear la instancia:
 
-```bash
-mv .agents/skills/stacks/ia-llm/skills/rag-local/ .agents/skills/
+```powershell
+python scripts\crear_proyecto.py <DESTINO> "<NOMBRE>" --configuracion <CONFIGURACION> --skill rag-local --skill agentes-multiagent
 ```
 
-Luego agregar las reglas adicionales a la seccion correspondiente de `AGENTS.md`.
+No se mueven carpetas manualmente. Este `LEEME.md` no implica que `fine-tuning-llm` u otra Skill hermana este instalada.

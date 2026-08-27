@@ -3,13 +3,15 @@
 **Tipo:** Stack tecnologico (Capa 2)
 **Para:** Proyectos fullstack con Next.js (App Router) o Next.js como frontend con backend separado (ej: FastAPI).
 
-## Que agrega al core
+## Que ofrece el catalogo fuente
 
 - Skills: `nextjs-fullstack`, `typescript-react`
 - Reglas adicionales de implementacion (ver abajo)
 - Terminos tecnicos del stack
 
-## Estructura
+Una instancia generada puede contener una o ambas Skills, segun la seleccion confirmada.
+
+## Estructura en el catalogo fuente
 
 ```
 stacks/frontend-nextjs/
@@ -73,13 +75,12 @@ export default function OrdersPage() { ... }
 export async function createOrder(data: FormData) { ... }
 ```
 
-## Como instalar
+## Como seleccionar
 
-La instalacion es automatica via `$iniciar-proyecto`. Si necesitas hacerlo manualmente:
+Desde la raiz de `agent-framework`, cada Skill se confirma por separado al crear la instancia:
 
-```bash
-mv .agents/skills/stacks/frontend-nextjs/skills/nextjs-fullstack/ .agents/skills/
-mv .agents/skills/stacks/frontend-nextjs/skills/typescript-react/ .agents/skills/
+```powershell
+python scripts\crear_proyecto.py <DESTINO> "<NOMBRE>" --configuracion <CONFIGURACION> --skill nextjs-fullstack --skill typescript-react
 ```
 
-Luego agregar las reglas adicionales a la seccion correspondiente de `AGENTS.md`.
+No se mueven carpetas manualmente. Este `LEEME.md` no implica que todas las Skills del stack esten instaladas.

@@ -12,13 +12,13 @@
 
 | Condicion | Archivos |
 |---|---|
-| Implementar en un stack especifico | `stacks/<stack>/LEEME.md`, reglas del stack |
+| Implementar en un stack instalado | `.agents/skills/stacks/<stack>/LEEME.md`, reglas del stack |
 | Nombres de variables/funciones | `.agents/rules/excepciones_nominales.md` |
 | Depurar error no trivial | `.agents/skills/lecciones-aprendidas/referencias/<stack>.md` |
 | Cerrar modulo | `.agents/skills/cerrar-modulo/SKILL.md` |
-| Evaluar calidad | `.agents/skills/evaluar-agente/SKILL.md` |
-| Iniciar proyecto nuevo | `.agents/skills/iniciar-proyecto/SKILL.md` |
-| Handoff a otro agente | `opcional/delegar-entre-agentes/SKILL.md` — usar solo si `PROJECT_STATE.md §8` no alcanza para que el agente siguiente retome (razonamiento en curso, decision a medias). En la practica rara vez se necesita. |
+| Evaluar un agente, si la Skill esta instalada | `.agents/skills/evaluar-agente/SKILL.md` |
+| Crear otro proyecto, si la Skill esta instalada | `.agents/skills/iniciar-proyecto/SKILL.md` |
+| Handoff, si la Skill opcional esta instalada | `.agents/skills/delegar-entre-agentes/SKILL.md` — usar solo si `PROJECT_STATE.md §8` no alcanza para retomar. |
 
 ## NO leer por defecto
 
@@ -29,7 +29,7 @@
 
 ## Nota sobre Skills
 
-Los skills NO se listan exhaustivamente aqui. Cada skill tiene su propio mecanismo de descubrimiento via metadata en `SKILL.md` (campo `name` + `description` en frontmatter). El agente consulta el skill relevante cuando la tarea coincide con su descripcion.
+Solo se consideran disponibles los `SKILL.md` presentes en la instancia. El creador instala el core automatico y las Skills adicionales confirmadas. Cada Skill se descubre mediante `name` y `description` en su frontmatter.
 
 ## Convencion
 

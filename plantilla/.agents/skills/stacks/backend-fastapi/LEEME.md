@@ -3,13 +3,13 @@
 **Tipo:** Stack tecnologico (Capa 2)
 **Para:** APIs REST y servicios backend con FastAPI, SQLAlchemy y Alembic. Gestion de dependencias con uv.
 
-## Que agrega al core
+## Que ofrece el catalogo fuente
 
 - Skills: `fastapi-setup`
 - Patron router/schema/service como convencion de estructura
 - uv como gestor de proyecto por defecto (en vez de pip+venv)
 
-## Estructura
+## Estructura en el catalogo fuente
 
 ```
 stacks/backend-fastapi/
@@ -58,12 +58,12 @@ class OrderCreate(BaseModel): ...
 def create_order(db: Session, data: OrderCreate): ...
 ```
 
-## Como instalar
+## Como seleccionar
 
-La instalacion es automatica via `$iniciar-proyecto`. Si necesitas hacerlo manualmente:
+Desde la raiz de `agent-framework`, la Skill se confirma al crear la instancia:
 
-```bash
-mv .agents/skills/stacks/backend-fastapi/skills/fastapi-setup/ .agents/skills/
+```powershell
+python scripts\crear_proyecto.py <DESTINO> "<NOMBRE>" --configuracion <CONFIGURACION> --skill fastapi-setup
 ```
 
-Luego agregar las reglas adicionales a la seccion correspondiente de `AGENTS.md`.
+No se mueven carpetas manualmente. En una instancia generada, este `LEEME.md` acompaña exclusivamente a las Skills del stack que fueron confirmadas.

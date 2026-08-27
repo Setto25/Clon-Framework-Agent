@@ -13,7 +13,7 @@ from typing import TypedDict
 
 
 class ArchivoInventariado(TypedDict):
-    """Representa un archivo congelado y su huella."""
+    """Representa un archivo inventariado y su huella."""
 
     ruta: str
     bytes: int
@@ -43,7 +43,7 @@ class ResumenInventario(TypedDict):
 
 
 class InventarioSkills(TypedDict):
-    """Representa el inventario completo del arbol congelado."""
+    """Representa el inventario completo del catalogo fuente."""
 
     version_inventario: int
     raiz: str
@@ -99,7 +99,7 @@ def detectar_declaraciones(contenido: str, ruta: str) -> list[DeclaracionProcede
 
 
 def crear_inventario(raiz: Path) -> InventarioSkills:
-    """Lee el arbol congelado y construye un inventario ordenado."""
+    """Lee el catalogo fuente y construye un inventario ordenado."""
     raiz_resuelta = raiz.expanduser().resolve()
     if not raiz_resuelta.is_dir():
         raise ValueError(f"No existe la raiz de Skills: {raiz_resuelta}")

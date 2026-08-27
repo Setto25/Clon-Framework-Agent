@@ -48,7 +48,9 @@ Un módulo solo se considera terminado cuando el código está implementado, las
 - Se debe leer completamente el `SKILL.md` seleccionado antes de actuar.
 - Se deben resolver scripts y referencias desde el directorio de la Skill correspondiente.
 - Se debe usar `$cerrar-modulo` después de completar y verificar un módulo.
-- Se debe usar `$iniciar-proyecto` al crear un proyecto nuevo desde la plantilla; el skill guía al usuario con preguntas y rellena los placeholders.
+- Se debe usar `$lecciones-aprendidas` antes de repetir una depuración difícil ya registrada.
+- Se debe usar `$probar-e2e` cuando corresponda comprobar un flujo completo entre componentes.
+- Solo se pueden invocar Skills cuyo `SKILL.md` exista en esta instancia. Las recomendaciones de otras Skills requieren confirmación antes de incorporarlas desde el framework fuente.
 
 ## 7. Operación con diferentes agentes
 

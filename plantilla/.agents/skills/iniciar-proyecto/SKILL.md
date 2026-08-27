@@ -1,79 +1,77 @@
 ---
 name: iniciar-proyecto
-description: Inicializa una instancia nueva de agent-framework mediante la CLI Python y su contrato canonico. Usar al crear un proyecto desde la plantilla o completar su configuracion inicial. No usar para reorganizar, mover ni eliminar Skills.
+description: Inicializa una instancia nueva de agent-framework, recomienda Skills segun el contexto y aplica solamente el core automatico mas las Skills confirmadas por el usuario. Usar al crear un proyecto desde la plantilla o completar su configuracion inicial.
 ---
 
 # Iniciar proyecto
 
-Esta Skill actua como interfaz conversacional de los scripts soportados. No duplica placeholders, no edita el contrato y no selecciona Skills mediante movimientos de carpetas.
+Esta Skill actua como interfaz conversacional de los scripts soportados. La recomendacion de una Skill no autoriza su instalacion.
 
 ## Identificar el contexto
 
-Antes de actuar, comprobar una sola de estas situaciones:
+Se comprueba una sola de estas situaciones:
 
-1. **Meta-repositorio:** existen `plantilla/` y `scripts/crear_proyecto.py`. Se crea un destino nuevo fuera de `agent-framework`.
-2. **Copia sin inicializar:** existen `.plantilla-framework`, `configuracion_plantilla.json` y `scripts/inicializar_proyecto.py`. Se inicializa esa copia una sola vez.
-3. **Proyecto inicializado:** existe `.estado-plantilla.json`. No se vuelve a ejecutar el inicializador; se informa que el proyecto ya fue configurado.
+1. **Meta-repositorio:** existen `plantilla/`, `scripts/crear_proyecto.py` y `scripts/catalogo_skills.py`. Se crea un destino nuevo fuera de `agent-framework`.
+2. **Copia sin inicializar:** existen `.plantilla-framework`, `configuracion_plantilla.json` y `scripts/inicializar_proyecto.py`. Se inicializa esa copia una sola vez. Esta ruta conserva las Skills que ya contenga y no realiza seleccion.
+3. **Proyecto inicializado:** existe `.estado-plantilla.json`. No se vuelve a ejecutar el inicializador.
 
-Si las rutas no corresponden a ninguno de esos contextos, detenerse y pedir la ruta correcta.
+Si las rutas no corresponden a esos contextos, se solicita la ruta correcta.
 
 ## Recopilar datos
 
-Leer `configuracion_plantilla.json` como fuente unica de claves. No mantener una lista paralela en esta Skill.
+Se lee `configuracion_plantilla.json` como fuente unica de placeholders. Se solicitan solamente los valores obligatorios que falten y no se inventan datos del producto.
 
-Solicitar solamente los valores obligatorios que falten. Se pueden agrupar en una sola pregunta:
+## Recomendar Skills
 
-- nombre visible e idioma;
-- zona horaria;
-- objetivo del producto;
-- alcance obligatorio y excluido;
-- siguiente paso;
-- reglas de arquitectura.
+Desde el meta-repositorio se consulta el catalogo vigente:
 
-Los valores opcionales pueden conservar sus predeterminados. No se inventan datos del producto.
+```powershell
+python scripts\catalogo_skills.py --json
+```
+
+El agente contrasta el objetivo, las tecnologias confirmadas, el hardware y el tipo de trabajo con las descripciones del catalogo. Luego presenta:
+
+- las tres Skills automaticas: `cerrar-modulo`, `lecciones-aprendidas` y `probar-e2e`;
+- cada Skill adicional recomendada, con una razon breve vinculada al proyecto;
+- las Skills dudosas o innecesarias, cuando su exclusion evite ruido o autoridad excesiva.
+
+No se recomienda por coincidencia superficial ni se presupone un stack no confirmado. La recomendacion no se agrega al comando hasta que el usuario confirme sus nombres exactos. Una respuesta ambigua requiere una confirmacion mas precisa.
 
 ## Confirmar antes de escribir
 
-Mostrar al usuario:
+Se muestra al usuario el destino, el nombre visible, los datos configurables, las Skills automaticas, las Skills adicionales confirmadas, los pendientes y si se creara `.env`.
 
-- contexto detectado;
-- destino exacto, cuando corresponda;
-- nombre visible;
-- claves que se completaran;
-- claves que quedarian pendientes;
-- si se creara `.env`.
-
-La confirmacion autoriza solamente la creacion o configuracion descrita. No autoriza borrar, mover o publicar contenido.
+La confirmacion autoriza solamente esa creacion. No autoriza eliminar Skills de la fuente, publicar el repositorio ni incorporar recomendaciones no confirmadas.
 
 ## Ejecutar la ruta soportada
 
 ### Desde el meta-repositorio
 
-Preparar un JSON temporal o usar `--valor CLAVE=VALOR`, y ejecutar:
+Se prepara un JSON temporal o se usa `--valor CLAVE=VALOR`. Cada Skill adicional confirmada se expresa con un argumento independiente:
 
 ```powershell
-python scripts\crear_proyecto.py <DESTINO_NUEVO> "<NOMBRE_VISIBLE>" --configuracion <CONFIGURACION_JSON>
+python scripts\crear_proyecto.py <DESTINO_NUEVO> "<NOMBRE_VISIBLE>" --configuracion <CONFIGURACION_JSON> --skill fastapi-setup --skill evaluar-agente
 ```
 
-El destino no debe existir ni quedar dentro de `agent-framework`.
+El destino no debe existir ni quedar dentro de `agent-framework`. El creador copia solo el core automatico y las Skills nombradas mediante `--skill`. Los stacks no seleccionados permanecen exclusivamente en el catalogo fuente.
 
 ### Desde una copia sin inicializar
 
-Ejecutar desde la raiz de la copia:
+Se ejecuta desde la raiz de la copia:
 
 ```powershell
 python scripts\inicializar_proyecto.py "<NOMBRE_VISIBLE>" "<IDIOMA>" --configuracion <CONFIGURACION_JSON>
 ```
 
-No usar el respaldo Bash mientras permanezca deprecado.
+Esta ruta no filtra Skills. Para obtener seleccion explicita se vuelve al meta-repositorio y se usa `scripts/crear_proyecto.py`.
 
 ### Configuracion incompleta
 
-`--permitir-pendientes` solo se usa cuando el usuario acepta una instancia provisional. Los marcadores generados deben completarse antes de considerar lista la memoria del proyecto.
+`--permitir-pendientes` se usa solo cuando el usuario acepta una instancia provisional. Los marcadores generados se completan antes de considerar lista la memoria del proyecto.
 
 ## Verificar
 
-Ejecutar en la instancia resultante:
+Se ejecuta en la instancia resultante:
 
 ```powershell
 python scripts\verificar_memoria_proyecto.py .
@@ -84,22 +82,9 @@ La inicializacion se considera correcta cuando:
 - el comando termina con codigo cero;
 - no quedan placeholders ni TODO de inicializacion;
 - `.env` esta ignorado por Git;
-- `.estado-plantilla.json` registra la version de origen;
-- Git muestra solamente los archivos esperados de la nueva instancia.
-
-## Skills y stacks
-
-La inicializacion conserva `.agents/skills/` byte por byte. No se activan Skills moviendolas ni se eliminan stacks.
-
-Si el usuario solicita curar el catalogo despues de crear el proyecto, tratarlo como una tarea separada: inventariar, evaluar compatibilidad y pedir autorizacion antes de cualquier cambio. Nunca usar rutas con placeholders en comandos destructivos.
+- `.estado-plantilla.json` registra la version y las Skills instaladas;
+- los manifiestos `SKILL.md` presentes coinciden exactamente con la seleccion autorizada.
 
 ## Entrega
 
-Informar:
-
-- destino creado o copia configurada;
-- archivos configurados;
-- resultado del verificador;
-- existencia y proteccion de `.env`;
-- pendientes reales, si el usuario los permitio;
-- siguiente paso indicado por `PROJECT_STATE.md`.
+Se informa el destino, los archivos configurados, las Skills instaladas, el resultado del verificador, la proteccion de `.env`, los pendientes reales y el siguiente paso indicado por `PROJECT_STATE.md`.

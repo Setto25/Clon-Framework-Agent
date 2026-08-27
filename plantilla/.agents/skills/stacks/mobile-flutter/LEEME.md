@@ -4,13 +4,15 @@
 **Para:** Proyectos moviles multiplataforma con Flutter y Dart.
 **Basado en:** [spjoshis/claude-code-plugins](https://github.com/spjoshis/claude-code-plugins), plugin `flutter-development`. La licencia de la revision usada no esta verificada. Adaptado: fusionado, reordenado a TDD, comprimido, traducido y alineado con las reglas del framework.
 
-## Que agrega al core
+## Que ofrece el catalogo fuente
 
 - Skills: `flutter-state-management`, `flutter-performance`, `flutter-animations`
 - Reglas adicionales de implementacion (ver abajo)
 - Terminos tecnicos del stack
 
-## Estructura
+Una instancia generada contiene solamente las Skills confirmadas de esta lista.
+
+## Estructura en el catalogo fuente
 
 ```
 stacks/mobile-flutter/
@@ -70,14 +72,12 @@ class NotificadorUsuarios extends AsyncNotifier<List<Usuario>> { ... }
 class OrdersBloc extends Bloc<OrderEvent, OrderState> { ... }
 ```
 
-## Como instalar
+## Como seleccionar
 
-La instalacion es automatica via `$iniciar-proyecto`. Si necesitas hacerlo manualmente:
+Desde la raiz de `agent-framework`, cada Skill se confirma por separado al crear la instancia:
 
-```bash
-mv .agents/skills/stacks/mobile-flutter/skills/flutter-state-management/ .agents/skills/
-mv .agents/skills/stacks/mobile-flutter/skills/flutter-performance/ .agents/skills/
-mv .agents/skills/stacks/mobile-flutter/skills/flutter-animations/ .agents/skills/
+```powershell
+python scripts\crear_proyecto.py <DESTINO> "<NOMBRE>" --configuracion <CONFIGURACION> --skill flutter-state-management --skill flutter-performance --skill flutter-animations
 ```
 
-Luego agregar las reglas adicionales a la seccion correspondiente de `AGENTS.md`.
+No se mueven carpetas manualmente. Este `LEEME.md` no implica que todas las Skills Flutter esten instaladas.

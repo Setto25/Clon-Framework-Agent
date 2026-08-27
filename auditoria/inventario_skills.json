@@ -1,7 +1,7 @@
 {
   "version_inventario": 1,
   "raiz": "plantilla/.agents/skills",
-  "huella_conjunto_sha256": "f9fabafc614302184d8b2d4a87f7e0f81909d1c525c858397b2a40b488405824",
+  "huella_conjunto_sha256": "5c42d715a712f189ee87df8dcc5e357e7e58dc28f76e60f3d59b524264de3c3a",
   "resumen": {
     "archivos": 32,
     "skills": 17,
@@ -22,8 +22,8 @@
     },
     {
       "ruta": "iniciar-proyecto/SKILL.md",
-      "bytes": 3769,
-      "sha256": "ec6a66c0e41e68b966dcd1e129e373842dd66f00b6c06d6903466631dfbffe0a",
+      "bytes": 4255,
+      "sha256": "54110252407497b9ae058df94980d47c9ac06392b832b034b0f7435afa15a599",
       "nombre": "iniciar-proyecto"
     },
     {
@@ -159,8 +159,8 @@
     },
     {
       "ruta": "stacks/backend-fastapi/LEEME.md",
-      "bytes": 2454,
-      "sha256": "b0f6826d1b2d0e6df655a8125ec8eb5f1e6b7e83fd7167d89333223fddda0754"
+      "bytes": 2585,
+      "sha256": "16313a849ace6fd2b2909f32b8750e05a32b2fa64c0c66d926f5cb10bdf5532a"
     },
     {
       "ruta": "stacks/firmware-esp32/domain-packs/audio-embebido/LEEME.md",
@@ -169,23 +169,23 @@
     },
     {
       "ruta": "stacks/firmware-esp32/LEEME.md",
-      "bytes": 2485,
-      "sha256": "168e8cb6537206cc243dc7b69796b78296ca87e2eeabce6c77dcb2b8b9100a67"
+      "bytes": 2551,
+      "sha256": "2200f7d791ae4a464f86ee05ef821df77293ae403c1677da4f8c266e87997841"
     },
     {
       "ruta": "stacks/frontend-nextjs/LEEME.md",
-      "bytes": 3782,
-      "sha256": "2cb0d88316f4e408b23d65df4de0fb0dd1e2fcdaeadf2a87c6e20fdefbe79f5c"
+      "bytes": 3922,
+      "sha256": "af201bc1b737db5ec94b946f2f327946cdf0124b6e0af23ef3e623d7511bd8fd"
     },
     {
       "ruta": "stacks/ia-llm/LEEME.md",
-      "bytes": 3776,
-      "sha256": "9b82525080b8cdde8d505ccc14d73b71d9d11365b57ea72189cff133c140c9e7"
+      "bytes": 4010,
+      "sha256": "ed4d0ac9607b61706ba7131965e3f1d0ec51f21ed3d17f9fce61550c6568be05"
     },
     {
       "ruta": "stacks/mobile-flutter/LEEME.md",
-      "bytes": 3796,
-      "sha256": "d24de56b9b4f4bdeb2fd9c10639b017b955b1ecd8be63ef45bc9395f069c4e1b"
+      "bytes": 3871,
+      "sha256": "b0ba1bc5e5eea4f7430429fec690ce1555aa94bda2d62dda50bb5ae054489841"
     }
   ],
   "declaraciones_procedencia": [

@@ -3,14 +3,16 @@
 **Tipo:** Stack tecnologico (Capa 2)
 **Para:** Proyectos con ESP32/MicroPython, Arduino y comunicacion IoT.
 
-## Que agrega al core
+## Que ofrece el catalogo fuente
 
 - Skills genericos de firmware: `desarrollar-firmware`, `diagnosticar-hardware`
 - Reglas adicionales de implementacion (ver abajo)
 - Secciones para inyectar en `AGENTS.md` §Arquitectura
 - Domain-packs opcionales para dominios especificos (ej: `audio-embebido`)
 
-## Estructura
+Una instancia generada puede contener una o ambas Skills. Los `domain-packs` no se instalan automaticamente.
+
+## Estructura en el catalogo fuente
 
 ```
 stacks/firmware-esp32/
@@ -50,16 +52,12 @@ Estos terminos se conservan en ingles dentro de proyectos que activen este stack
 | `PSRAM` | — | Memoria externa ESP32 |
 | `NVS` | — | Non-Volatile Storage |
 
-## Como instalar
+## Como seleccionar
 
-La instalacion es automatica via `$iniciar-proyecto`. Si necesitas hacerlo manualmente:
+Desde la raiz de `agent-framework`, cada Skill se confirma por separado al crear la instancia:
 
-```bash
-# Skills genericos del stack
-mv .agents/skills/stacks/firmware-esp32/skills/desarrollar-firmware/ .agents/skills/
-mv .agents/skills/stacks/firmware-esp32/skills/diagnosticar-hardware/ .agents/skills/
+```powershell
+python scripts\crear_proyecto.py <DESTINO> "<NOMBRE>" --configuracion <CONFIGURACION> --skill desarrollar-firmware --skill diagnosticar-hardware
 ```
 
-Para domain-packs (ej: audio), ver el LEEME.md dentro de `domain-packs/audio-embebido/`.
-
-Luego agregar las reglas adicionales a la seccion correspondiente de `AGENTS.md`.
+No se mueven carpetas manualmente. La seleccion de un `domain-pack` requiere un flujo independiente que todavia no esta implementado.

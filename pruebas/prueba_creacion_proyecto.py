@@ -6,6 +6,7 @@ from __future__ import annotations
 import hashlib
 import json
 import os
+import re
 import subprocess
 import sys
 import tempfile
@@ -17,6 +18,9 @@ RAIZ_FRAMEWORK = Path(__file__).resolve().parent.parent
 CREADOR = RAIZ_FRAMEWORK / "scripts" / "crear_proyecto.py"
 CONFIGURACION_EJEMPLO = RAIZ_FRAMEWORK / "ejemplos" / "configuracion_proyecto.ejemplo.json"
 SKILLS_ORIGEN = RAIZ_FRAMEWORK / "plantilla" / ".agents" / "skills"
+ADAPTADOR_BASH = RAIZ_FRAMEWORK / "plantilla" / "scripts" / "inicializar_proyecto.sh"
+CORE_AUTOMATICO: set[str] = {"cerrar-modulo", "lecciones-aprendidas", "probar-e2e"}
+PATRON_NOMBRE_SKILL = re.compile(r"^name:\s*(.+?)\s*$", re.MULTILINE)
 
 
 def ejecutar(argumentos: list[str], raiz: Path = RAIZ_FRAMEWORK) -> subprocess.CompletedProcess[str]:
@@ -41,6 +45,20 @@ def calcular_huellas(raiz: Path) -> dict[str, str]:
         for archivo in sorted(raiz.rglob("*"))
         if archivo.is_file()
     }
+
+
+def descubrir_skills(raiz: Path) -> dict[str, Path]:
+    """Relaciona cada nombre de Skill con su directorio instalado."""
+    resultado: dict[str, Path] = {}
+    for manifiesto in sorted(raiz.rglob("SKILL.md")):
+        coincidencia = PATRON_NOMBRE_SKILL.search(manifiesto.read_text(encoding="utf-8"))
+        if coincidencia is None:
+            raise AssertionError(f"Manifiesto sin nombre: {manifiesto}")
+        nombre = coincidencia.group(1).strip().strip("\"'")
+        if nombre in resultado:
+            raise AssertionError(f"Nombre de Skill duplicado: {nombre}")
+        resultado[nombre] = manifiesto.parent
+    return resultado
 
 
 class PruebasCreacionProyecto(unittest.TestCase):
@@ -87,10 +105,78 @@ class PruebasCreacionProyecto(unittest.TestCase):
         self.assertTrue((destino / ".env").is_file())
         resultado_ignorado = ejecutar(["git", "check-ignore", ".env"], destino)
         self.assertEqual(resultado_ignorado.returncode, 0, resultado_ignorado.stdout + resultado_ignorado.stderr)
-        self.assertEqual(
-            calcular_huellas(SKILLS_ORIGEN),
-            calcular_huellas(destino / ".agents" / "skills"),
+        skills_origen = descubrir_skills(SKILLS_ORIGEN)
+        skills_destino = descubrir_skills(destino / ".agents" / "skills")
+        self.assertEqual(set(skills_destino), CORE_AUTOMATICO)
+        for nombre, ruta_destino in skills_destino.items():
+            with self.subTest(skill=nombre):
+                self.assertEqual(calcular_huellas(skills_origen[nombre]), calcular_huellas(ruta_destino))
+        estado: object = json.loads((destino / ".estado-plantilla.json").read_text(encoding="utf-8"))
+        self.assertIsInstance(estado, dict)
+        instaladas = estado.get("skills_instaladas") if isinstance(estado, dict) else None
+        self.assertEqual(set(instaladas) if isinstance(instaladas, list) else set(), CORE_AUTOMATICO)
+
+    def test_instala_solo_skills_adicionales_confirmadas(self) -> None:
+        """Confirma una seleccion mixta de core, stack y Skill opcional."""
+        destino = self.raiz_temporal / "proyecto-seleccionado"
+        adicionales = {"fastapi-setup", "evaluar-agente", "delegar-entre-agentes"}
+        resultado = ejecutar(
+            [
+                sys.executable,
+                str(CREADOR),
+                str(destino),
+                "Proyecto Seleccionado",
+                "--configuracion",
+                str(CONFIGURACION_EJEMPLO),
+                "--skill",
+                "fastapi-setup",
+                "--skill",
+                "evaluar-agente",
+                "--skill",
+                "delegar-entre-agentes",
+            ]
         )
+        self.assertEqual(resultado.returncode, 0, resultado.stdout + resultado.stderr)
+        skills_origen = descubrir_skills(SKILLS_ORIGEN)
+        skills_destino = descubrir_skills(destino / ".agents" / "skills")
+        self.assertEqual(set(skills_destino), CORE_AUTOMATICO | adicionales)
+        for nombre, ruta_destino in skills_destino.items():
+            with self.subTest(skill=nombre):
+                self.assertEqual(calcular_huellas(skills_origen[nombre]), calcular_huellas(ruta_destino))
+        self.assertTrue(
+            (destino / ".agents" / "skills" / "stacks" / "backend-fastapi" / "LEEME.md").is_file()
+        )
+        self.assertFalse(
+            (destino / ".agents" / "skills" / "stacks" / "frontend-nextjs").exists()
+        )
+
+    def test_rechaza_una_skill_desconocida_sin_publicar_destino(self) -> None:
+        """Confirma que una seleccion invalida falle antes de copiar la plantilla."""
+        destino = self.raiz_temporal / "proyecto-skill-invalida"
+        resultado = ejecutar(
+            [
+                sys.executable,
+                str(CREADOR),
+                str(destino),
+                "Proyecto Invalido",
+                "--permitir-pendientes",
+                "--skill",
+                "skill-inexistente",
+            ]
+        )
+        self.assertNotEqual(resultado.returncode, 0)
+        self.assertIn("Skills desconocidas", resultado.stderr)
+        self.assertFalse(destino.exists())
+        self.assertEqual(list(self.raiz_temporal.glob(".proyecto-temporal-*")), [])
+
+    def test_adaptador_bash_no_duplica_la_inicializacion(self) -> None:
+        """Confirma que el respaldo Bash delegue sin administrar Skills."""
+        contenido = ADAPTADOR_BASH.read_text(encoding="utf-8")
+        self.assertIn("inicializar_proyecto.py", contenido)
+        self.assertIn("exec python", contenido)
+        for fragmento in ("catalogo_skills.json", "mv .agents", "perl -pi", "grep -rl"):
+            with self.subTest(fragmento=fragmento):
+                self.assertNotIn(fragmento, contenido)
 
     def test_rechaza_memoria_con_pendientes(self) -> None:
         """Confirma que una instancia provisional no se certifique como completa."""

@@ -37,6 +37,7 @@ class ContratoPlantilla(TypedDict):
 
 
 PATRON_PLACEHOLDER = re.compile(r"\{\{([A-Z0-9_]+)\}\}")
+PATRON_NOMBRE_SKILL = re.compile(r"^name:\s*(.+?)\s*$", re.MULTILINE)
 VALORES_PREDETERMINADOS: dict[str, str] = {
     "ESTADO_BREVE": "Inicializando",
     "FASE_ACTIVA": "Fase 0 — Setup",
@@ -291,6 +292,32 @@ def verificar_env_ignorado(raiz: Path) -> None:
         raise ValueError(".env no esta protegido por .gitignore")
 
 
+def descubrir_nombres_skills(raiz: Path) -> list[str]:
+    """Descubre los nombres declarados por las Skills instaladas."""
+    nombres: set[str] = set()
+    for manifiesto in sorted((raiz / ".agents" / "skills").rglob("SKILL.md")):
+        contenido = manifiesto.read_text(encoding="utf-8")
+        coincidencia = PATRON_NOMBRE_SKILL.search(contenido)
+        if coincidencia is None:
+            raise ValueError(f"La Skill no declara nombre: {manifiesto.relative_to(raiz)}")
+        nombre = coincidencia.group(1).strip().strip("\"'")
+        if nombre in nombres:
+            raise ValueError(f"Nombre de Skill duplicado: {nombre}")
+        nombres.add(nombre)
+    return sorted(nombres)
+
+
+def validar_skills_instaladas(raiz: Path, declaradas: list[str]) -> list[str]:
+    """Verifica que la seleccion declarada coincida con los archivos presentes."""
+    instaladas = descubrir_nombres_skills(raiz)
+    nombres_declarados = [nombre.strip() for nombre in declaradas if nombre.strip()]
+    if len(nombres_declarados) != len(set(nombres_declarados)):
+        raise ValueError("La seleccion de Skills contiene nombres duplicados")
+    if nombres_declarados and set(nombres_declarados) != set(instaladas):
+        raise ValueError("La seleccion declarada de Skills no coincide con los archivos instalados")
+    return instaladas
+
+
 def crear_argumentos() -> argparse.Namespace:
     """Define la interfaz de linea de comandos."""
     analizador = argparse.ArgumentParser(description=__doc__)
@@ -298,6 +325,13 @@ def crear_argumentos() -> argparse.Namespace:
     analizador.add_argument("idioma_nombres", nargs="?", help="Idioma de nombres")
     analizador.add_argument("--configuracion", type=Path, help="Archivo JSON con valores por placeholder")
     analizador.add_argument("--valor", action="append", default=[], metavar="CLAVE=VALOR")
+    analizador.add_argument(
+        "--skill-seleccionada",
+        action="append",
+        default=[],
+        metavar="NOMBRE",
+        help="Skill ya instalada por el creador externo; se puede repetir",
+    )
     analizador.add_argument("--permitir-pendientes", action="store_true")
     analizador.add_argument("--sin-env", action="store_true")
     return analizador.parse_args()
@@ -314,6 +348,7 @@ def main() -> int:
         if not centinela.exists():
             raise ValueError("Falta .plantilla-framework; la plantilla ya fue inicializada o no es una copia valida")
         contrato = cargar_contrato(raiz / "configuracion_plantilla.json")
+        skills_instaladas = validar_skills_instaladas(raiz, argumentos.skill_seleccionada)
         valores = cargar_valores(argumentos.configuracion)
         if argumentos.nombre_proyecto:
             valores["NOMBRE_PROYECTO"] = argumentos.nombre_proyecto
@@ -335,6 +370,11 @@ def main() -> int:
         if not argumentos.sin_env and not env_destino.exists():
             shutil.copy2(env_ejemplo, env_destino)
 
+        politica_skills = (
+            "core_automatico_mas_seleccion_explicita"
+            if argumentos.skill_seleccionada
+            else "contenido_preexistente_sin_seleccion"
+        )
         estado_plantilla = {
             "version_framework": contrato["version_framework"],
             "version_contrato": contrato["version_contrato"],
@@ -342,7 +382,8 @@ def main() -> int:
             "nombre_proyecto": valores_completos["NOMBRE_PROYECTO"],
             "idioma_nombres": valores_completos["IDIOMA_NOMBRES"],
             "pendientes": pendientes,
-            "skills_congeladas": True,
+            "skills_instaladas": skills_instaladas,
+            "politica_skills": politica_skills,
         }
         (raiz / ".estado-plantilla.json").write_text(
             json.dumps(estado_plantilla, ensure_ascii=False, indent=2) + "\n",
@@ -366,7 +407,7 @@ def main() -> int:
     print(f"Proyecto inicializado: {valores_completos['NOMBRE_PROYECTO']}")
     print(f"Archivos configurados: {len(cambios)}")
     print(f"Pendientes marcados: {len(pendientes)}")
-    print("Skills: conservadas sin modificaciones por auditoria de procedencia")
+    print("Skills instaladas: " + ", ".join(skills_instaladas))
     print("Siguiente paso: revisar .env y confirmar los TODO pendientes antes del primer commit.")
     return 0
 

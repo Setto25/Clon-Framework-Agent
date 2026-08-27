@@ -4,7 +4,7 @@ Framework agentico reutilizable para crear proyectos con agentes de IA, memoria 
 
 Extraido inicialmente del proyecto entrevoces. El creador y los verificadores tienen pruebas locales reproducibles; todavia falta validarlo en proyectos piloto reales.
 
-> **Estado de Skills:** las 17 Skills fueron revisadas estructuralmente y las de mayor riesgo se endurecieron para uso personal. Su procedencia sigue incompleta, por lo que no se recomienda redistribuirlas. La CLI Python conserva la logica de inicializacion; `$iniciar-proyecto` solo actua como interfaz conversacional y no mueve ni elimina Skills.
+> **Estado de Skills:** las 17 Skills permanecen en el catalogo fuente y fueron revisadas estructuralmente. Un proyecto nuevo recibe solo `cerrar-modulo`, `lecciones-aprendidas`, `probar-e2e` y las Skills adicionales confirmadas mediante `--skill`. Su procedencia sigue incompleta, por lo que no se recomienda redistribuirlas.
 
 ---
 
@@ -65,7 +65,7 @@ plantilla/
 - No reemplaza revision humana del codigo generado.
 - **Domain-packs son stubs**: solo hay estructura reservada, sin contenido operativo.
 - **`delegar-entre-agentes` es aspiracional**: vive en `opcional/`, sin evidencia de uso real en entrevoces, y no se activa por defecto. Util solo cuando el agente pierde decisiones importantes que PROJECT_STATE.md no captura (razonamiento en curso, decision a medias). En la practica, PROJECT_STATE.md suele ser suficiente.
-- No selecciona ni elimina Skills por stack todavia: la copia conserva el arbol completo, byte por byte.
+- No instala una recomendacion del agente sin confirmacion explicita del usuario.
 - No certifica las Skills existentes: su calidad, procedencia y licencia siguen pendientes de auditoria.
 - No cubre Prisma, pandas/ML, Go, Rust ni infraestructura/DevOps con Skills dedicadas.
 
@@ -88,27 +88,33 @@ d:\PROYECTOS\
 
 ### Flujo recomendado: configuracion completa
 
-1. Copia el ejemplo fuera del repositorio y edita sus valores.
+1. Consulta el catalogo. El agente puede recomendar Skills segun el objetivo y el stack confirmado, pero la persona debe aprobar sus nombres exactos.
+
+```powershell
+python scripts\catalogo_skills.py
+```
+
+2. Copia el ejemplo fuera del repositorio y edita sus valores.
 
 ```powershell
 Copy-Item .\ejemplos\configuracion_proyecto.ejemplo.json D:\PROYECTOS\configuracion-mi-proyecto.json
 ```
 
-2. Desde la raiz de `agent-framework`, ejecuta:
+3. Desde la raiz de `agent-framework`, ejecuta. Repite `--skill` por cada Skill adicional confirmada:
 
 ```powershell
-python scripts\crear_proyecto.py D:\PROYECTOS\mi-proyecto "Mi Proyecto" --configuracion D:\PROYECTOS\configuracion-mi-proyecto.json
+python scripts\crear_proyecto.py D:\PROYECTOS\mi-proyecto "Mi Proyecto" --configuracion D:\PROYECTOS\configuracion-mi-proyecto.json --skill fastapi-setup --skill evaluar-agente
 ```
 
-El destino no debe existir. El nombre visible puede contener espacios o acentos; el inicializador deriva por separado los identificadores tecnicos. El comando copia la plantilla completa, crea `.env` ignorado por Git, sustituye los valores declarados, registra `.estado-plantilla.json` e inicializa un repositorio Git sin realizar commits.
+El destino no debe existir. El nombre visible puede contener espacios o acentos; el inicializador deriva por separado los identificadores tecnicos. El comando copia la base, instala el core automatico mas la seleccion explicita, crea `.env` ignorado por Git, registra las Skills en `.estado-plantilla.json` e inicializa un repositorio Git sin realizar commits.
 
-3. Verifica la memoria generada antes del primer commit:
+4. Verifica la memoria generada antes del primer commit:
 
 ```powershell
 python D:\PROYECTOS\mi-proyecto\scripts\verificar_memoria_proyecto.py D:\PROYECTOS\mi-proyecto
 ```
 
-4. Revisa `.env`, abre el proyecto y crea el primer commit:
+5. Revisa `.env`, abre el proyecto y crea el primer commit:
 
 ```powershell
 Set-Location D:\PROYECTOS\mi-proyecto
@@ -135,9 +141,9 @@ Si no puede usarse el creador raiz, se puede copiar **todo** el contenido de `pl
 python scripts\inicializar_proyecto.py "Mi Proyecto" "español" --configuracion D:\PROYECTOS\configuracion-mi-proyecto.json
 ```
 
-No se recomienda copiar carpetas sueltas ni omitir `.agents`, `.gitignore`, `.gitattributes`, `.env.ejemplo`, `.plantilla-framework` o `configuracion_plantilla.json`: todos forman parte del contrato de la instancia.
+Esta contingencia conserva las 17 Skills y no aplica seleccion. No se recomienda copiar carpetas sueltas ni omitir `.agents`, `.gitignore`, `.gitattributes`, `.env.ejemplo`, `.plantilla-framework` o `configuracion_plantilla.json`: todos forman parte del contrato de la instancia.
 
-El respaldo `scripts/inicializar_proyecto.sh` permanece deprecado y no se considera validado en Windows. `$iniciar-proyecto` puede guiar la recopilacion y ejecutar la misma CLI Python, pero no reemplaza su contrato ni administra el catalogo de Skills.
+`scripts/inicializar_proyecto.sh` es solo un adaptador de compatibilidad: localiza Python y delega todos los argumentos en `inicializar_proyecto.py`. `$iniciar-proyecto` puede recomendar desde el catalogo y ejecutar la misma CLI Python; una recomendacion nunca sustituye la confirmacion explicita.
 
 ---
 
@@ -209,15 +215,20 @@ Estos archivos son los del **proyecto instanciado**, no los de `agent-framework/
 
 ## 6. Inventario de skills
 
-### Core incluido
+### Core automatico
 
 | Skill | Que hace | Cuando invocar |
 |---|---|---|
-| `iniciar-proyecto` | Interfaz conversacional de la CLI Python y su contrato canonico | Al crear o configurar una instancia nueva |
 | `cerrar-modulo` | Documenta modulo terminado: actualiza PROJECT_STATE, plan, registro de cambios | Cuando las pruebas pasan o el usuario aprueba un componente |
-| `evaluar-agente` | Evalua un agente: intenciones, tool-use, prompt injection, limites de autoridad | Al crear/modificar prompts o tool-calling |
 | `probar-e2e` | Pruebas end-to-end del MVP entre componentes | Al verificar flujos completos (cliente-servidor-dispositivo) |
 | `lecciones-aprendidas` | Memoria de errores resueltos con dificultad (causa raiz no obvia) | Antes de depurar error complejo / tras resolver uno con 2+ intentos |
+
+### Core seleccionable explicitamente
+
+| Skill | Que hace | Cuando recomendar |
+|---|---|---|
+| `iniciar-proyecto` | Interfaz conversacional de la CLI y del catalogo | Cuando el proyecto deba crear otras instancias del framework |
+| `evaluar-agente` | Evalua intenciones, tool-use, prompt injection y limites de autoridad | Al crear o modificar agentes, prompts o tool-calling |
 
 ### Por stack
 
@@ -294,7 +305,7 @@ Prisma, pandas/scikit-learn, Go, Rust, Java, Kubernetes, Terraform, Storybook, t
 | Python 3.9+ | Ejecutar el creador y los verificadores soportados | Funciona desde PowerShell, cmd o la terminal del editor |
 | PowerShell / cmd | Ejecutar los comandos en Windows | No realiza la logica de inicializacion |
 
-El flujo soportado requiere Python. Git Bash y perl solo corresponden al respaldo Bash deprecado, que no forma parte de la ruta verificada.
+El flujo soportado requiere Python. Bash es opcional y su adaptador no duplica la logica de inicializacion ni requiere Perl.
 
 ### Validacion local del framework
 
@@ -305,7 +316,7 @@ python scripts\validar_contrato_plantilla.py
 python -m unittest discover -s pruebas -p "prueba_*.py" -v
 ```
 
-La suite comprueba creacion completa, memoria pendiente, limpieza atomica, rechazo de sobrescritura, proteccion de `.env`, copia byte por byte de Skills, vigencia del inventario y ausencia de instrucciones obsoletas o destructivas. El workflow `.github/workflows/validacion.yml` ejecuta la misma validacion en Windows y Ubuntu con Python 3.9 y 3.12.
+La suite comprueba creacion completa, seleccion exacta de Skills, rechazo de nombres desconocidos, memoria pendiente, limpieza atomica, proteccion de `.env`, vigencia del inventario y ausencia de instrucciones obsoletas o destructivas. El workflow `.github/workflows/validacion.yml` ejecuta la misma validacion en Windows y Ubuntu con Python 3.9 y 3.12.
 
 ---
 
@@ -314,9 +325,9 @@ La suite comprueba creacion completa, memoria pendiente, limpieza atomica, recha
 Extraido de un unico proyecto real (entrevoces). **Todavia no fue probado en un segundo proyecto.** La creacion atomica, la configuracion completa, el rechazo de pendientes y la inmutabilidad de Skills si fueron comprobados en directorios temporales.
 
 La proxima vez que se use:
-1. Documentar las fricciones de la CLI y del proyecto generado en [`PROJECT_STATE.md`](PROJECT_STATE.md), seccion "Que falta".
-2. Registrar cualquier defecto de una Skill sin editarla, indicando ruta, fuente probable y efecto observado.
-3. Completar la auditoria de procedencia y licencia antes de modificar, agregar, eliminar o redistribuir Skills.
+1. Documentar las fricciones de la CLI, las recomendaciones y la seleccion efectiva en [`PROJECT_STATE.md`](PROJECT_STATE.md), seccion "Que falta".
+2. Registrar cualquier defecto de una Skill, su correccion comprobada, la fuente probable y el efecto observado.
+3. Completar la auditoria de procedencia y licencia antes de redistribuir Skills.
 
 El objetivo es que dos proyectos piloto completen el flujo antes de publicar `v1.0.0`.
 
@@ -334,7 +345,7 @@ plantilla/
 ├── scripts/
 │   ├── inicializar_proyecto.py                 ← Inicializador interno soportado
 │   ├── verificar_memoria_proyecto.py           ← Valida memoria y pendientes
-│   └── inicializar_proyecto.sh                 ← Respaldo deprecado sin validacion actual
+│   └── inicializar_proyecto.sh                 ← Adaptador opcional hacia Python
 ├── .agents/
 │   ├── rules/
 │   │   ├── claude.md                           ← Reglas especificas para Claude
@@ -388,12 +399,14 @@ plantilla/
 Desde la raiz del meta-repositorio tambien existen:
 
 - `scripts/crear_proyecto.py`: creador atomico de una instancia nueva;
+- `scripts/catalogo_skills.py`: catalogo tipado para recomendaciones y seleccion explicita;
 - `scripts/validar_contrato_plantilla.py`: validador del contrato de la plantilla;
 - `scripts/inventariar_skills.py`: inventariador determinista y de solo lectura;
 - `ejemplos/configuracion_proyecto.ejemplo.json`: punto de partida para una configuracion completa;
 - `pruebas/prueba_creacion_proyecto.py`: suite integral con biblioteca estandar;
 - `pruebas/prueba_inventario_skills.py`: control de vigencia del inventario de Skills;
 - `pruebas/prueba_calidad_skills.py`: invariantes estructurales y operativas de las 17 Skills;
+- `pruebas/prueba_catalogo_skills.py`: politica de core automatico y clasificacion del catalogo;
 - `.github/workflows/validacion.yml`: matriz de CI para Windows, Ubuntu y dos versiones de Python;
 - `auditoria/inventario_skills.json`: rutas, tamaños y huellas del contenido auditado;
 - `ATRIBUCIONES.md`: inventario de procedencia y licencias pendientes.

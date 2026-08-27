@@ -1,8 +1,8 @@
 # Estado del proyecto: agent-framework
 
-**Ultima actualizacion:** 2026-08-26 (rev 16)
-**Estado general:** Skills endurecidas para uso personal; pilotos y procedencia pendientes
-**Fase activa:** Fase 6 — validacion funcional de Skills y stacks
+**Ultima actualizacion:** 2026-08-27 (rev 17)
+**Estado general:** Seleccion explicita de Skills comprobada; pilotos y procedencia pendientes
+**Fase activa:** Fase 6 — pilotos funcionales de Skills y stacks
 
 ## 1. Objetivo
 
@@ -70,16 +70,16 @@ Cada stack tiene LEEME.md con reglas adicionales, terminos tecnicos y procedimie
 18. **Limite de congelacion respetado.** El contrato excluye `.agents/skills`; los placeholders operativos de esas rutas no se modifican ni se validan como configuracion inicial.
 19. **Inicializador interno reconstruido.** `plantilla/scripts/inicializar_proyecto.py` consume el contrato, protege `.env`, separa nombre visible e identificador tecnico, conserva procedencia y rechaza reinicializaciones.
 20. **Inmutabilidad de Skills comprobada.** Una prueba temporal comparo SHA-256 antes y despues de inicializar; todas las Skills permanecieron identicas.
-21. **Creacion de un comando verificada.** `scripts/crear_proyecto.py` copia hacia un temporal, ejecuta el inicializador contractual y publica el destino solo al terminar. Rechaza sobrescrituras y conserva las Skills byte por byte.
-22. **Wizard temporalmente no soportado para correcciones.** La Skill `iniciar-proyecto` permanece congelada; hasta completar su auditoria, la CLI Python es la ruta soportada para crear proyectos.
+21. **Creacion de un comando verificada.** `scripts/crear_proyecto.py` copia hacia un temporal, instala solamente las Skills autorizadas, ejecuta el inicializador contractual y publica el destino solo al terminar. Rechaza sobrescrituras y conserva byte por byte cada Skill seleccionada.
+22. **Wizard alineado con la CLI.** La Skill `iniciar-proyecto` recomienda desde el catalogo, exige confirmacion nominal y delega la instalacion en la CLI Python.
 23. **Memoria operativa completa.** La plantilla incorpora plan de desarrollo, documentacion tecnica y guia de operacion. `scripts/verificar_memoria_proyecto.py` comprueba la existencia, el contenido y la ausencia de placeholders configurables pendientes en los documentos obligatorios.
-24. **Prueba documental reproducible.** Un proyecto temporal se genero con 14 archivos configurados y cero pendientes; sus siete documentos obligatorios pasaron el verificador y las 32 huellas de Skills coincidieron con la plantilla.
+24. **Prueba documental reproducible.** Un proyecto temporal se genero con 14 archivos configurados y cero pendientes; sus siete documentos obligatorios pasaron el verificador y las Skills seleccionadas coincidieron byte por byte con la fuente.
 25. **Verificacion estricta de pendientes.** El verificador distingue placeholders sin resolver y marcadores TODO creados por `--permitir-pendientes`; solo una memoria completamente configurada obtiene salida valida.
-26. **README alineado con la implementacion.** La guia principal presenta el creador atomico como ruta soportada, incluye una configuracion de ejemplo, relega la copia manual a contingencia y no promete seleccion automatica de stacks.
-27. **Fase documental cerrada.** Todos los documentos prometidos fuera de Skills existen y el flujo descrito se probo de punta a punta. El wizard permanece congelado y excluido del flujo soportado.
-28. **Suite permanente incorporada.** `pruebas/prueba_creacion_proyecto.py` cubre creacion completa, pendientes, limpieza tras fallo, rechazo de sobrescritura, proteccion de `.env` e inmutabilidad de Skills con `unittest` y sin dependencias externas.
+26. **README alineado con la implementacion.** La guia principal presenta el catalogo, el core automatico, `--skill`, la confirmacion explicita y la copia manual sin filtrado como contingencia.
+27. **Fase documental cerrada.** Todos los documentos prometidos existen y el flujo descrito se probo de punta a punta, incluida la seleccion de Skills.
+28. **Suite permanente incorporada.** `pruebas/prueba_creacion_proyecto.py` cubre creacion completa, seleccion exacta, nombres desconocidos, pendientes, limpieza tras fallo, rechazo de sobrescritura, proteccion de `.env` e inmutabilidad del contenido seleccionado con `unittest`.
 29. **Matriz de CI definida.** `.github/workflows/validacion.yml` ejecuta el contrato y la suite en Windows y Ubuntu con Python 3.9 y 3.12. Su aprobacion remota queda pendiente hasta publicar la rama y ejecutar GitHub Actions.
-30. **Skills preservadas por prueba.** La suite calcula y compara SHA-256 del arbol congelado; no escribe ni corrige contenido bajo `.agents/skills`.
+30. **Skills seleccionadas preservadas por prueba.** La suite calcula y compara SHA-256 de cada Skill copiada; el inventario separado controla todo el catalogo fuente.
 31. **Reproducibilidad desde Git comprobada.** Se creo un clon temporal limpio del commit `864ba88`; el contrato y las cuatro pruebas aprobaron fuera del arbol de trabajo. El clon se elimino despues de la comprobacion.
 32. **Integracion local lineal.** Se comprobo que `main` era ancestro directo de `codex/estabilizacion-framework`, con siete commits adicionales y sin cambios de Skills respecto de `main`. La rama local `main` se adelanto por fast-forward sin eliminar ramas ni publicar cambios.
 33. **Inventario congelado reproducible.** `scripts/inventariar_skills.py` registra 32 archivos, 17 manifiestos `SKILL.md`, tamaños, SHA-256 y declaraciones locales de procedencia en `auditoria/inventario_skills.json`. Una quinta prueba impide que el inventario quede desactualizado.
@@ -87,7 +87,13 @@ Cada stack tiene LEEME.md con reglas adicionales, terminos tecnicos y procedimie
 35. **Modificacion autorizada para uso personal.** El usuario autorizo mejorar las Skills sin eliminarlas. La restriccion anterior de congelacion queda reemplazada por una politica de cambios probados, inventariados y sin redistribucion mientras la procedencia siga incompleta.
 36. **Skills criticas reconstruidas.** `iniciar-proyecto` ahora delega en la CLI Python, no duplica placeholders y no mueve ni borra Skills. `agentes-multiagent` prioriza soluciones simples, autorizacion externa al modelo, aislamiento real y evaluaciones adversariales.
 37. **Guias tecnicas endurecidas.** FastAPI exige secretos sin valor predeterminado y lock validado; Next.js usa cache explicita; RAG y fine-tuning eliminan precios, modelos, VRAM y umbrales universales. Los nombres de negocio leen el idioma desde `AGENTS.md` en vez de placeholders no procesados.
-38. **Validacion estructural completa.** Las 17 Skills aprobaron `quick_validate.py`. La suite tiene ocho pruebas y controla cantidad, frontmatter, inventario, copia byte por byte y ausencia de instrucciones obsoletas o destructivas.
+38. **Validacion estructural completa.** Las 17 Skills aprobaron `quick_validate.py`. La suite controla cantidad, frontmatter, inventario, copia byte por byte y ausencia de instrucciones obsoletas o destructivas.
+39. **Catalogo fuente separado de la instancia.** `scripts/catalogo_skills.py` descubre y clasifica las 17 Skills mediante `TypedDict`; ninguna se elimina de `plantilla/`.
+40. **Core automatico minimo.** Todo proyecto generado recibe exactamente `cerrar-modulo`, `lecciones-aprendidas` y `probar-e2e`. Las restantes se instalan solo mediante argumentos repetibles `--skill NOMBRE`.
+41. **Recomendacion sin autorizacion implicita.** El agente puede proponer Skills a partir del objetivo, stack y hardware confirmados, pero debe obtener confirmacion de nombres exactos antes de agregarlas al comando.
+42. **Trazabilidad de instancia.** `.estado-plantilla.json` registra la lista descubierta de Skills instaladas y la politica aplicada. Los `LEEME.md` de stacks ya no instruyen movimientos manuales.
+43. **Selector probado localmente.** Python 3, `argparse`, `pathlib`, `shutil`, `TypedDict` y `unittest` sostienen el flujo. Las 17 Skills, el contrato y 14 pruebas aprobaron el 2026-08-27.
+44. **Inicializacion unica.** `inicializar_proyecto.sh` quedo reducido a un adaptador que delega argumentos en Python; ya no genera catalogos alternativos ni sugiere movimientos manuales.
 
 ## 5. Que falta
 
@@ -99,4 +105,4 @@ Cada stack tiene LEEME.md con reglas adicionales, terminos tecnicos y procedimie
 
 ## 6. Siguiente paso logico
 
-Ejecutar pilotos aislados de `iniciar-proyecto`, `fastapi-setup` y `agentes-multiagent`, comparando resultado, tiempo, errores y seguridad frente a una ejecucion sin Skill. Mantener bloqueada la redistribucion hasta completar procedencia y licencia.
+Ejecutar el primer piloto real con el core automatico y una seleccion minima confirmada, comenzando por `fastapi-setup` si el nuevo proyecto usa FastAPI. Registrar recomendacion, seleccion efectiva, tiempo, errores y seguridad frente a una ejecucion sin la Skill. Mantener bloqueada la redistribucion hasta completar procedencia y licencia.

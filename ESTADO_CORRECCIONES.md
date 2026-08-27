@@ -1,8 +1,8 @@
 # Estado de correcciones de agent-framework
 
-**Ultima actualizacion:** 2026-08-26 (rev 14)
-**Estado general:** Skills endurecidas para uso personal; pilotos y procedencia pendientes
-**Fase activa:** Fase 6 — validacion funcional de Skills y stacks
+**Ultima actualizacion:** 2026-08-27 (rev 15)
+**Estado general:** Seleccion explicita de Skills comprobada; pilotos y procedencia pendientes
+**Fase activa:** Fase 6 — pilotos funcionales de Skills y stacks
 **Rama de trabajo:** `codex/estabilizacion-framework`
 
 ## 1. Proposito
@@ -44,7 +44,7 @@ El framework debe llegar a una version `v1.0.0` que cumpla estas condiciones:
 | 3 | Contrato unico de plantilla y placeholders | Completada | Manifiesto valido y placeholders sin duplicidad |
 | 4 | Reconstruir el inicializador | Completada | Un comando genera un proyecto completo y seguro |
 | 5 | Corregir wizard, documentos y referencias | Completada — CLI soportada | No existen archivos o rutas prometidas ausentes |
-| 6 | Validar Skills, stacks y agentes | En curso — estructura aprobada | Solo se descubren Skills activas y las guias estan comprobadas |
+| 6 | Validar Skills, stacks y agentes | En curso — selector aprobado, pilotos pendientes | Solo se descubren Skills activas y las guias estan comprobadas |
 | 7 | Incorporar pruebas y CI | En curso — local aprobada | Matriz automatica aprobada en plataformas soportadas |
 | 8 | Ejecutar pilotos y publicar `v1.0.0` | Pendiente | Dos pilotos exitosos y release reproducible |
 
@@ -101,6 +101,44 @@ La clasificacion confirmo que `_dryrun2/` era una salida generada para `proyecto
 - No existe una suite automatica que demuestre una instalacion reproducible.
 
 ## 7. Registro de avance
+
+### 2026-08-27 — Rev 15
+
+**Decision del usuario:**
+
+- El catalogo fuente conserva las 17 Skills.
+- Todo proyecto nuevo instala automaticamente `cerrar-modulo`, `lecciones-aprendidas` y `probar-e2e`.
+- Las demas Skills requieren seleccion explicita; el agente puede recomendarlas, pero no instalarlas sin confirmacion nominal.
+
+**Completado:**
+
+- Se creo `scripts/catalogo_skills.py` con descubrimiento tipado, categorias `core`, `opcional` y `stack`, y salida legible o JSON.
+- `scripts/crear_proyecto.py` excluye el almacen completo durante la copia base y agrega solo el core automatico mas cada `--skill NOMBRE` validada.
+- El creador conserva la operacion atomica, rechaza nombres desconocidos antes de copiar y mantiene byte por byte cada Skill seleccionada.
+- `plantilla/scripts/inicializar_proyecto.py` comprueba que la seleccion declarada coincida con los manifiestos instalados y la registra en `.estado-plantilla.json`.
+- La Skill `iniciar-proyecto` separa recomendacion y autorizacion, exige confirmacion exacta y documenta la CLI repetible.
+- Los `LEEME.md` de los cinco stacks distinguen catalogo fuente e instancia generada y dejaron de recomendar movimientos manuales.
+- `inicializar_proyecto.sh` se redujo a un adaptador que delega en Python y elimino la segunda implementacion obsoleta del selector.
+- El README y el indice de lectura reflejan que solo existen en cada proyecto las Skills efectivamente instaladas.
+- Se agrego `pruebas/prueba_catalogo_skills.py` y se ampliaron las pruebas integrales con seleccion mixta y rechazo seguro.
+- Se actualizo el inventario SHA-256 sin eliminar ninguna Skill.
+
+**Tecnologias:**
+
+- Python 3 con `argparse`, `pathlib`, `shutil`, `TypedDict` y biblioteca estandar.
+- `unittest` para pruebas deterministas sin dependencias externas.
+
+**Evidencia:**
+
+- Las 17 Skills aprobaron `quick_validate.py` de `skill-creator`.
+- `python scripts/validar_contrato_plantilla.py` aprobo.
+- Las 14 pruebas automaticas aprobaron.
+- Una instancia predeterminada contuvo exactamente tres Skills y una instancia seleccionada contuvo exactamente seis; todas coincidieron byte por byte con la fuente.
+- Una Skill desconocida fue rechazada sin destino publicado ni temporal huerfano.
+
+**Resultado:**
+
+El criterio tecnico de seleccionar solo Skills activas queda implementado y probado. La eficacia real y la calidad de las recomendaciones todavia requieren proyectos piloto; la redistribucion continua bloqueada por procedencia y licencia.
 
 ### 2026-08-26 — Rev 14
 
@@ -407,7 +445,7 @@ El usuario indico que otras Skills tambien pueden contener adaptaciones de produ
 
 ## 8. Siguiente paso exacto
 
-Ejecutar pilotos aislados de `iniciar-proyecto`, `fastapi-setup` y `agentes-multiagent`, comparando resultado, tiempo, errores y seguridad frente a una ejecucion sin Skill.
+Ejecutar un primer piloto real con core automatico y una seleccion minima confirmada. Si el stack es FastAPI, comenzar con `fastapi-setup` y registrar recomendacion, seleccion efectiva, tiempo, errores y seguridad frente a una ejecucion sin Skill.
 
 ## 9. Bloqueos
 
