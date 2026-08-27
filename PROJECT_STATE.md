@@ -1,6 +1,6 @@
 # Estado del proyecto: agent-framework
 
-**Ultima actualizacion:** 2026-08-27 (rev 27)
+**Ultima actualizacion:** 2026-08-27 (rev 28)
 **Estado general:** Publicacion y recursos acotados; pilotos y procedencia pendientes
 **Fase activa:** Fase 6 — validacion interna previa a pilotos
 
@@ -124,6 +124,7 @@ Cada stack tiene LEEME.md con reglas adicionales, terminos tecnicos y procedimie
 72. **Permisos controlados.** El temporal publicado conserva contenido y ejecutabilidad, elimina bits especiales y garantiza lectura y escritura del propietario. Una copia manual con archivos administrados de solo lectura falla antes de crear Git.
 73. **Publicacion revalidada.** El destino se comprueba inmediatamente antes de `os.replace`; si aparecio durante la creacion se conserva y el temporal propio se elimina. La proteccion es de mejor esfuerzo ante una carrera hostil ocurrida entre esa comprobacion y la llamada atomica.
 74. **Operaciones con tiempo finito.** Cada comando Git dispone de 30 segundos y el inicializador invocado por el creador de 120 segundos. La suite tiene 38 pruebas y cubre limites acumulados, JSON, valores, permisos, caché y publicacion tardia.
+75. **Exportacion de recursos aprobada.** El commit `534e906` aprobo el contrato y las 38 pruebas desde un `git archive` limpio; los temporales de la exportacion y de los escenarios adversariales se eliminaron.
 
 ## 5. Que falta
 

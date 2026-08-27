@@ -1,6 +1,6 @@
 # Estado de correcciones de agent-framework
 
-**Ultima actualizacion:** 2026-08-27 (rev 25)
+**Ultima actualizacion:** 2026-08-27 (rev 26)
 **Estado general:** Publicacion y recursos acotados; pilotos y procedencia pendientes
 **Fase activa:** Fase 6 — validacion interna previa a pilotos
 **Rama de trabajo:** `codex/estabilizacion-framework`
@@ -101,6 +101,23 @@ La clasificacion confirmo que `_dryrun2/` era una salida generada para `proyecto
 - No existe una suite automatica que demuestre una instalacion reproducible.
 
 ## 7. Registro de avance
+
+### 2026-08-27 — Rev 26
+
+**Completado:**
+
+- Los limites de publicacion, permisos y recursos se registraron en el commit `534e906`.
+- Se valido una exportacion limpia del commit y se eliminaron sus temporales.
+
+**Evidencia:**
+
+- El contrato aprobo desde la exportacion limpia.
+- Las 38 pruebas automaticas aprobaron desde la exportacion limpia.
+- Los escenarios de JSON, valores, archivo grande, permisos, caché y publicacion tardia volvieron a aprobar fuera del arbol activo.
+
+**Resultado:**
+
+Los limites operativos y la limpieza asociada son reproducibles desde Git y no dependen de residuos locales ignorados.
 
 ### 2026-08-27 — Rev 25
 
