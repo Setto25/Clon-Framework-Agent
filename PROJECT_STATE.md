@@ -101,6 +101,7 @@ Cada stack tiene LEEME.md con reglas adicionales, terminos tecnicos y procedimie
 49. **Historial limpio por proyecto.** `REGISTRO_CAMBIOS.md` dejo de heredar decisiones internas de `agent-framework`; ahora registra fecha, version de origen, Skills instaladas y siguiente paso de la instancia.
 50. **Regresion ampliada.** La suite tiene 19 pruebas e incluye referencias comunes, capacidades obsoletas, escape dotenv, rechazo de saltos de linea y memoria inicial propia.
 51. **Inventario independiente de plataforma.** La exportacion limpia detecto que las huellas variaban entre CRLF y LF. El inventario version `2` canoniza texto UTF-8 a LF y una prueba compara ambos formatos.
+52. **Exportacion limpia aprobada.** Los commits `ac08dab` y `62d3db3` contienen el endurecimiento y la normalizacion. Un `git archive` de `HEAD` aprobo el contrato y las 19 pruebas sin depender del arbol de trabajo; los temporales se eliminaron.
 
 ## 5. Que falta
 
@@ -112,4 +113,4 @@ Cada stack tiene LEEME.md con reglas adicionales, terminos tecnicos y procedimie
 
 ## 6. Siguiente paso logico
 
-Mientras los pilotos permanezcan pospuestos, verificar el commit resultante desde un clon local limpio y continuar la auditoria interna de referencias, seguridad y compatibilidad. Despues, ejecutar un piloto real solo cuando el usuario decida crear un proyecto. Mantener bloqueada la redistribucion hasta completar procedencia y licencia.
+Mientras los pilotos permanezcan pospuestos, revisar la atomicidad del inicializador cuando se ejecuta directamente sobre una copia manual y asegurar que cualquier valor que introduzca placeholders falle antes de escribir. Despues, continuar la auditoria interna. Ejecutar un piloto real solo cuando el usuario decida crear un proyecto.

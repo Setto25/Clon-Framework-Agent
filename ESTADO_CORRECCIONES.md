@@ -135,6 +135,13 @@ La clasificacion confirmo que `_dryrun2/` era una salida generada para `proyecto
 
 La plantilla deja de depender de suposiciones sobre productos concretos, evita inyeccion de lineas en dotenv y entrega una memoria inicial perteneciente al proyecto generado. Los pilotos siguen pospuestos por decision del usuario.
 
+**Registro y reproducibilidad:**
+
+- `ac08dab` registra compatibilidad, dotenv y memoria inicial.
+- `62d3db3` normaliza el inventario entre plataformas.
+- El clon local fue bloqueado por la proteccion de propiedad de Git y no se modifico la configuracion global.
+- Una exportacion limpia mediante `git archive HEAD` aprobo el contrato y las 19 pruebas; el archivo y directorio temporales se eliminaron.
+
 ### 2026-08-27 — Rev 15
 
 **Decision del usuario:**
@@ -483,7 +490,7 @@ El usuario indico que otras Skills tambien pueden contener adaptaciones de produ
 
 ## 8. Siguiente paso exacto
 
-Verificar el cambio desde un clon local limpio. Mientras no se cree un proyecto nuevo, continuar con auditorias internas reproducibles y dejar los pilotos pendientes de una decision explicita del usuario.
+Revisar la atomicidad de la inicializacion directa sobre una copia manual y rechazar antes de escribir cualquier valor que reintroduzca sintaxis de placeholder. Mantener los pilotos pendientes de una decision explicita del usuario.
 
 ## 9. Bloqueos
 
