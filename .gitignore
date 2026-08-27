@@ -1,0 +1,42 @@
+# Protege secretos y configuraciones locales.
+.env
+.env.*
+!.env.ejemplo
+
+# Excluye artefactos de Python.
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Excluye artefactos de Node.js y Next.js.
+node_modules/
+.next/
+out/
+dist/
+coverage/
+
+# Excluye artefactos de Flutter y Dart.
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+build/
+
+# Excluye datos locales y derivados.
+*.db
+*.sqlite
+*.sqlite3
+almacenes_vectores/
+
+# Excluye configuraciones locales de editores y sistema operativo.
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+
+# Excluye pruebas secas generadas localmente.
+_dryrun*/

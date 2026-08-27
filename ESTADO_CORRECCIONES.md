@@ -1,8 +1,8 @@
 # Estado de correcciones de agent-framework
 
-**Ultima actualizacion:** 2026-08-26 (rev 2)
-**Estado general:** Linea base local en consolidacion
-**Fase activa:** Fase 1 — estabilizacion Git y linea base
+**Ultima actualizacion:** 2026-08-26 (rev 4)
+**Estado general:** Protecciones tecnicas instaladas; licencia pendiente
+**Fase activa:** Fase 2 — seguridad, licencia y atribuciones
 **Rama de trabajo:** `codex/estabilizacion-framework`
 
 ## 1. Proposito
@@ -33,13 +33,14 @@ El framework debe llegar a una version `v1.0.0` que cumpla estas condiciones:
 - La Skill `iniciar-proyecto` actuara como interfaz conversacional del inicializador y no duplicara su logica.
 - `AGENTS.md` sera el contrato comun; los deltas por agente solo contendran diferencias comprobadas.
 - Los cambios materiales deben actualizar este archivo y `PROJECT_STATE.md`.
+- Las Skills permanecen congeladas por decision del usuario hasta completar su auditoria de procedencia; cualquier defecto se registra sin editar esos archivos.
 
 ## 4. Plan y avance
 
 | Fase | Alcance | Estado | Criterio de salida |
 |---|---|---|---|
-| 1 | Estabilizar Git y definir la linea base | En curso | Rama canónica definida, arbol limpio y clon reproducible |
-| 2 | Seguridad, `.gitignore`, licencia y atribuciones | Pendiente | `.env` protegido, licencia y atribuciones completas |
+| 1 | Estabilizar Git y definir la linea base | Completada | Rama canónica definida, arbol limpio y clon reproducible |
+| 2 | Seguridad, `.gitignore`, licencia y atribuciones | En curso | `.env` protegido, licencia y atribuciones completas |
 | 3 | Contrato unico de plantilla y placeholders | Pendiente | Manifiesto valido y placeholders sin duplicidad |
 | 4 | Reconstruir el inicializador | Pendiente | Un comando genera un proyecto completo y seguro |
 | 5 | Corregir wizard, documentos y referencias | Pendiente | No existen archivos o rutas prometidas ausentes |
@@ -101,6 +102,48 @@ La clasificacion confirmo que `_dryrun2/` era una salida generada para `proyecto
 
 ## 7. Registro de avance
 
+### 2026-08-26 — Rev 4
+
+**Completado:**
+
+- Se agregaron `.gitignore` y `.gitattributes` en la raiz del meta-repositorio.
+- Se agregaron `.gitignore` y `.gitattributes` en `plantilla/` para que cada proyecto generado herede las protecciones.
+- Se verifico con `git check-ignore` que `.env` queda ignorado y `.env.ejemplo` permanece permitido en ambos niveles.
+- Se verifico con `git check-attr` que Markdown, Python y Bash usan finales de linea LF.
+- Se creo `ATRIBUCIONES.md` con la procedencia conocida, los vacios de trazabilidad y la politica temporal de congelacion.
+- Se comprobo que el diff de esta revision no modifica ninguna ruta bajo `plantilla/.agents/skills/`.
+
+**Pendiente de la Fase 2:**
+
+- Identificar las fuentes, revisiones y licencias exactas de cada Skill adaptada.
+- Decidir si cada contenido externo se conserva con su aviso, se reemplaza, se excluye o requiere permiso.
+- Agregar una licencia raiz solo cuando su alcance pueda definirse sin cubrir material de derechos inciertos.
+
+**Decision:**
+
+La proteccion tecnica puede cerrarse y versionarse, pero la licencia global queda diferida. Este pendiente no bloquea las correcciones del inicializador y la documentacion que no modifican Skills.
+
+### 2026-08-26 — Rev 3
+
+**Completado:**
+
+- Se creo el commit `1274132` (`docs: establece memoria y linea base del framework`).
+- Se confirmo que `origin/main` es ancestro directo de la rama de estabilizacion y que la integracion futura admite fast-forward.
+- Se creo la rama local `main` en `1274132` y se configuro para rastrear `origin/main`.
+- Se conservo `master` en `4f958a6` hasta que la publicacion remota se complete y se confirme que ya no se necesita.
+- Se creo un clon local temporal de `main` y se verifico que su `HEAD` fuera `1274132`, que su arbol estuviera limpio y que contuviera los archivos requeridos.
+- El clon temporal se elimino despues de completar la verificacion.
+
+**Resultado:**
+
+La Fase 1 queda completada localmente. `main` contiene una linea base limpia, lineal y reproducible. La publicacion en `origin/main` se difiere hasta cerrar los riesgos criticos de seguridad y licencia de la Fase 2.
+
+**Riesgo detectado al iniciar la Fase 2:**
+
+El repositorio publico atribuido como fuente del stack `mobile-flutter` no mostro un archivo de licencia en el arbol revisado el 2026-08-26. La declaracion local de licencia MIT no se considera verificada hasta encontrar evidencia primaria o recibir permiso del autor.
+
+El usuario indico que otras Skills tambien pueden contener adaptaciones de productos comerciales o repositorios publicos. Todo `plantilla/.agents/skills/` queda congelado: no se modifica, agrega ni elimina contenido durante las correcciones actuales.
+
 ### 2026-08-26 — Rev 2
 
 **Completado:**
@@ -150,7 +193,7 @@ La clasificacion confirmo que `_dryrun2/` era una salida generada para `proyecto
 
 ## 8. Siguiente paso exacto
 
-Registrar la documentacion del meta-repositorio como tercer commit de linea base, verificar que el arbol quede limpio y documentar el mecanismo seguro para integrar posteriormente `codex/estabilizacion-framework` en `main`.
+Versionar las protecciones tecnicas y el registro de atribuciones. Despues se iniciara el contrato de placeholders fuera de las Skills, manteniendo congelado todo `plantilla/.agents/skills/`.
 
 ## 9. Bloqueos
 

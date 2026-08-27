@@ -1,8 +1,8 @@
 # Estado del proyecto: agent-framework
 
-**Ultima actualizacion:** 2026-08-26 (rev 4)
+**Ultima actualizacion:** 2026-08-26 (rev 6)
 **Estado general:** Plantilla funcional en proceso de endurecimiento
-**Fase activa:** Fase 1 — estabilizacion Git y linea base
+**Fase activa:** Fase 2 — seguridad, licencia y atribuciones
 
 ## 1. Objetivo
 
@@ -61,6 +61,11 @@ Cada stack tiene LEEME.md con reglas adicionales, terminos tecnicos y procedimie
 9. **Plan de correcciones formalizado.** `ESTADO_CORRECCIONES.md` conserva el avance, las evidencias, los bloqueos y el siguiente paso del endurecimiento hasta `v1.0.0`.
 10. **Rama de estabilizacion aislada.** Las correcciones se realizan en `codex/estabilizacion-framework` para preservar el arbol de trabajo preexistente sin resets ni eliminaciones.
 11. **Linea base versionada por grupos.** El core y los stacks se registraron en `1aeed87`; el inicializador alfa se registro en `f845050`. La documentacion del meta-repositorio se mantiene separada para facilitar la revision.
+12. **Fase 1 completada localmente.** La rama local `main` apunta a `1274132`, rastrea `origin/main` y se valido mediante un clon temporal limpio. La publicacion remota se difiere hasta cerrar seguridad y licencia.
+13. **Licencia externa pendiente de verificacion.** La fuente atribuida al stack `mobile-flutter` no mostro una licencia primaria en el arbol publico revisado; no se asumira MIT para una eventual redistribucion comercial sin evidencia adicional.
+14. **Skills congeladas por procedencia.** Por decision del usuario no se modifican, agregan ni eliminan Skills hasta completar el inventario de fuentes, versiones y licencias. Los riesgos se documentan en `ATRIBUCIONES.md`.
+15. **Protecciones Git instaladas.** La raiz y `plantilla/` incluyen `.gitignore` y `.gitattributes`; `.env` queda ignorado, `.env.ejemplo` permanece versionable y los archivos de texto principales usan finales LF.
+16. **Licencia raiz diferida.** No se aplicara una licencia global hasta separar el contenido original de las adaptaciones con derechos pendientes. La correccion tecnica continua sin tocar Skills.
 
 ## 5. Que falta
 
@@ -71,4 +76,4 @@ Cada stack tiene LEEME.md con reglas adicionales, terminos tecnicos y procedimie
 
 ## 6. Siguiente paso logico
 
-Completar la Fase 1 documentada en `ESTADO_CORRECCIONES.md`: registrar la documentacion del meta-repositorio, confirmar un arbol limpio y definir la integracion segura de la rama de estabilizacion en `main`.
+Versionar las protecciones de la Fase 2 e iniciar el contrato unico de placeholders de la Fase 3, sin modificar ni agregar Skills.
