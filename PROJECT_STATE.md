@@ -1,7 +1,7 @@
 # Estado del proyecto: agent-framework
 
-**Ultima actualizacion:** 2026-08-26 (rev 11)
-**Estado general:** Flujo soportado documentado y verificable
+**Ultima actualizacion:** 2026-08-26 (rev 12)
+**Estado general:** Suite automatica local aprobada; CI remota pendiente
 **Fase activa:** Fase 7 — pruebas automaticas y CI
 
 ## 1. Objetivo
@@ -77,6 +77,9 @@ Cada stack tiene LEEME.md con reglas adicionales, terminos tecnicos y procedimie
 25. **Verificacion estricta de pendientes.** El verificador distingue placeholders sin resolver y marcadores TODO creados por `--permitir-pendientes`; solo una memoria completamente configurada obtiene salida valida.
 26. **README alineado con la implementacion.** La guia principal presenta el creador atomico como ruta soportada, incluye una configuracion de ejemplo, relega la copia manual a contingencia y no promete seleccion automatica de stacks.
 27. **Fase documental cerrada.** Todos los documentos prometidos fuera de Skills existen y el flujo descrito se probo de punta a punta. El wizard permanece congelado y excluido del flujo soportado.
+28. **Suite permanente incorporada.** `pruebas/prueba_creacion_proyecto.py` cubre creacion completa, pendientes, limpieza tras fallo, rechazo de sobrescritura, proteccion de `.env` e inmutabilidad de Skills con `unittest` y sin dependencias externas.
+29. **Matriz de CI definida.** `.github/workflows/validacion.yml` ejecuta el contrato y la suite en Windows y Ubuntu con Python 3.9 y 3.12. Su aprobacion remota queda pendiente hasta publicar la rama y ejecutar GitHub Actions.
+30. **Skills preservadas por prueba.** La suite calcula y compara SHA-256 del arbol congelado; no escribe ni corrige contenido bajo `.agents/skills`.
 
 ## 5. Que falta
 
@@ -87,4 +90,4 @@ Cada stack tiene LEEME.md con reglas adicionales, terminos tecnicos y procedimie
 
 ## 6. Siguiente paso logico
 
-Crear pruebas automaticas permanentes para el contrato, la generacion atomica, el rechazo de pendientes y la inmutabilidad de Skills, sin editar el contenido congelado.
+Registrar la suite y ejecutar una comprobacion en un clon limpio local. Despues, integrar la rama por fast-forward en `main` cuando la revision local quede cerrada; la publicacion y CI remota requieren una decision posterior.

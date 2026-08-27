@@ -296,6 +296,17 @@ Prisma, pandas/scikit-learn, Go, Rust, Java, Kubernetes, Terraform, Storybook, t
 
 El flujo soportado requiere Python. Git Bash y perl solo corresponden al respaldo Bash deprecado, que no forma parte de la ruta verificada.
 
+### Validacion local del framework
+
+Desde la raiz del meta-repositorio:
+
+```powershell
+python scripts\validar_contrato_plantilla.py
+python -m unittest discover -s pruebas -p "prueba_*.py" -v
+```
+
+La suite comprueba creacion completa, memoria pendiente, limpieza atomica, rechazo de sobrescritura, proteccion de `.env` e identidad byte por byte de Skills. El workflow `.github/workflows/validacion.yml` ejecuta la misma validacion en Windows y Ubuntu con Python 3.9 y 3.12.
+
 ---
 
 ## 10. Estado actual y proxima validacion pendiente
@@ -379,4 +390,6 @@ Desde la raiz del meta-repositorio tambien existen:
 - `scripts/crear_proyecto.py`: creador atomico de una instancia nueva;
 - `scripts/validar_contrato_plantilla.py`: validador del contrato de la plantilla;
 - `ejemplos/configuracion_proyecto.ejemplo.json`: punto de partida para una configuracion completa;
+- `pruebas/prueba_creacion_proyecto.py`: suite integral con biblioteca estandar;
+- `.github/workflows/validacion.yml`: matriz de CI para Windows, Ubuntu y dos versiones de Python;
 - `ATRIBUCIONES.md`: inventario de procedencia y licencias pendientes.

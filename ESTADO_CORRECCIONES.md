@@ -1,7 +1,7 @@
 # Estado de correcciones de agent-framework
 
-**Ultima actualizacion:** 2026-08-26 (rev 9)
-**Estado general:** Flujo soportado documentado y verificable
+**Ultima actualizacion:** 2026-08-26 (rev 10)
+**Estado general:** Suite automatica local aprobada; CI remota pendiente
 **Fase activa:** Fase 7 — pruebas automaticas y CI
 **Rama de trabajo:** `codex/estabilizacion-framework`
 
@@ -45,7 +45,7 @@ El framework debe llegar a una version `v1.0.0` que cumpla estas condiciones:
 | 4 | Reconstruir el inicializador | Completada | Un comando genera un proyecto completo y seguro |
 | 5 | Corregir wizard, documentos y referencias | Completada — CLI soportada | No existen archivos o rutas prometidas ausentes |
 | 6 | Validar Skills, stacks y agentes | En espera — Skills congeladas | Solo se descubren Skills activas y las guias estan comprobadas |
-| 7 | Incorporar pruebas y CI | En curso | Matriz automatica aprobada en plataformas soportadas |
+| 7 | Incorporar pruebas y CI | En curso — local aprobada | Matriz automatica aprobada en plataformas soportadas |
 | 8 | Ejecutar pilotos y publicar `v1.0.0` | Pendiente | Dos pilotos exitosos y release reproducible |
 
 ## 5. Linea base Git observada
@@ -101,6 +101,27 @@ La clasificacion confirmo que `_dryrun2/` era una salida generada para `proyecto
 - No existe una suite automatica que demuestre una instalacion reproducible.
 
 ## 7. Registro de avance
+
+### 2026-08-26 — Rev 10
+
+**Completado:**
+
+- Se creo `pruebas/prueba_creacion_proyecto.py` con la biblioteca estandar de Python.
+- La suite cubre configuracion completa, validacion de pendientes, limpieza atomica tras fallo y rechazo de sobrescritura.
+- La prueba integral confirma que Git se inicializa, `.env` queda ignorado y todas las huellas SHA-256 de Skills permanecen identicas.
+- Se creo `.github/workflows/validacion.yml` con una matriz para Ubuntu y Windows en Python 3.9 y 3.12.
+- El README documenta los comandos de validacion local y el alcance de la suite.
+
+**Prueba local:**
+
+- `python scripts/validar_contrato_plantilla.py` finalizo correctamente.
+- `python -m unittest discover -s pruebas -p "prueba_*.py" -v` ejecuto cuatro pruebas y todas aprobaron.
+- `git diff --check` no detecto errores de whitespace.
+- El estado de Git no mostro cambios bajo `plantilla/.agents/skills/`.
+
+**Pendiente:**
+
+La matriz de CI no se considera aprobada hasta que GitHub Actions la ejecute en ambas plataformas. No se publicara la rama como parte implicita de esta fase.
 
 ### 2026-08-26 — Rev 9
 
@@ -306,7 +327,7 @@ El usuario indico que otras Skills tambien pueden contener adaptaciones de produ
 
 ## 8. Siguiente paso exacto
 
-Crear una suite automatica permanente que cubra el contrato, el creador atomico, el rechazo de pendientes y la inmutabilidad de Skills, sin editar el contenido congelado.
+Registrar la suite y comprobar la rama desde un clon limpio local. Despues se podra preparar la integracion local por fast-forward sin publicar cambios remotos.
 
 ## 9. Bloqueos
 

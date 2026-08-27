@@ -1,0 +1,35 @@
+name: Validacion
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  pruebas:
+    name: ${{ matrix.sistema }} / Python ${{ matrix.python }}
+    runs-on: ${{ matrix.sistema }}
+    strategy:
+      fail-fast: false
+      matrix:
+        sistema:
+          - ubuntu-latest
+          - windows-latest
+        python:
+          - "3.9"
+          - "3.12"
+    steps:
+      - name: Obtiene el repositorio
+        uses: actions/checkout@v4
+      - name: Configura Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Valida el contrato
+        run: python scripts/validar_contrato_plantilla.py
+      - name: Ejecuta las pruebas
+        run: python -m unittest discover -s pruebas -p "prueba_*.py" -v
+      - name: Confirma que Skills permanece intacto
+        run: git diff --exit-code -- plantilla/.agents/skills
