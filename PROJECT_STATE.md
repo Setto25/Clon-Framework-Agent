@@ -1,6 +1,6 @@
 # Estado del proyecto: agent-framework
 
-**Ultima actualizacion:** 2026-08-27 (rev 21)
+**Ultima actualizacion:** 2026-08-27 (rev 22)
 **Estado general:** Referencias interoperables depuradas; pilotos y procedencia pendientes
 **Fase activa:** Fase 6 — validacion interna previa a pilotos
 
@@ -109,6 +109,7 @@ Cada stack tiene LEEME.md con reglas adicionales, terminos tecnicos y procedimie
 57. **Convenciones sin proveedor supuesto.** `AGENTS.md`, `PROJECT_STATE.md`, `.agents/`, `SKILL.md` y `.env` se documentan como interfaces reservadas por herramientas o por el contrato del framework. Cada agente comprueba su descubrimiento real y carga manualmente lo que falte.
 58. **Referencia arqueologica eliminada.** El indice de una instancia ya no apunta a `documentacion/analisis/`, ruta historica que solo existe en el meta-repositorio.
 59. **Referencias condicionales comprobadas.** La version `0.2.0-alpha.4` y 23 pruebas verifican que cada stack citado tenga `LEEME.md` y referencia de lecciones, y que las Skills condicionales del indice existan en la fuente.
+60. **Exportacion agnostica aprobada.** El commit `91346e6` aprobo el contrato y las 23 pruebas desde un `git archive` limpio; los temporales se eliminaron al finalizar.
 
 ## 5. Que falta
 

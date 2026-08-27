@@ -1,6 +1,6 @@
 # Estado de correcciones de agent-framework
 
-**Ultima actualizacion:** 2026-08-27 (rev 19)
+**Ultima actualizacion:** 2026-08-27 (rev 20)
 **Estado general:** Referencias interoperables depuradas; pilotos y procedencia pendientes
 **Fase activa:** Fase 6 — validacion interna previa a pilotos
 **Rama de trabajo:** `codex/estabilizacion-framework`
@@ -101,6 +101,23 @@ La clasificacion confirmo que `_dryrun2/` era una salida generada para `proyecto
 - No existe una suite automatica que demuestre una instalacion reproducible.
 
 ## 7. Registro de avance
+
+### 2026-08-27 — Rev 20
+
+**Completado:**
+
+- La depuracion agnostica se registro en el commit `91346e6`.
+- Se valido una exportacion limpia de ese commit y se eliminaron sus temporales.
+
+**Evidencia:**
+
+- El contrato aprobo desde la exportacion limpia.
+- Las 23 pruebas automaticas aprobaron desde la exportacion limpia.
+- El arbol de trabajo quedo limpio despues del commit funcional.
+
+**Resultado:**
+
+La correccion de referencias y convenciones es reproducible desde Git y no depende del entorno de trabajo activo.
 
 ### 2026-08-27 — Rev 19
 
