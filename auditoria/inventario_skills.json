@@ -1,7 +1,7 @@
 {
-  "version_inventario": 1,
+  "version_inventario": 2,
   "raiz": "plantilla/.agents/skills",
-  "huella_conjunto_sha256": "5c42d715a712f189ee87df8dcc5e357e7e58dc28f76e60f3d59b524264de3c3a",
+  "huella_conjunto_sha256": "e02656014bdba8188517642ed3b3794fab85072b9a5c813ec25029b65f789f6b",
   "resumen": {
     "archivos": 32,
     "skills": 17,
@@ -10,14 +10,14 @@
   "skills": [
     {
       "ruta": "cerrar-modulo/SKILL.md",
-      "bytes": 1794,
-      "sha256": "465fb66d91441f569c3150f15ccd275afc00a4894ef1d8ac25e8895bfb5d653e",
+      "bytes": 1763,
+      "sha256": "ba892b0b23f9df69d077d6c6259f9b1bc616f895c6437ffe0cbc88878e7d8f2e",
       "nombre": "cerrar-modulo"
     },
     {
       "ruta": "evaluar-agente/SKILL.md",
-      "bytes": 2002,
-      "sha256": "f5b948bfe28716dd2c083f303b6f61d28182ca931bdb1cdf71a4a2c32c8a7ac3",
+      "bytes": 1962,
+      "sha256": "c62e0339d22e4b03b5f3a6c23d6d5a288dd6808047d37e1996102996b95fec72",
       "nombre": "evaluar-agente"
     },
     {
@@ -34,14 +34,14 @@
     },
     {
       "ruta": "opcional/delegar-entre-agentes/SKILL.md",
-      "bytes": 3412,
-      "sha256": "806c9e74088a7d5f4a5e98184927a5366cc853e750130c9d78e720f4a98d3373",
+      "bytes": 3359,
+      "sha256": "ccdcab1050438055311bc8152cc847b45de521a62f769cb4589dc8f73c0c733e",
       "nombre": "delegar-entre-agentes"
     },
     {
       "ruta": "probar-e2e/SKILL.md",
-      "bytes": 1774,
-      "sha256": "39404d9cb4229a542fa4488d986b56823b345927636486287d379ea717b259aa",
+      "bytes": 1739,
+      "sha256": "a799efb45a87fe44ccfa049facf11387b7214833f06b0ec89626448c0f487282",
       "nombre": "probar-e2e"
     },
     {
@@ -114,8 +114,8 @@
   "archivos_adicionales": [
     {
       "ruta": "evaluar-agente/referencias/casos_evaluacion.md",
-      "bytes": 1333,
-      "sha256": "96c80349735e0782efd08a7f3cbf23c9a5e35b72683310956d11691df8258c2c"
+      "bytes": 1282,
+      "sha256": "f001b9e0578867461934fbdbceb1b291236e503af8ad1e92ab76383ce23f6cc0"
     },
     {
       "ruta": "lecciones-aprendidas/referencias/backend-fastapi.md",
@@ -149,13 +149,13 @@
     },
     {
       "ruta": "opcional/LEEME.md",
-      "bytes": 640,
-      "sha256": "fda0bac0d0cccf27ffbd210a764f5cfb4d236cf504f20f600ba647ab77e9476a"
+      "bytes": 622,
+      "sha256": "77c9b77e95d94aee7c1fec16d8868350ac52595d60cb1039cc270120a31acf48"
     },
     {
       "ruta": "probar-e2e/referencias/guion_e2e.md",
-      "bytes": 944,
-      "sha256": "29559e400d5cc1706cce107052dd50edb97c53dea264be3a60897a316ec98839"
+      "bytes": 904,
+      "sha256": "6a93d8dd35630cb976d171a7227de8a454322d4c46836a5bc5e49b3bf5e6b8ad"
     },
     {
       "ruta": "stacks/backend-fastapi/LEEME.md",

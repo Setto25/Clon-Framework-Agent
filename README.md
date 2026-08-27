@@ -403,7 +403,7 @@ Desde la raiz del meta-repositorio tambien existen:
 - `scripts/crear_proyecto.py`: creador atomico de una instancia nueva;
 - `scripts/catalogo_skills.py`: catalogo tipado para recomendaciones y seleccion explicita;
 - `scripts/validar_contrato_plantilla.py`: validador del contrato de la plantilla;
-- `scripts/inventariar_skills.py`: inventariador determinista y de solo lectura;
+- `scripts/inventariar_skills.py`: inventariador determinista con texto UTF-8/LF canonico para reproducibilidad entre sistemas;
 - `ejemplos/configuracion_proyecto.ejemplo.json`: punto de partida para una configuracion completa;
 - `pruebas/prueba_creacion_proyecto.py`: suite integral con biblioteca estandar;
 - `pruebas/prueba_inventario_skills.py`: control de vigencia del inventario de Skills;

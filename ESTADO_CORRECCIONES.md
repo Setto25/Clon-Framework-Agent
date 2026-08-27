@@ -117,6 +117,7 @@ La clasificacion confirmo que `_dryrun2/` era una salida generada para `proyecto
 - `NOMBRE_PROYECTO_ENV` se deriva con escape JSON; nombre e idioma rechazan caracteres de control y longitudes no razonables.
 - El registro inicial del proyecto ya no copia el historial del framework. Documenta version, Skills instaladas y siguiente paso propios.
 - Se creo `pruebas/prueba_compatibilidad_agentes.py` y se ampliaron las pruebas de creacion con entradas dotenv adversariales y memoria inicial.
+- Una exportacion limpia de `HEAD` revelo que el inventario dependia de CRLF/LF. `scripts/inventariar_skills.py` ahora canoniza texto UTF-8 a LF y el inventario avanzo a version `2`.
 
 **Tecnologias:**
 
@@ -125,9 +126,10 @@ La clasificacion confirmo que `_dryrun2/` era una salida generada para `proyecto
 **Evidencia local:**
 
 - El contrato de plantilla aprobo.
-- Las 18 pruebas automaticas aprobaron.
+- Las 19 pruebas automaticas aprobaron.
 - Un nombre con comillas y `#` quedo escapado; un nombre con salto de linea fue rechazado sin publicar el destino.
 - El barrido no encontro las afirmaciones obsoletas ni la ruta inexistente corregida.
+- Una prueba dedicada demostro que el mismo `SKILL.md` produce la misma huella con LF y CRLF.
 
 **Resultado:**
 

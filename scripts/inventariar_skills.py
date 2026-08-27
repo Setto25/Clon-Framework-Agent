@@ -13,7 +13,7 @@ from typing import TypedDict
 
 
 class ArchivoInventariado(TypedDict):
-    """Representa un archivo inventariado y su huella."""
+    """Representa un archivo inventariado mediante contenido canonico."""
 
     ruta: str
     bytes: int
@@ -60,6 +60,7 @@ PATRON_PROCEDENCIA = re.compile(
     re.IGNORECASE,
 )
 PATRON_ENLACE = re.compile(r"https?://", re.IGNORECASE)
+EXTENSIONES_TEXTO: set[str] = {".json", ".md", ".py", ".sh", ".toml", ".txt", ".yaml", ".yml"}
 
 
 def crear_argumentos() -> argparse.Namespace:
@@ -74,6 +75,14 @@ def crear_argumentos() -> argparse.Namespace:
 def calcular_sha256(contenido: bytes) -> str:
     """Calcula la huella SHA-256 de un contenido."""
     return hashlib.sha256(contenido).hexdigest()
+
+
+def normalizar_para_huella(archivo: Path, contenido: bytes) -> bytes:
+    """Canoniza a UTF-8 con LF los formatos de texto conocidos."""
+    if archivo.suffix.lower() not in EXTENSIONES_TEXTO:
+        return contenido
+    texto = contenido.decode("utf-8")
+    return texto.replace("\r\n", "\n").replace("\r", "\n").encode("utf-8")
 
 
 def extraer_nombre(contenido: str, ruta: Path) -> str:
@@ -111,7 +120,7 @@ def crear_inventario(raiz: Path) -> InventarioSkills:
 
     for archivo in sorted(ruta for ruta in raiz_resuelta.rglob("*") if ruta.is_file()):
         ruta_relativa = archivo.relative_to(raiz_resuelta).as_posix()
-        contenido_bytes = archivo.read_bytes()
+        contenido_bytes = normalizar_para_huella(archivo, archivo.read_bytes())
         huella = calcular_sha256(contenido_bytes)
         componentes_huella.append(f"{ruta_relativa}\0{huella}\n".encode("utf-8"))
         base = ArchivoInventariado(ruta=ruta_relativa, bytes=len(contenido_bytes), sha256=huella)
@@ -126,7 +135,7 @@ def crear_inventario(raiz: Path) -> InventarioSkills:
 
     huella_conjunto = calcular_sha256(b"".join(componentes_huella))
     return InventarioSkills(
-        version_inventario=1,
+        version_inventario=2,
         raiz="plantilla/.agents/skills",
         huella_conjunto_sha256=huella_conjunto,
         resumen=ResumenInventario(

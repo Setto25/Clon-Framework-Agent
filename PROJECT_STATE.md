@@ -99,7 +99,8 @@ Cada stack tiene LEEME.md con reglas adicionales, terminos tecnicos y procedimie
 47. **Referencia inexistente eliminada.** Se retiro `.agents/rules/{{NOMBRE_PROYECTO}}_contexto.md`, que nunca formo parte de la plantilla, y una prueba impide reintroducirla junto con afirmaciones obsoletas.
 48. **Nombre seguro para dotenv.** El contrato `2` y la version `0.2.0-alpha.2` derivan `NOMBRE_PROYECTO_ENV` mediante JSON, limitan nombre e idioma y rechazan caracteres de control antes de escribir.
 49. **Historial limpio por proyecto.** `REGISTRO_CAMBIOS.md` dejo de heredar decisiones internas de `agent-framework`; ahora registra fecha, version de origen, Skills instaladas y siguiente paso de la instancia.
-50. **Regresion ampliada.** La suite tiene 18 pruebas e incluye referencias comunes, capacidades obsoletas, escape dotenv, rechazo de saltos de linea y memoria inicial propia.
+50. **Regresion ampliada.** La suite tiene 19 pruebas e incluye referencias comunes, capacidades obsoletas, escape dotenv, rechazo de saltos de linea y memoria inicial propia.
+51. **Inventario independiente de plataforma.** La exportacion limpia detecto que las huellas variaban entre CRLF y LF. El inventario version `2` canoniza texto UTF-8 a LF y una prueba compara ambos formatos.
 
 ## 5. Que falta
 
