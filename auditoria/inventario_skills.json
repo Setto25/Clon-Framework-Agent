@@ -1,0 +1,198 @@
+{
+  "version_inventario": 1,
+  "raiz": "plantilla/.agents/skills",
+  "huella_conjunto_sha256": "8b91a7ac8d0ecb2dacfafb860334c7cdaf142b95148e1e866359b1bdf61ef685",
+  "resumen": {
+    "archivos": 32,
+    "skills": 17,
+    "declaraciones_procedencia": 1
+  },
+  "skills": [
+    {
+      "ruta": "cerrar-modulo/SKILL.md",
+      "bytes": 1816,
+      "sha256": "6a95eb9849024b2a5e4c3d0cd09df0fff7920715ee8f923b09c9d0eb07ef79d4",
+      "nombre": "cerrar-modulo"
+    },
+    {
+      "ruta": "evaluar-agente/SKILL.md",
+      "bytes": 2002,
+      "sha256": "f5b948bfe28716dd2c083f303b6f61d28182ca931bdb1cdf71a4a2c32c8a7ac3",
+      "nombre": "evaluar-agente"
+    },
+    {
+      "ruta": "iniciar-proyecto/SKILL.md",
+      "bytes": 8247,
+      "sha256": "5aedac65b70eb32b5813c025cd82dc14ba974899855ec3e4b1818a68a2e29bc1",
+      "nombre": "iniciar-proyecto"
+    },
+    {
+      "ruta": "lecciones-aprendidas/SKILL.md",
+      "bytes": 2142,
+      "sha256": "6035bd110e2ea15f2d2a52bcc7bc45184e696d740cdec3befc204df0f86f4530",
+      "nombre": "lecciones-aprendidas"
+    },
+    {
+      "ruta": "opcional/delegar-entre-agentes/SKILL.md",
+      "bytes": 3412,
+      "sha256": "806c9e74088a7d5f4a5e98184927a5366cc853e750130c9d78e720f4a98d3373",
+      "nombre": "delegar-entre-agentes"
+    },
+    {
+      "ruta": "probar-e2e/SKILL.md",
+      "bytes": 1774,
+      "sha256": "39404d9cb4229a542fa4488d986b56823b345927636486287d379ea717b259aa",
+      "nombre": "probar-e2e"
+    },
+    {
+      "ruta": "stacks/backend-fastapi/skills/fastapi-setup/SKILL.md",
+      "bytes": 8183,
+      "sha256": "4bec1d713f4a85284beb1d30494ed0a66c422ea17cf7e7786990862c9fed60a5",
+      "nombre": "fastapi-setup"
+    },
+    {
+      "ruta": "stacks/firmware-esp32/skills/desarrollar-firmware/SKILL.md",
+      "bytes": 1888,
+      "sha256": "490f23145df96956c5480ad7a5216888c6f8c54ae93d4ff48b7bcd580e1f6a9f",
+      "nombre": "desarrollar-firmware"
+    },
+    {
+      "ruta": "stacks/firmware-esp32/skills/diagnosticar-hardware/SKILL.md",
+      "bytes": 2050,
+      "sha256": "996e555c9e6d6b4c52ed6612991fc0836ac6965e86d7b54eeaa53459e9ec98dc",
+      "nombre": "diagnosticar-hardware"
+    },
+    {
+      "ruta": "stacks/frontend-nextjs/skills/nextjs-fullstack/SKILL.md",
+      "bytes": 9404,
+      "sha256": "b7d73dec5642dcfa384c9708cfd0734c2e367b92c5d313475ab3d1459df97acb",
+      "nombre": "nextjs-fullstack"
+    },
+    {
+      "ruta": "stacks/frontend-nextjs/skills/typescript-react/SKILL.md",
+      "bytes": 8459,
+      "sha256": "fafe811743e143483d12a1a1a0ab01f48d4503580281a063aa39419132fac41b",
+      "nombre": "typescript-react"
+    },
+    {
+      "ruta": "stacks/ia-llm/skills/agentes-multiagent/SKILL.md",
+      "bytes": 16559,
+      "sha256": "2a7fae99859f8c8a4794951007557819a8f458b806d4d4cd909dd07e22d300b0",
+      "nombre": "agentes-multiagent"
+    },
+    {
+      "ruta": "stacks/ia-llm/skills/fine-tuning-llm/SKILL.md",
+      "bytes": 10326,
+      "sha256": "439bc0bf7de570b1c880529e7ef83ac4d89a3c6ba15ff289eeae80c705cdb81c",
+      "nombre": "fine-tuning-llm"
+    },
+    {
+      "ruta": "stacks/ia-llm/skills/rag-local/SKILL.md",
+      "bytes": 11703,
+      "sha256": "f171096ca8f2f9ecc9fc3240800b822ec313b84ba3266ca0c2473632fa4bc3b6",
+      "nombre": "rag-local"
+    },
+    {
+      "ruta": "stacks/mobile-flutter/skills/flutter-animations/SKILL.md",
+      "bytes": 7622,
+      "sha256": "3719d30a8f693a3726ad5d2ca886ce40411dd450817badb15d5b75fb3bcc5353",
+      "nombre": "flutter-animations"
+    },
+    {
+      "ruta": "stacks/mobile-flutter/skills/flutter-performance/SKILL.md",
+      "bytes": 4368,
+      "sha256": "6f8f6c844aa095fcbc773a40c6ceb4d28838f5940ebebd2d0d438fd1090d6efe",
+      "nombre": "flutter-performance"
+    },
+    {
+      "ruta": "stacks/mobile-flutter/skills/flutter-state-management/SKILL.md",
+      "bytes": 8209,
+      "sha256": "16d69eb49bbf25a2927bc982b132ebe26ed890fcb6f18801ce14561abcb80513",
+      "nombre": "flutter-state-management"
+    }
+  ],
+  "archivos_adicionales": [
+    {
+      "ruta": "evaluar-agente/referencias/casos_evaluacion.md",
+      "bytes": 1333,
+      "sha256": "96c80349735e0782efd08a7f3cbf23c9a5e35b72683310956d11691df8258c2c"
+    },
+    {
+      "ruta": "lecciones-aprendidas/referencias/backend-fastapi.md",
+      "bytes": 205,
+      "sha256": "530d52b7f006bd2f735235054206056332447e04241ed0ba71c581f722cf1b2a"
+    },
+    {
+      "ruta": "lecciones-aprendidas/referencias/firmware-esp32.md",
+      "bytes": 204,
+      "sha256": "0b1575994601430ac158dc2dd8f94a97ffb9049682811f4ab93e8bccdf1b5c5c"
+    },
+    {
+      "ruta": "lecciones-aprendidas/referencias/frontend-nextjs.md",
+      "bytes": 205,
+      "sha256": "ccfe3c5dfa34b82e436538f133a14ff0c7ca5727b2683c45738191a6dc21d76f"
+    },
+    {
+      "ruta": "lecciones-aprendidas/referencias/general.md",
+      "bytes": 3863,
+      "sha256": "c0f7a9f9b1ecab989adea5fec6faf2104bde2abf3a6f03a507cfca541d1f89ff"
+    },
+    {
+      "ruta": "lecciones-aprendidas/referencias/ia-llm.md",
+      "bytes": 196,
+      "sha256": "7c0990a226258ef0b115168325fa89032b5d2a650a0f2954662280a14aaf7c97"
+    },
+    {
+      "ruta": "lecciones-aprendidas/referencias/mobile-flutter.md",
+      "bytes": 204,
+      "sha256": "f99decbf117771b80145817f01df5a9f683dee65265a964f704409c7db0ebf0b"
+    },
+    {
+      "ruta": "opcional/LEEME.md",
+      "bytes": 640,
+      "sha256": "fda0bac0d0cccf27ffbd210a764f5cfb4d236cf504f20f600ba647ab77e9476a"
+    },
+    {
+      "ruta": "probar-e2e/referencias/guion_e2e.md",
+      "bytes": 944,
+      "sha256": "29559e400d5cc1706cce107052dd50edb97c53dea264be3a60897a316ec98839"
+    },
+    {
+      "ruta": "stacks/backend-fastapi/LEEME.md",
+      "bytes": 2462,
+      "sha256": "aaa83d1877fc12431b4a0bbf9f5a438fa44045fbae266b19dda5d78dff7e544f"
+    },
+    {
+      "ruta": "stacks/firmware-esp32/domain-packs/audio-embebido/LEEME.md",
+      "bytes": 1959,
+      "sha256": "6d2dca0bb4158ecc2facad20bb8dea0d200cb551f1f54ca0a44e4711d7b5932f"
+    },
+    {
+      "ruta": "stacks/firmware-esp32/LEEME.md",
+      "bytes": 2485,
+      "sha256": "168e8cb6537206cc243dc7b69796b78296ca87e2eeabce6c77dcb2b8b9100a67"
+    },
+    {
+      "ruta": "stacks/frontend-nextjs/LEEME.md",
+      "bytes": 3790,
+      "sha256": "a4a6b8b8726889600c94cc15850924709aacea45f284975432037c2a1674306a"
+    },
+    {
+      "ruta": "stacks/ia-llm/LEEME.md",
+      "bytes": 3784,
+      "sha256": "d5eea4fbd86a8d42cb980cdec2126c0196fd41ec399dcdd13f1127936cbd26ab"
+    },
+    {
+      "ruta": "stacks/mobile-flutter/LEEME.md",
+      "bytes": 3755,
+      "sha256": "fea165e55014bf7543384e72985a3964ada9df85bcd0940f10be65d3bf097902"
+    }
+  ],
+  "declaraciones_procedencia": [
+    {
+      "ruta": "stacks/mobile-flutter/LEEME.md",
+      "linea": 5,
+      "texto": "**Basado en:** [spjoshis/claude-code-plugins](https://github.com/spjoshis/claude-code-plugins) (plugin flutter-development, MIT). Adaptado: fusionado, reordenado a TDD, comprimido, traducido y alineado con las reglas del framework."
+    }
+  ]
+}

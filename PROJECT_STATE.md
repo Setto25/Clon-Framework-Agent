@@ -1,8 +1,8 @@
 # Estado del proyecto: agent-framework
 
-**Ultima actualizacion:** 2026-08-26 (rev 14)
-**Estado general:** `main` local estabilizada; publicacion y CI remota pendientes
-**Fase activa:** Fase 7 — pruebas automaticas y CI
+**Ultima actualizacion:** 2026-08-26 (rev 15)
+**Estado general:** Skills congeladas con inventario reproducible; publicacion bloqueada
+**Fase activa:** Fase 2 — auditoria de procedencia de solo lectura
 
 ## 1. Objetivo
 
@@ -82,6 +82,8 @@ Cada stack tiene LEEME.md con reglas adicionales, terminos tecnicos y procedimie
 30. **Skills preservadas por prueba.** La suite calcula y compara SHA-256 del arbol congelado; no escribe ni corrige contenido bajo `.agents/skills`.
 31. **Reproducibilidad desde Git comprobada.** Se creo un clon temporal limpio del commit `864ba88`; el contrato y las cuatro pruebas aprobaron fuera del arbol de trabajo. El clon se elimino despues de la comprobacion.
 32. **Integracion local lineal.** Se comprobo que `main` era ancestro directo de `codex/estabilizacion-framework`, con siete commits adicionales y sin cambios de Skills respecto de `main`. La rama local `main` se adelanto por fast-forward sin eliminar ramas ni publicar cambios.
+33. **Inventario congelado reproducible.** `scripts/inventariar_skills.py` registra 32 archivos, 17 manifiestos `SKILL.md`, tamaños, SHA-256 y declaraciones locales de procedencia en `auditoria/inventario_skills.json`. Una quinta prueba impide que el inventario quede desactualizado.
+34. **Declaracion local insuficiente.** El analisis mecanico detecto una sola declaracion explicita de procedencia, en `mobile-flutter`; afirma MIT, pero esa afirmacion continua sin evidencia primaria verificada.
 
 ## 5. Que falta
 
@@ -92,4 +94,4 @@ Cada stack tiene LEEME.md con reglas adicionales, terminos tecnicos y procedimie
 
 ## 6. Siguiente paso logico
 
-Mantener la publicacion bloqueada hasta resolver la procedencia y licencia de Skills. El siguiente trabajo seguro consiste en construir un inventario de auditoria de solo lectura fuera de `.agents/skills`; la CI remota solo podra comprobarse despues de una publicacion autorizada.
+Clasificar, sin editar Skills, los 17 manifiestos por autoria probable y evidencia disponible. Cada fuente externa debera registrar URL, revision y licencia primaria antes de considerar una publicacion.

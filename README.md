@@ -305,7 +305,7 @@ python scripts\validar_contrato_plantilla.py
 python -m unittest discover -s pruebas -p "prueba_*.py" -v
 ```
 
-La suite comprueba creacion completa, memoria pendiente, limpieza atomica, rechazo de sobrescritura, proteccion de `.env` e identidad byte por byte de Skills. El workflow `.github/workflows/validacion.yml` ejecuta la misma validacion en Windows y Ubuntu con Python 3.9 y 3.12.
+La suite comprueba creacion completa, memoria pendiente, limpieza atomica, rechazo de sobrescritura, proteccion de `.env`, identidad byte por byte de Skills y vigencia de su inventario congelado. El workflow `.github/workflows/validacion.yml` ejecuta la misma validacion en Windows y Ubuntu con Python 3.9 y 3.12.
 
 ---
 
@@ -389,7 +389,10 @@ Desde la raiz del meta-repositorio tambien existen:
 
 - `scripts/crear_proyecto.py`: creador atomico de una instancia nueva;
 - `scripts/validar_contrato_plantilla.py`: validador del contrato de la plantilla;
+- `scripts/inventariar_skills.py`: inventariador determinista y de solo lectura;
 - `ejemplos/configuracion_proyecto.ejemplo.json`: punto de partida para una configuracion completa;
 - `pruebas/prueba_creacion_proyecto.py`: suite integral con biblioteca estandar;
+- `pruebas/prueba_inventario_skills.py`: control de vigencia del inventario congelado;
 - `.github/workflows/validacion.yml`: matriz de CI para Windows, Ubuntu y dos versiones de Python;
+- `auditoria/inventario_skills.json`: rutas, tamaños y huellas del contenido congelado;
 - `ATRIBUCIONES.md`: inventario de procedencia y licencias pendientes.

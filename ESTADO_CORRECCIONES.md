@@ -1,8 +1,8 @@
 # Estado de correcciones de agent-framework
 
-**Ultima actualizacion:** 2026-08-26 (rev 12)
-**Estado general:** `main` local estabilizada; publicacion y CI remota pendientes
-**Fase activa:** Fase 7 — pruebas automaticas y CI
+**Ultima actualizacion:** 2026-08-26 (rev 13)
+**Estado general:** Skills congeladas con inventario reproducible; publicacion bloqueada
+**Fase activa:** Fase 2 — auditoria de procedencia de solo lectura
 **Rama de trabajo:** `codex/estabilizacion-framework`
 
 ## 1. Proposito
@@ -101,6 +101,27 @@ La clasificacion confirmo que `_dryrun2/` era una salida generada para `proyecto
 - No existe una suite automatica que demuestre una instalacion reproducible.
 
 ## 7. Registro de avance
+
+### 2026-08-26 — Rev 13
+
+**Completado:**
+
+- Se creo `scripts/inventariar_skills.py` fuera del arbol congelado.
+- El script lee 32 archivos y 17 manifiestos `SKILL.md`, y calcula tamaño y SHA-256 sin escribir dentro de `.agents/skills`.
+- Se genero `auditoria/inventario_skills.json` con una huella conjunta determinista.
+- El detector encontro una sola declaracion explicita de procedencia, ubicada en `stacks/mobile-flutter/LEEME.md`.
+- Se creo `pruebas/prueba_inventario_skills.py` para exigir que el inventario registrado coincida byte por byte con una regeneracion en memoria.
+- `ATRIBUCIONES.md` y el README enlazan el inventario mecanico y explican su alcance.
+
+**Prueba local:**
+
+- El contrato de plantilla aprobo.
+- La suite ejecuto cinco pruebas y todas aprobaron.
+- Git no mostro modificaciones bajo `plantilla/.agents/skills/`.
+
+**Resultado:**
+
+Existe una linea base verificable para detectar cualquier cambio futuro en Skills. El inventario no demuestra autoria ni licencia; solo fija el contenido que debe auditarse.
 
 ### 2026-08-26 — Rev 12
 
@@ -356,7 +377,7 @@ El usuario indico que otras Skills tambien pueden contener adaptaciones de produ
 
 ## 8. Siguiente paso exacto
 
-Construir fuera de `.agents/skills` un inventario reproducible y de solo lectura con rutas, huellas, fuentes declaradas y licencias declaradas. No modificar ni agregar Skills y no publicar cambios remotos.
+Clasificar los 17 manifiestos por autoria probable y evidencia disponible, sin editar Skills. Para cada posible fuente externa se debe buscar URL, revision y licencia primaria antes de decidir su tratamiento.
 
 ## 9. Bloqueos
 

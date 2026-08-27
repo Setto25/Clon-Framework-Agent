@@ -19,6 +19,8 @@ Este registro no reemplaza los avisos de licencia exigidos por cada fuente. Cuan
 
 ## 3. Inventario conocido
 
+El inventario mecanico reproducible vive en `auditoria/inventario_skills.json`. Registra los 32 archivos congelados, los 17 manifiestos `SKILL.md`, sus tamaños, sus huellas SHA-256 y las declaraciones locales de procedencia detectadas. `scripts/inventariar_skills.py` lo regenera sin escribir dentro de `.agents/skills`, y la suite automatica exige coincidencia byte por byte.
+
 | Grupo | Procedencia declarada | Estado de licencia | Tratamiento |
 |---|---|---|---|
 | Core historico y firmware ESP32 | Extraido del proyecto personal `entrevoces` | Pendiente de confirmar autoria exclusiva | Congelado hasta completar inventario |
