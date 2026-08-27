@@ -7,6 +7,7 @@ import hashlib
 import json
 import os
 import re
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -19,6 +20,7 @@ CREADOR = RAIZ_FRAMEWORK / "scripts" / "crear_proyecto.py"
 CONFIGURACION_EJEMPLO = RAIZ_FRAMEWORK / "ejemplos" / "configuracion_proyecto.ejemplo.json"
 SKILLS_ORIGEN = RAIZ_FRAMEWORK / "plantilla" / ".agents" / "skills"
 ADAPTADOR_BASH = RAIZ_FRAMEWORK / "plantilla" / "scripts" / "inicializar_proyecto.sh"
+PLANTILLA = RAIZ_FRAMEWORK / "plantilla"
 CORE_AUTOMATICO: set[str] = {"cerrar-modulo", "lecciones-aprendidas", "probar-e2e"}
 PATRON_NOMBRE_SKILL = re.compile(r"^name:\s*(.+?)\s*$", re.MULTILINE)
 
@@ -92,6 +94,12 @@ class PruebasCreacionProyecto(unittest.TestCase):
         self.assertEqual(resultado.returncode, 0, resultado.stdout + resultado.stderr)
         return destino
 
+    def copiar_plantilla(self, nombre_directorio: str) -> Path:
+        """Copia la plantilla completa para probar el inicializador interno."""
+        destino = self.raiz_temporal / nombre_directorio
+        shutil.copytree(PLANTILLA, destino, copy_function=shutil.copy2)
+        return destino
+
     def test_crea_proyecto_completo_y_protege_entorno(self) -> None:
         """Confirma una instancia valida con Git, memoria y entorno protegido."""
         destino = self.crear_completo()
@@ -116,7 +124,7 @@ class PruebasCreacionProyecto(unittest.TestCase):
         instaladas = estado.get("skills_instaladas") if isinstance(estado, dict) else None
         self.assertEqual(set(instaladas) if isinstance(instaladas, list) else set(), CORE_AUTOMATICO)
         registro = (destino / "documentacion" / "REGISTRO_CAMBIOS.md").read_text(encoding="utf-8")
-        self.assertIn("agent-framework 0.2.0-alpha.2", registro)
+        self.assertIn("agent-framework 0.2.0-alpha.3", registro)
         for nombre in CORE_AUTOMATICO:
             with self.subTest(skill_registrada=nombre):
                 self.assertIn(f"- `{nombre}`", registro)
@@ -218,6 +226,91 @@ class PruebasCreacionProyecto(unittest.TestCase):
         self.assertNotEqual(resultado.returncode, 0)
         self.assertIn("caracteres de control", resultado.stderr)
         self.assertFalse(destino.exists())
+
+    def test_inicializacion_directa_rechaza_placeholder_antes_de_escribir(self) -> None:
+        """Confirma que contenido ambiguo no deje una copia parcialmente configurada."""
+        destino = self.copiar_plantilla("copia-placeholder-invalido")
+        configuracion: object = json.loads(CONFIGURACION_EJEMPLO.read_text(encoding="utf-8"))
+        self.assertIsInstance(configuracion, dict)
+        if isinstance(configuracion, dict):
+            configuracion["SIGUIENTE_PASO"] = "Resolver {{VALOR_FUTURO}}"
+        ruta_configuracion = self.raiz_temporal / "configuracion-placeholder.json"
+        ruta_configuracion.write_text(
+            json.dumps(configuracion, ensure_ascii=False),
+            encoding="utf-8",
+            newline="\n",
+        )
+        huellas_antes = calcular_huellas(destino)
+        resultado = ejecutar(
+            [
+                sys.executable,
+                str(destino / "scripts" / "inicializar_proyecto.py"),
+                "Proyecto Directo",
+                "español",
+                "--configuracion",
+                str(ruta_configuracion),
+            ],
+            destino,
+        )
+        self.assertNotEqual(resultado.returncode, 0)
+        self.assertIn("reintroduce placeholders", resultado.stderr)
+        self.assertEqual(calcular_huellas(destino), huellas_antes)
+        self.assertFalse((destino / ".git").exists())
+        self.assertFalse((destino / ".estado-plantilla.json").exists())
+
+    def test_inicializacion_directa_revierte_git_si_env_no_esta_protegido(self) -> None:
+        """Confirma que un fallo posterior a git init restaure la copia manual."""
+        destino = self.copiar_plantilla("copia-gitignore-invalido")
+        (destino / ".gitignore").write_text(
+            "# Configuracion deliberadamente invalida para la prueba.\n",
+            encoding="utf-8",
+            newline="\n",
+        )
+        huellas_antes = calcular_huellas(destino)
+        resultado = ejecutar(
+            [
+                sys.executable,
+                str(destino / "scripts" / "inicializar_proyecto.py"),
+                "Proyecto Directo",
+                "español",
+                "--configuracion",
+                str(CONFIGURACION_EJEMPLO),
+            ],
+            destino,
+        )
+        self.assertNotEqual(resultado.returncode, 0)
+        self.assertIn(".env no esta protegido", resultado.stderr)
+        self.assertEqual(calcular_huellas(destino), huellas_antes)
+        self.assertFalse((destino / ".git").exists())
+        self.assertTrue((destino / ".plantilla-framework").is_file())
+
+    def test_inicializacion_directa_revierte_archivos_tras_escribir(self) -> None:
+        """Confirma que un fallo tardio restaure archivos, centinela y Git."""
+        destino = self.copiar_plantilla("copia-fallo-tardio")
+        ruta_infraestructura = destino / "infraestructura"
+        ruta_infraestructura.write_text(
+            "Bloquea deliberadamente la creacion del directorio de registros.\n",
+            encoding="utf-8",
+            newline="\n",
+        )
+        huellas_antes = calcular_huellas(destino)
+        resultado = ejecutar(
+            [
+                sys.executable,
+                str(destino / "scripts" / "inicializar_proyecto.py"),
+                "Proyecto Directo",
+                "español",
+                "--configuracion",
+                str(CONFIGURACION_EJEMPLO),
+            ],
+            destino,
+        )
+        self.assertNotEqual(resultado.returncode, 0)
+        self.assertEqual(calcular_huellas(destino), huellas_antes)
+        self.assertFalse((destino / ".git").exists())
+        self.assertFalse((destino / ".estado-plantilla.json").exists())
+        self.assertFalse((destino / ".env").exists())
+        self.assertTrue((destino / ".plantilla-framework").is_file())
 
     def test_rechaza_memoria_con_pendientes(self) -> None:
         """Confirma que una instancia provisional no se certifique como completa."""

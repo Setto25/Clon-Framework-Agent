@@ -1,7 +1,7 @@
 # Estado de correcciones de agent-framework
 
-**Ultima actualizacion:** 2026-08-27 (rev 16)
-**Estado general:** Compatibilidad e inicializacion endurecidas; pilotos y procedencia pendientes
+**Ultima actualizacion:** 2026-08-27 (rev 17)
+**Estado general:** Inicializacion directa transaccional; pilotos y procedencia pendientes
 **Fase activa:** Fase 6 — validacion interna previa a pilotos
 **Rama de trabajo:** `codex/estabilizacion-framework`
 
@@ -101,6 +101,29 @@ La clasificacion confirmo que `_dryrun2/` era una salida generada para `proyecto
 - No existe una suite automatica que demuestre una instalacion reproducible.
 
 ## 7. Registro de avance
+
+### 2026-08-27 — Rev 17
+
+**Completado:**
+
+- `preparar_cambios` comprueba el contenido resultante y rechaza valores que reintroduzcan placeholders antes de escribir.
+- La inicializacion directa se agrupo en una transaccion con respaldo de archivos configurables y del centinela.
+- Ante un fallo se eliminan solamente `.env`, estado, directorios y `.git` creados por esa ejecucion, con validacion estricta de la ruta Git.
+- Las escrituras temporales y el estado usan reemplazo atomico; los temporales residuales se limpian.
+- El framework avanzo a `0.2.0-alpha.3`.
+- Se agregaron tres pruebas sobre copias manuales completas.
+
+**Evidencia:**
+
+- El contrato aprobo.
+- Las 22 pruebas automaticas aprobaron.
+- Un valor `{{VALOR_FUTURO}}` fue rechazado y todas las huellas de la copia permanecieron iguales.
+- Una copia con `.gitignore` incapaz de proteger `.env` fallo despues de `git init`, elimino el `.git` nuevo y conservo `.plantilla-framework`.
+- Un obstaculo deliberado en `infraestructura/` provoco un fallo posterior a las escrituras y comprobo la restauracion byte por byte, incluida la eliminacion de `.env` y Git creados por el intento.
+
+**Resultado:**
+
+La ruta manual deja de depender exclusivamente de la atomicidad del creador externo. Tanto el flujo recomendado como la contingencia directa evitan publicar o conservar una inicializacion parcial en los fallos cubiertos.
 
 ### 2026-08-27 — Rev 16
 
@@ -490,7 +513,7 @@ El usuario indico que otras Skills tambien pueden contener adaptaciones de produ
 
 ## 8. Siguiente paso exacto
 
-Revisar la atomicidad de la inicializacion directa sobre una copia manual y rechazar antes de escribir cualquier valor que reintroduzca sintaxis de placeholder. Mantener los pilotos pendientes de una decision explicita del usuario.
+Continuar la auditoria interna del contrato y las referencias documentales. Mantener los pilotos pendientes de una decision explicita del usuario.
 
 ## 9. Bloqueos
 

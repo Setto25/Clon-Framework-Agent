@@ -1,7 +1,7 @@
 # Estado del proyecto: agent-framework
 
-**Ultima actualizacion:** 2026-08-27 (rev 18)
-**Estado general:** Compatibilidad e inicializacion endurecidas; pilotos y procedencia pendientes
+**Ultima actualizacion:** 2026-08-27 (rev 19)
+**Estado general:** Inicializacion directa transaccional; pilotos y procedencia pendientes
 **Fase activa:** Fase 6 — validacion interna previa a pilotos
 
 ## 1. Objetivo
@@ -102,6 +102,9 @@ Cada stack tiene LEEME.md con reglas adicionales, terminos tecnicos y procedimie
 50. **Regresion ampliada.** La suite tiene 19 pruebas e incluye referencias comunes, capacidades obsoletas, escape dotenv, rechazo de saltos de linea y memoria inicial propia.
 51. **Inventario independiente de plataforma.** La exportacion limpia detecto que las huellas variaban entre CRLF y LF. El inventario version `2` canoniza texto UTF-8 a LF y una prueba compara ambos formatos.
 52. **Exportacion limpia aprobada.** Los commits `ac08dab` y `62d3db3` contienen el endurecimiento y la normalizacion. Un `git archive` de `HEAD` aprobo el contrato y las 19 pruebas sin depender del arbol de trabajo; los temporales se eliminaron.
+53. **Validacion previa a toda escritura.** `preparar_cambios` rechaza valores que reintroduzcan sintaxis `{{PLACEHOLDER}}` antes de crear Git o modificar archivos.
+54. **Inicializacion directa transaccional.** La version `0.2.0-alpha.3` respalda archivos, conserva el centinela y revierte estado, `.env`, directorios y `.git` creados por una ejecucion fallida.
+55. **Atomicidad comprobada.** La suite tiene 22 pruebas. Una copia manual con placeholder ambiguo permanecio byte por byte intacta; otra con `.env` desprotegido revirtio el `git init`; un fallo deliberado posterior a la escritura restauro archivos, `.env`, Git y `.plantilla-framework`.
 
 ## 5. Que falta
 
@@ -113,4 +116,4 @@ Cada stack tiene LEEME.md con reglas adicionales, terminos tecnicos y procedimie
 
 ## 6. Siguiente paso logico
 
-Mientras los pilotos permanezcan pospuestos, revisar la atomicidad del inicializador cuando se ejecuta directamente sobre una copia manual y asegurar que cualquier valor que introduzca placeholders falle antes de escribir. Despues, continuar la auditoria interna. Ejecutar un piloto real solo cuando el usuario decida crear un proyecto.
+Mientras los pilotos permanezcan pospuestos, continuar la auditoria interna del contrato y las referencias documentales, priorizando entradas derivadas, rutas condicionales y fallos recuperables. Ejecutar un piloto real solo cuando el usuario decida crear un proyecto.

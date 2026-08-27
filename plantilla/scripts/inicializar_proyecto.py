@@ -246,6 +246,11 @@ def preparar_cambios(archivos: list[Path], valores: dict[str, str]) -> dict[Path
         if faltantes:
             raise ValueError(f"{archivo} contiene placeholders sin valor: {', '.join(sorted(faltantes))}")
         contenido_nuevo = PATRON_PLACEHOLDER.sub(lambda coincidencia: valores[coincidencia.group(1)], contenido)
+        reintroducidos = sorted(set(PATRON_PLACEHOLDER.findall(contenido_nuevo)))
+        if reintroducidos:
+            raise ValueError(
+                f"Un valor reintroduce placeholders en {archivo}: {', '.join(reintroducidos)}"
+            )
         if contenido_nuevo != contenido:
             cambios[archivo] = contenido_nuevo
     return cambios
@@ -255,6 +260,7 @@ def escribir_cambios(cambios: dict[Path, str], raiz: Path) -> None:
     """Escribe cambios con respaldo temporal y restaura ante un fallo."""
     with tempfile.TemporaryDirectory(prefix="respaldo-inicializacion-") as directorio_temporal:
         respaldo = Path(directorio_temporal)
+        temporales: list[Path] = []
         for archivo in cambios:
             destino_respaldo = respaldo / archivo.relative_to(raiz)
             destino_respaldo.parent.mkdir(parents=True, exist_ok=True)
@@ -262,6 +268,7 @@ def escribir_cambios(cambios: dict[Path, str], raiz: Path) -> None:
         try:
             for archivo, contenido in cambios.items():
                 temporal = archivo.with_name(f".{archivo.name}.temporal")
+                temporales.append(temporal)
                 temporal.write_text(contenido, encoding="utf-8", newline="\n")
                 os.replace(temporal, archivo)
         except OSError:
@@ -270,6 +277,10 @@ def escribir_cambios(cambios: dict[Path, str], raiz: Path) -> None:
                 if origen_respaldo.exists():
                     shutil.copy2(origen_respaldo, archivo)
             raise
+        finally:
+            for temporal in temporales:
+                if temporal.exists():
+                    temporal.unlink()
 
 
 def ejecutar_git(argumentos: list[str], raiz: Path, comprobar: bool = True) -> subprocess.CompletedProcess[str]:
@@ -335,6 +346,92 @@ def validar_skills_instaladas(raiz: Path, declaradas: list[str]) -> list[str]:
     return instaladas
 
 
+def eliminar_git_creado(raiz: Path) -> None:
+    """Elimina exclusivamente el repositorio creado por la transaccion fallida."""
+    raiz_resuelta = raiz.resolve()
+    directorio_git = (raiz_resuelta / ".git").resolve()
+    if directorio_git.parent != raiz_resuelta or directorio_git.name != ".git":
+        raise ValueError("Se rechazo eliminar una ruta Git inesperada")
+    if directorio_git.exists():
+        shutil.rmtree(directorio_git)
+
+
+def crear_directorios_controlados(raiz: Path, objetivos: tuple[str, ...]) -> list[Path]:
+    """Crea directorios y registra cada ruta nueva para una posible reversion."""
+    creados: list[Path] = []
+    for objetivo in objetivos:
+        actual = raiz
+        for parte in Path(objetivo).parts:
+            actual = actual / parte
+            if not actual.exists():
+                actual.mkdir()
+                creados.append(actual)
+    return creados
+
+
+def aplicar_transaccion(
+    raiz: Path,
+    centinela: Path,
+    cambios: dict[Path, str],
+    estado_plantilla: dict[str, object],
+    crear_env: bool,
+) -> None:
+    """Aplica la inicializacion completa y restaura la copia ante un fallo."""
+    ruta_estado = raiz / ".estado-plantilla.json"
+    temporal_estado = raiz / ".estado-plantilla.json.temporal"
+    env_destino = raiz / ".env"
+    if ruta_estado.exists() or temporal_estado.exists():
+        raise ValueError("La copia contiene un estado de inicializacion previo o incompleto")
+
+    git_existia = (raiz / ".git").exists()
+    env_creado = False
+    estado_creado = False
+    directorios_creados: list[Path] = []
+    with tempfile.TemporaryDirectory(prefix="respaldo-transaccion-") as directorio_temporal:
+        respaldo = Path(directorio_temporal)
+        for archivo in (*cambios.keys(), centinela):
+            destino_respaldo = respaldo / archivo.relative_to(raiz)
+            destino_respaldo.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(archivo, destino_respaldo)
+        try:
+            verificar_git(raiz)
+            verificar_env_ignorado(raiz)
+            escribir_cambios(cambios, raiz)
+            directorios_creados = crear_directorios_controlados(
+                raiz,
+                ("documentacion", "infraestructura/registros", "scripts"),
+            )
+            if crear_env and not env_destino.exists():
+                shutil.copy2(raiz / ".env.ejemplo", env_destino)
+                env_creado = True
+            temporal_estado.write_text(
+                json.dumps(estado_plantilla, ensure_ascii=False, indent=2) + "\n",
+                encoding="utf-8",
+                newline="\n",
+            )
+            os.replace(temporal_estado, ruta_estado)
+            estado_creado = True
+            centinela.unlink()
+        except (OSError, ValueError, subprocess.SubprocessError):
+            for archivo in cambios:
+                origen_respaldo = respaldo / archivo.relative_to(raiz)
+                shutil.copy2(origen_respaldo, archivo)
+            if not centinela.exists():
+                shutil.copy2(respaldo / centinela.relative_to(raiz), centinela)
+            if temporal_estado.exists():
+                temporal_estado.unlink()
+            if estado_creado and ruta_estado.exists():
+                ruta_estado.unlink()
+            if env_creado and env_destino.exists():
+                env_destino.unlink()
+            for directorio in reversed(directorios_creados):
+                if directorio.exists():
+                    directorio.rmdir()
+            if not git_existia and (raiz / ".git").exists():
+                eliminar_git_creado(raiz)
+            raise
+
+
 def crear_argumentos() -> argparse.Namespace:
     """Define la interfaz de linea de comandos."""
     analizador = argparse.ArgumentParser(description=__doc__)
@@ -380,17 +477,6 @@ def main() -> int:
         archivos = resolver_archivos(raiz, contrato["archivos_incluidos"])
         cambios = preparar_cambios(archivos, valores_completos)
 
-        verificar_git(raiz)
-        verificar_env_ignorado(raiz)
-        escribir_cambios(cambios, raiz)
-        for directorio in ("documentacion", "infraestructura/registros", "scripts"):
-            (raiz / directorio).mkdir(parents=True, exist_ok=True)
-
-        env_ejemplo = raiz / ".env.ejemplo"
-        env_destino = raiz / ".env"
-        if not argumentos.sin_env and not env_destino.exists():
-            shutil.copy2(env_ejemplo, env_destino)
-
         politica_skills = (
             "core_automatico_mas_seleccion_explicita"
             if argumentos.skill_seleccionada
@@ -406,20 +492,13 @@ def main() -> int:
             "skills_instaladas": skills_instaladas,
             "politica_skills": politica_skills,
         }
-        (raiz / ".estado-plantilla.json").write_text(
-            json.dumps(estado_plantilla, ensure_ascii=False, indent=2) + "\n",
-            encoding="utf-8",
-            newline="\n",
+        aplicar_transaccion(
+            raiz,
+            centinela,
+            cambios,
+            estado_plantilla,
+            crear_env=not argumentos.sin_env,
         )
-        centinela.unlink()
-
-        restantes: dict[str, list[str]] = {}
-        for archivo in archivos:
-            for clave in PATRON_PLACEHOLDER.findall(archivo.read_text(encoding="utf-8")):
-                restantes.setdefault(clave, []).append(str(archivo.relative_to(raiz)))
-        if restantes:
-            detalle = "; ".join(f"{clave}: {', '.join(rutas)}" for clave, rutas in sorted(restantes.items()))
-            raise ValueError(f"Quedaron placeholders configurables sin resolver: {detalle}")
 
     except (OSError, UnicodeError, json.JSONDecodeError, ValueError, subprocess.SubprocessError) as error:
         print(f"ERROR: {error}", file=sys.stderr)
