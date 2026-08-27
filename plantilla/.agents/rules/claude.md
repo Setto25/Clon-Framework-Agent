@@ -20,9 +20,9 @@ Claude comunica qué leyó antes de actuar.
 
 ---
 
-## 2. Disciplina de proceso — Nivel 0 (siempre activo)
+## 2. Disciplina de proceso — Nivel 0 (base)
 
-> **Nota:** Este bloque es comportamiento base, no un skill. No aparece en el catalogo de stacks/ ni en opcional/. No se invoca con `$`. Se aplica automaticamente en cada sesion. No confundir con skills opcionales como `delegar-entre-agentes`.
+> **Nota:** Este bloque es comportamiento base, no una Skill. No aparece en el catalogo de stacks/ ni en opcional/. No se invoca con `$`. Se aplica siempre que este archivo forme parte del contexto de la sesion. No se debe asumir que una herramienta lo descubre automaticamente. No se confunde con Skills opcionales como `delegar-entre-agentes`.
 
 ### Superpowers
 

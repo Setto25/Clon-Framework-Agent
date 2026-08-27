@@ -1,7 +1,7 @@
 # Estado del proyecto: agent-framework
 
-**Ultima actualizacion:** 2026-08-27 (rev 20)
-**Estado general:** Inicializacion directa transaccional; pilotos y procedencia pendientes
+**Ultima actualizacion:** 2026-08-27 (rev 21)
+**Estado general:** Referencias interoperables depuradas; pilotos y procedencia pendientes
 **Fase activa:** Fase 6 — validacion interna previa a pilotos
 
 ## 1. Objetivo
@@ -106,6 +106,9 @@ Cada stack tiene LEEME.md con reglas adicionales, terminos tecnicos y procedimie
 54. **Inicializacion directa transaccional.** La version `0.2.0-alpha.3` respalda archivos, conserva el centinela y revierte estado, `.env`, directorios y `.git` creados por una ejecucion fallida.
 55. **Atomicidad comprobada.** La suite tiene 22 pruebas. Una copia manual con placeholder ambiguo permanecio byte por byte intacta; otra con `.env` desprotegido revirtio el `git init`; un fallo deliberado posterior a la escritura restauro archivos, `.env`, Git y `.plantilla-framework`.
 56. **Exportacion transaccional aprobada.** El commit `c7e76b3` aprobo el contrato y las 22 pruebas desde un `git archive` limpio; la copia temporal y su archivo comprimido se eliminaron despues de la validacion.
+57. **Convenciones sin proveedor supuesto.** `AGENTS.md`, `PROJECT_STATE.md`, `.agents/`, `SKILL.md` y `.env` se documentan como interfaces reservadas por herramientas o por el contrato del framework. Cada agente comprueba su descubrimiento real y carga manualmente lo que falte.
+58. **Referencia arqueologica eliminada.** El indice de una instancia ya no apunta a `documentacion/analisis/`, ruta historica que solo existe en el meta-repositorio.
+59. **Referencias condicionales comprobadas.** La version `0.2.0-alpha.4` y 23 pruebas verifican que cada stack citado tenga `LEEME.md` y referencia de lecciones, y que las Skills condicionales del indice existan en la fuente.
 
 ## 5. Que falta
 
@@ -117,4 +120,4 @@ Cada stack tiene LEEME.md con reglas adicionales, terminos tecnicos y procedimie
 
 ## 6. Siguiente paso logico
 
-Mientras los pilotos permanezcan pospuestos, continuar la auditoria interna del contrato y las referencias documentales, priorizando entradas derivadas, rutas condicionales y fallos recuperables. Ejecutar un piloto real solo cuando el usuario decida crear un proyecto.
+Mientras los pilotos permanezcan pospuestos, continuar la auditoria interna de entradas derivadas y validacion del contrato, priorizando tipos, valores permitidos y mensajes de error recuperables. Ejecutar un piloto real solo cuando el usuario decida crear un proyecto.

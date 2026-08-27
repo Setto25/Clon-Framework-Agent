@@ -1,7 +1,7 @@
 # Estado de correcciones de agent-framework
 
-**Ultima actualizacion:** 2026-08-27 (rev 18)
-**Estado general:** Inicializacion directa transaccional; pilotos y procedencia pendientes
+**Ultima actualizacion:** 2026-08-27 (rev 19)
+**Estado general:** Referencias interoperables depuradas; pilotos y procedencia pendientes
 **Fase activa:** Fase 6 — validacion interna previa a pilotos
 **Rama de trabajo:** `codex/estabilizacion-framework`
 
@@ -101,6 +101,27 @@ La clasificacion confirmo que `_dryrun2/` era una salida generada para `proyecto
 - No existe una suite automatica que demuestre una instalacion reproducible.
 
 ## 7. Registro de avance
+
+### 2026-08-27 — Rev 19
+
+**Completado:**
+
+- Se retiraron afirmaciones que atribuian a Antigravity requisitos universales de nombres y rutas.
+- Las rutas estables se describen como convenciones interoperables del framework y se exige comprobar su descubrimiento en cada herramienta.
+- Se elimino del indice generado la referencia inexistente a `documentacion/analisis/`.
+- Se agrego una prueba que enlaza stacks, reglas de lecciones y Skills condicionales con su fuente instalable.
+- El framework avanzo a `0.2.0-alpha.4`.
+
+**Evidencia:**
+
+- El contrato aprobo.
+- Las 23 pruebas automaticas aprobaron.
+- Cada uno de los cinco stacks dispone de `LEEME.md` y de una referencia homonima en `lecciones-aprendidas`.
+- Las cuatro Skills citadas nominalmente por el indice existen en el catalogo fuente.
+
+**Resultado:**
+
+La documentacion comun deja de prometer descubrimiento automatico por proveedor y las rutas condicionales relevantes quedan respaldadas por pruebas.
 
 ### 2026-08-27 — Rev 18
 
@@ -531,7 +552,7 @@ El usuario indico que otras Skills tambien pueden contener adaptaciones de produ
 
 ## 8. Siguiente paso exacto
 
-Continuar la auditoria interna del contrato y las referencias documentales. Mantener los pilotos pendientes de una decision explicita del usuario.
+Continuar la auditoria interna de entradas derivadas y validacion del contrato. Mantener los pilotos pendientes de una decision explicita del usuario.
 
 ## 9. Bloqueos
 

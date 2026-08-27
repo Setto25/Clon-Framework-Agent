@@ -124,7 +124,7 @@ class PruebasCreacionProyecto(unittest.TestCase):
         instaladas = estado.get("skills_instaladas") if isinstance(estado, dict) else None
         self.assertEqual(set(instaladas) if isinstance(instaladas, list) else set(), CORE_AUTOMATICO)
         registro = (destino / "documentacion" / "REGISTRO_CAMBIOS.md").read_text(encoding="utf-8")
-        self.assertIn("agent-framework 0.2.0-alpha.3", registro)
+        self.assertIn("agent-framework 0.2.0-alpha.4", registro)
         for nombre in CORE_AUTOMATICO:
             with self.subTest(skill_registrada=nombre):
                 self.assertIn(f"- `{nombre}`", registro)

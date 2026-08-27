@@ -3,7 +3,7 @@
 ## 1. Estilo de código y documentación
 
 - Todos los nombres creados para archivos, carpetas, módulos, clases, esquemas, modelos y routers deben escribirse en {{IDIOMA_NOMBRES}}, con dos excepciones:
-  - **Nombres impuestos por herramientas** (no configurables): `AGENTS.md`, `PROJECT_STATE.md`, `.agents/skills`, `.agents/rules`, `SKILL.md` y los demas enumerados en `.agents/rules/excepciones_nominales.md`.
+  - **Nombres reservados por herramientas o por la convencion interoperable del framework** (no configurables dentro de la plantilla): `AGENTS.md`, `PROJECT_STATE.md`, `.agents/skills`, `.agents/rules`, `SKILL.md` y los demas enumerados en `.agents/rules/excepciones_nominales.md`.
   - **Terminos tecnicos universales** reconocidos por la comunidad (ej: `endpoint`, `middleware`, `system_prompt`, `callback`): se conservan en ingles porque traducirlos dificulta busqueda y comunicacion. La lista completa y el criterio de inclusion estan en `.agents/rules/excepciones_nominales.md`.
 - Se permite composicion mixta: termino universal + palabra en {{IDIOMA_NOMBRES}} (ej: `middleware_autenticacion`, `handler_pedidos`).
 - Si una herramienta impone otro nombre tecnico no configurable, se debe documentar la excepcion antes de crearlo.

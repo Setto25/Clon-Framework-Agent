@@ -48,7 +48,7 @@ Si un documento contradice la implementación comprobada, informa la diferencia 
 
 - Crea en {{IDIOMA_NOMBRES}} todos los nombres de archivos, carpetas, módulos, clases, esquemas, modelos y routers.
 - No mezcla nombres en {{IDIOMA_NOMBRES}} e inglés.
-- Mantiene `PROJECT_STATE.md`, `.agents/skills`, `.agents/rules` y `SKILL.md` porque las herramientas exigen esas rutas.
+- Mantiene `PROJECT_STATE.md`, `.agents/skills`, `.agents/rules` y `SKILL.md` como interfaces estables del framework. Comprueba el descubrimiento real de cada herramienta y carga manualmente lo que no se descubra.
 - Si una herramienta impone un nombre técnico no configurable, documenta la excepción.
 - Usa type hints explícitos en todo Python.
 - Usa tipos explícitos en TypeScript y Dart; no usa `any` sin justificación.

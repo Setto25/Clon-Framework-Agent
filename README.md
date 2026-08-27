@@ -12,7 +12,7 @@ Extraido inicialmente del proyecto entrevoces. El creador y los verificadores ti
 
 Un conjunto de archivos que se copian a cualquier proyecto nuevo para darle al agente:
 
-- **Reglas de proceso — "superpowers" (Nivel 0, siempre activo)**: brainstorming estructurado, TDD red-green-refactor, depuracion sistematica en 4 fases. Viven en `.agents/rules/claude.md §2`. Se decidio no implementarlos como skill separado: son comportamiento base que aplica en toda sesion sin invocacion. No aparecen en el catalogo de stacks/ ni en opcional/. No confundir con skills opcionales como `delegar-entre-agentes`.
+- **Reglas de proceso — "superpowers" (Nivel 0, base)**: brainstorming estructurado, TDD red-green-refactor, depuracion sistematica en 4 fases. Viven en `.agents/rules/claude.md §2`. Se decidio no implementarlos como Skill separado: son comportamiento base obligatorio cuando se carga el conjunto de reglas y no requieren invocacion nominal. No aparecen en el catalogo de stacks/ ni en opcional/. No confundir con Skills opcionales como `delegar-entre-agentes`.
 - **Estructura de documentacion**: AGENTS.md, PROJECT_STATE.md, REGISTRO_CAMBIOS.md, PLAN_DESARROLLO.md y otros como convencion.
 - **Skills agrupados por stack**: guias existentes para FastAPI, Flutter, Next.js, ESP32/firmware y LLM/RAG, pendientes de auditoria individual.
 - **Memoria de errores**: skill `lecciones-aprendidas` para no repetir ciclos de depuracion ya resueltos.

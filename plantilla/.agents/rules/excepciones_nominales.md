@@ -12,23 +12,23 @@ Registra todos los nombres técnicos no configurables que se conservan como exce
 
 | Categoria | Criterio | Ejemplo |
 |---|---|---|
-| **Impuesta por herramienta** | La plataforma exige ese nombre exacto; no hay alternativa | `AGENTS.md`, `SKILL.md`, `.env` |
+| **Reservada para interoperabilidad** | Una herramienta o el contrato del framework usa ese nombre como interfaz estable | `AGENTS.md`, `SKILL.md`, `.env` |
 | **Termino tecnico universal** | Concepto ampliamente reconocido en ingles por la comunidad; traducirlo dificulta busqueda, comunicacion o reconocimiento | `system_prompt`, `middleware`, `endpoint` |
 | **Nombre de proyecto** | Todo lo demas: modulos, clases, variables, archivos, carpetas creados por el equipo | En {{IDIOMA_NOMBRES}} |
 
 ---
 
-## Excepciones obligatorias por herramientas
+## Nombres reservados para interoperabilidad
 
-### Antigravity / Codex
+### Memoria, reglas y Skills
 
 | Nombre | Ubicación | Razón | Alternativa |
 |---|---|---|---|
-| `AGENTS.md` | Raíz | Antigravity exige este nombre para descubrimiento de reglas | Ninguna |
-| `PROJECT_STATE.md` | Raíz | Antigravity exige este nombre para descubrimiento de estado | Ninguna |
-| `.agents/skills` | Directorio | Antigravity exige esta ruta para descubrimiento de Skills | Ninguna |
-| `.agents/rules` | Directorio | Antigravity exige esta ruta para descubrimiento de reglas | Ninguna |
-| `SKILL.md` | Cada Skill | Antigravity exige este nombre en cada carpeta de Skill | Ninguna |
+| `AGENTS.md` | Raíz | Es la interfaz estable de instrucciones del repositorio y algunas herramientas la reconocen | Adjuntarlo como contexto cuando no exista descubrimiento verificable |
+| `PROJECT_STATE.md` | Raíz | Es la memoria persistente definida por el framework | Leerlo o adjuntarlo explicitamente al iniciar la sesion |
+| `.agents/skills` | Directorio | Es el catalogo local neutral elegido por el framework | Instalar o adjuntar la Skill si la herramienta no descubre la ruta |
+| `.agents/rules` | Directorio | Agrupa reglas compartidas sin ligarlas a un proveedor | Cargar manualmente las reglas relevantes |
+| `SKILL.md` | Cada Skill | Es el manifiesto estable usado para describir una Skill | Adaptar la integracion, sin renombrar la copia canonica |
 
 ### Gestión de entorno
 
@@ -91,7 +91,7 @@ Un termino entra aqui si cumple AL MENOS DOS de estos:
 
 Si se necesita agregar una nueva excepción:
 
-1. **Verificar que sea obligatoria** — ¿La herramienta exige específicamente este nombre? ¿No hay alternativa configurable?
+1. **Verificar que deba reservarse** — ¿Una herramienta o el contrato del framework usa específicamente este nombre? ¿Existe una alternativa configurable?
 2. **Documentar la razón** — Herramienta, versión, referencia oficial.
 3. **Agregar a este archivo** — En la sección apropiada con razón y alternativa.
 4. **Comunicar** — Agregar entrada en `REGISTRO_CAMBIOS.md`.
@@ -100,7 +100,7 @@ Si se necesita agregar una nueva excepción:
 
 ## Referencia rápida
 
-**Excepciones obligatorias (NO traducir):**
+**Nombres reservados (NO traducir):**
 - `AGENTS.md`, `PROJECT_STATE.md`
 - `.agents/skills`, `.agents/rules`, `SKILL.md`
 - `.env`, `.env.ejemplo`

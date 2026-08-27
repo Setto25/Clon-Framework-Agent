@@ -22,7 +22,6 @@
 
 ## NO leer por defecto
 
-- `documentacion/analisis/` — Solo si se necesita contexto historico de la extraccion del framework.
 - `documentacion/REGISTRO_CAMBIOS.md` completo — Usar `git log` o leer solo las ultimas 5-10 entradas.
 - Codigo fuente completo — Solicitar archivos especificos por ruta.
 - Archivos de infraestructura (docker, CI) — Solo si la tarea lo requiere.
