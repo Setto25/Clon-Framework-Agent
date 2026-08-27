@@ -1,7 +1,7 @@
 # Estado del proyecto: agent-framework
 
-**Ultima actualizacion:** 2026-08-27 (rev 24)
-**Estado general:** Contrato y entradas estrictas; pilotos y procedencia pendientes
+**Ultima actualizacion:** 2026-08-27 (rev 25)
+**Estado general:** Limites de rutas y enlaces endurecidos; pilotos y procedencia pendientes
 **Fase activa:** Fase 6 — validacion interna previa a pilotos
 
 ## 1. Objetivo
@@ -115,6 +115,9 @@ Cada stack tiene LEEME.md con reglas adicionales, terminos tecnicos y procedimie
 63. **Texto de configuracion endurecido.** Los saltos multilinea y tabulaciones legitimos se conservan, mientras controles Unicode invisibles y listas con elementos multilinea se rechazan antes de escribir.
 64. **Regresion de entradas ampliada.** La suite tiene 28 pruebas e incluye contratos futuros o deformados, valores derivados externos, duplicados entre fuentes y controles Unicode.
 65. **Exportacion contractual aprobada.** El commit `dfb20d7` aprobo el contrato y las 28 pruebas desde un `git archive` limpio; la copia y el archivo temporal se eliminaron al finalizar.
+66. **Arboles locales regulares.** La version `0.2.0-alpha.6` rechaza enlaces simbolicos, junctions, reparse points y cambios de dispositivo dentro de la plantilla fuente o de una copia manual antes de leer el contrato o copiar archivos.
+67. **Destino lexico y resuelto protegido.** El creador comprueba tanto la ruta escrita por el usuario como su resolucion real. Un destino que existe como enlace roto se considera ocupado y no se sigue ni reemplaza.
+68. **Regresion de enlaces comprobada.** La suite tiene 30 pruebas. Los dos casos de enlace se ejecutaron en Windows sin omisiones: el archivo externo permanecio intacto y el destino roto no creo su objetivo.
 
 ## 5. Que falta
 
@@ -126,4 +129,4 @@ Cada stack tiene LEEME.md con reglas adicionales, terminos tecnicos y procedimie
 
 ## 6. Siguiente paso logico
 
-Mientras los pilotos permanezcan pospuestos, auditar la portabilidad de rutas, enlaces simbolicos y limites del destino frente a copias o configuraciones manipuladas. Ejecutar un piloto real solo cuando el usuario decida crear un proyecto.
+Mientras los pilotos permanezcan pospuestos, auditar carreras de publicacion, permisos, tamaños y consumo de recursos frente a arboles o configuraciones manipuladas. Ejecutar un piloto real solo cuando el usuario decida crear un proyecto.

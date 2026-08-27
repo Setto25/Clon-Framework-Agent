@@ -143,7 +143,7 @@ class PruebasCreacionProyecto(unittest.TestCase):
         instaladas = estado.get("skills_instaladas") if isinstance(estado, dict) else None
         self.assertEqual(set(instaladas) if isinstance(instaladas, list) else set(), CORE_AUTOMATICO)
         registro = (destino / "documentacion" / "REGISTRO_CAMBIOS.md").read_text(encoding="utf-8")
-        self.assertIn("agent-framework 0.2.0-alpha.5", registro)
+        self.assertIn("agent-framework 0.2.0-alpha.6", registro)
         for nombre in CORE_AUTOMATICO:
             with self.subTest(skill_registrada=nombre):
                 self.assertIn(f"- `{nombre}`", registro)
@@ -326,6 +326,64 @@ class PruebasCreacionProyecto(unittest.TestCase):
         self.assertNotEqual(resultado.returncode, 0)
         self.assertIn("caracteres de control no permitidos", resultado.stderr)
         self.assertFalse(destino.exists())
+
+    def test_rechaza_enlace_externo_en_copia_manual(self) -> None:
+        """Impide que la inicializacion lea contenido enlazado fuera de la copia."""
+        destino = self.copiar_plantilla("copia-enlace-externo")
+        archivo_externo = self.raiz_temporal / "contenido-externo.txt"
+        archivo_externo.write_text(
+            "Este contenido debe permanecer fuera de la copia.\n",
+            encoding="utf-8",
+            newline="\n",
+        )
+        enlace = destino / "enlace-externo.txt"
+        try:
+            enlace.symlink_to(archivo_externo)
+        except (NotImplementedError, OSError) as error:
+            self.skipTest(f"El entorno no permite crear enlaces simbolicos: {error}")
+        huellas_antes = calcular_huellas(destino)
+        contenido_externo_antes = archivo_externo.read_bytes()
+        resultado = ejecutar(
+            [
+                sys.executable,
+                str(destino / "scripts" / "inicializar_proyecto.py"),
+                "Proyecto Enlace",
+                "español",
+                "--configuracion",
+                str(CONFIGURACION_EJEMPLO),
+            ],
+            destino,
+        )
+        self.assertNotEqual(resultado.returncode, 0)
+        self.assertIn("enlace o reparse point no permitido", resultado.stderr)
+        self.assertEqual(calcular_huellas(destino), huellas_antes)
+        self.assertEqual(archivo_externo.read_bytes(), contenido_externo_antes)
+        self.assertFalse((destino / ".git").exists())
+
+    def test_rechaza_destino_existente_como_enlace_roto(self) -> None:
+        """Impide publicar sobre un nombre ocupado por un enlace roto."""
+        objetivo_inexistente = self.raiz_temporal / "objetivo-inexistente"
+        destino = self.raiz_temporal / "destino-enlace-roto"
+        try:
+            destino.symlink_to(objetivo_inexistente, target_is_directory=True)
+        except (NotImplementedError, OSError) as error:
+            self.skipTest(f"El entorno no permite crear enlaces simbolicos: {error}")
+        self.assertFalse(destino.exists())
+        self.assertTrue(os.path.lexists(destino))
+        resultado = ejecutar(
+            [
+                sys.executable,
+                str(CREADOR),
+                str(destino),
+                "Proyecto Enlace Roto",
+                "--permitir-pendientes",
+            ]
+        )
+        self.assertNotEqual(resultado.returncode, 0)
+        self.assertIn("existe, incluso como enlace", resultado.stderr)
+        self.assertTrue(os.path.lexists(destino))
+        self.assertFalse(objetivo_inexistente.exists())
+        self.assertEqual(list(self.raiz_temporal.glob(".proyecto-temporal-*")), [])
 
     def test_rechaza_contratos_incompatibles_sin_escribir(self) -> None:
         """Confirma que versiones, rutas, claves y origenes fallen sin mutar."""

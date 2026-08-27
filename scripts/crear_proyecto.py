@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 import os
 import shutil
+import stat
 import subprocess
 import sys
 import tempfile
@@ -13,6 +14,9 @@ from collections.abc import Callable
 from pathlib import Path
 
 from catalogo_skills import CORE_AUTOMATICO, RegistroSkill, descubrir_skills
+
+
+ATRIBUTO_REPARSE_POINT = getattr(stat, "FILE_ATTRIBUTE_REPARSE_POINT", 0x400)
 
 
 def crear_argumentos() -> argparse.Namespace:
@@ -44,15 +48,54 @@ def esta_dentro(ruta: Path, posible_contenedor: Path) -> bool:
     return True
 
 
+def es_enlace_o_reparse(ruta: Path) -> bool:
+    """Detecta enlaces simbolicos y puntos de reanalisis sin seguirlos."""
+    informacion = ruta.lstat()
+    atributos = getattr(informacion, "st_file_attributes", 0)
+    return stat.S_ISLNK(informacion.st_mode) or bool(atributos & ATRIBUTO_REPARSE_POINT)
+
+
+def validar_arbol_sin_enlaces(
+    raiz: Path,
+    rutas_omitidas: frozenset[str] = frozenset(),
+) -> None:
+    """Rechaza redirecciones y montajes que saquen contenido del arbol esperado."""
+    raiz_resuelta = raiz.resolve(strict=True)
+    dispositivo_raiz = raiz_resuelta.lstat().st_dev
+
+    def recorrer(directorio: Path) -> None:
+        with os.scandir(directorio) as entradas:
+            for entrada in entradas:
+                ruta = Path(entrada.path)
+                relativa = ruta.relative_to(raiz_resuelta).as_posix()
+                if es_enlace_o_reparse(ruta):
+                    raise ValueError(f"La plantilla contiene un enlace o reparse point no permitido: {relativa}")
+                informacion = ruta.lstat()
+                if informacion.st_dev != dispositivo_raiz:
+                    raise ValueError(f"La plantilla cruza a otro sistema de archivos: {relativa}")
+                ruta_resuelta = ruta.resolve(strict=True)
+                if not esta_dentro(ruta_resuelta, raiz_resuelta):
+                    raise ValueError(f"La plantilla contiene una ruta fuera de su raiz: {relativa}")
+                if entrada.is_dir(follow_symlinks=False) and relativa not in rutas_omitidas:
+                    recorrer(ruta)
+
+    recorrer(raiz_resuelta)
+
+
 def validar_destino(destino: Path, raiz_framework: Path) -> tuple[Path, Path]:
     """Valida que el destino sea nuevo, externo al framework y tenga padre existente."""
-    destino_absoluto = destino.expanduser().resolve()
-    if destino_absoluto.exists():
-        raise ValueError(f"El destino ya existe: {destino_absoluto}")
+    destino_lexico = Path(os.path.abspath(os.fspath(destino.expanduser())))
+    if os.path.lexists(destino_lexico):
+        raise ValueError(f"El destino ya existe, incluso como enlace: {destino_lexico}")
+    destino_absoluto = destino_lexico.resolve()
     padre = destino_absoluto.parent
     if not padre.is_dir():
         raise ValueError(f"El directorio padre no existe: {padre}")
-    if esta_dentro(destino_absoluto, raiz_framework):
+    raiz_framework_resuelta = raiz_framework.resolve(strict=True)
+    if esta_dentro(destino_lexico, raiz_framework_resuelta) or esta_dentro(
+        destino_absoluto,
+        raiz_framework_resuelta,
+    ):
         raise ValueError("El destino no puede quedar dentro del repositorio agent-framework")
     return destino_absoluto, padre
 
@@ -154,6 +197,7 @@ def crear_proyecto(argumentos: argparse.Namespace) -> tuple[Path, list[str]]:
     """Copia, inicializa y publica localmente el proyecto de forma atomica."""
     raiz_framework = Path(__file__).resolve().parent.parent
     origen = raiz_framework / "plantilla"
+    validar_arbol_sin_enlaces(origen)
     raiz_skills_origen = origen / ".agents" / "skills"
     catalogo = descubrir_skills(raiz_skills_origen)
     skills_seleccionadas, nombres_skills = seleccionar_skills(catalogo, argumentos.skill)

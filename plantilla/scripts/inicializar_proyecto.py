@@ -8,6 +8,7 @@ import json
 import os
 import re
 import shutil
+import stat
 import subprocess
 import sys
 import tempfile
@@ -53,6 +54,7 @@ CLAVES_CONTRATO: frozenset[str] = frozenset(
     }
 )
 CLAVES_CAMPO_PLACEHOLDER: frozenset[str] = frozenset({"obligatorio", "origen", "descripcion"})
+ATRIBUTO_REPARSE_POINT = getattr(stat, "FILE_ATTRIBUTE_REPARSE_POINT", 0x400)
 VALORES_PREDETERMINADOS: dict[str, str] = {
     "ESTADO_BREVE": "Inicializando",
     "FASE_ACTIVA": "Fase 0 — Setup",
@@ -98,6 +100,49 @@ def exigir_lista_cadenas(valor: object, nombre: str) -> list[str]:
     if not isinstance(valor, list) or not all(isinstance(item, str) for item in valor):
         raise ValueError(f"{nombre} debe ser una lista de cadenas")
     return cast(list[str], valor)
+
+
+def esta_dentro(ruta: Path, posible_contenedor: Path) -> bool:
+    """Determina si una ruta resuelta permanece dentro de otra."""
+    try:
+        ruta.relative_to(posible_contenedor)
+    except ValueError:
+        return False
+    return True
+
+
+def es_enlace_o_reparse(ruta: Path) -> bool:
+    """Detecta enlaces simbolicos y puntos de reanalisis sin seguirlos."""
+    informacion = ruta.lstat()
+    atributos = getattr(informacion, "st_file_attributes", 0)
+    return stat.S_ISLNK(informacion.st_mode) or bool(atributos & ATRIBUTO_REPARSE_POINT)
+
+
+def validar_arbol_sin_enlaces(
+    raiz: Path,
+    rutas_omitidas: frozenset[str] = frozenset(),
+) -> None:
+    """Rechaza redirecciones y montajes que saquen contenido de la copia."""
+    raiz_resuelta = raiz.resolve(strict=True)
+    dispositivo_raiz = raiz_resuelta.lstat().st_dev
+
+    def recorrer(directorio: Path) -> None:
+        with os.scandir(directorio) as entradas:
+            for entrada in entradas:
+                ruta = Path(entrada.path)
+                relativa = ruta.relative_to(raiz_resuelta).as_posix()
+                if es_enlace_o_reparse(ruta):
+                    raise ValueError(f"La copia contiene un enlace o reparse point no permitido: {relativa}")
+                informacion = ruta.lstat()
+                if informacion.st_dev != dispositivo_raiz:
+                    raise ValueError(f"La copia cruza a otro sistema de archivos: {relativa}")
+                ruta_resuelta = ruta.resolve(strict=True)
+                if not esta_dentro(ruta_resuelta, raiz_resuelta):
+                    raise ValueError(f"La copia contiene una ruta fuera de su raiz: {relativa}")
+                if entrada.is_dir(follow_symlinks=False) and relativa not in rutas_omitidas:
+                    recorrer(ruta)
+
+    recorrer(raiz_resuelta)
 
 
 def exigir_claves_exactas(
@@ -586,6 +631,7 @@ def main() -> int:
     try:
         if not centinela.exists():
             raise ValueError("Falta .plantilla-framework; la plantilla ya fue inicializada o no es una copia valida")
+        validar_arbol_sin_enlaces(raiz, frozenset({".git"}))
         contrato = cargar_contrato(raiz / "configuracion_plantilla.json")
         skills_instaladas = validar_skills_instaladas(raiz, argumentos.skill_seleccionada)
         valores = combinar_valores_usuario(

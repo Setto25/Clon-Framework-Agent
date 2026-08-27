@@ -1,7 +1,7 @@
 # Estado de correcciones de agent-framework
 
-**Ultima actualizacion:** 2026-08-27 (rev 22)
-**Estado general:** Contrato y entradas estrictas; pilotos y procedencia pendientes
+**Ultima actualizacion:** 2026-08-27 (rev 23)
+**Estado general:** Limites de rutas y enlaces endurecidos; pilotos y procedencia pendientes
 **Fase activa:** Fase 6 — validacion interna previa a pilotos
 **Rama de trabajo:** `codex/estabilizacion-framework`
 
@@ -101,6 +101,27 @@ La clasificacion confirmo que `_dryrun2/` era una salida generada para `proyecto
 - No existe una suite automatica que demuestre una instalacion reproducible.
 
 ## 7. Registro de avance
+
+### 2026-08-27 — Rev 23
+
+**Completado:**
+
+- El creador valida el arbol fuente antes de descubrir o copiar Skills.
+- El inicializador directo valida la copia antes de leer el contrato.
+- Se rechazan enlaces simbolicos, junctions, reparse points y cruces de dispositivo internos.
+- El destino se comprueba de forma lexica y resuelta; `lexists` detecta enlaces rotos.
+- El framework avanzo a `0.2.0-alpha.6`.
+
+**Evidencia:**
+
+- El contrato aprobo.
+- Las 30 pruebas automaticas aprobaron sin omisiones.
+- Una copia manual con un enlace hacia un archivo externo fallo antes de crear Git, mantuvo todas sus huellas y no altero el objetivo externo.
+- Un destino ocupado por un enlace roto fue rechazado sin crear el objetivo ni abandonar temporales.
+
+**Resultado:**
+
+La creacion ya no sigue redirecciones del sistema de archivos presentes en la plantilla o en el nombre final del destino.
 
 ### 2026-08-27 — Rev 22
 
@@ -608,7 +629,7 @@ El usuario indico que otras Skills tambien pueden contener adaptaciones de produ
 
 ## 8. Siguiente paso exacto
 
-Auditar la portabilidad de rutas, enlaces simbolicos y limites del destino frente a copias o configuraciones manipuladas. Mantener los pilotos pendientes de una decision explicita del usuario.
+Auditar carreras de publicacion, permisos, tamaños y consumo de recursos frente a arboles o configuraciones manipuladas. Mantener los pilotos pendientes de una decision explicita del usuario.
 
 ## 9. Bloqueos
 
