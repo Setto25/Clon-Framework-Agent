@@ -1,6 +1,6 @@
 # Estado del proyecto: agent-framework
 
-**Ultima actualizacion:** 2026-08-27 (rev 19)
+**Ultima actualizacion:** 2026-08-27 (rev 20)
 **Estado general:** Inicializacion directa transaccional; pilotos y procedencia pendientes
 **Fase activa:** Fase 6 — validacion interna previa a pilotos
 
@@ -105,6 +105,7 @@ Cada stack tiene LEEME.md con reglas adicionales, terminos tecnicos y procedimie
 53. **Validacion previa a toda escritura.** `preparar_cambios` rechaza valores que reintroduzcan sintaxis `{{PLACEHOLDER}}` antes de crear Git o modificar archivos.
 54. **Inicializacion directa transaccional.** La version `0.2.0-alpha.3` respalda archivos, conserva el centinela y revierte estado, `.env`, directorios y `.git` creados por una ejecucion fallida.
 55. **Atomicidad comprobada.** La suite tiene 22 pruebas. Una copia manual con placeholder ambiguo permanecio byte por byte intacta; otra con `.env` desprotegido revirtio el `git init`; un fallo deliberado posterior a la escritura restauro archivos, `.env`, Git y `.plantilla-framework`.
+56. **Exportacion transaccional aprobada.** El commit `c7e76b3` aprobo el contrato y las 22 pruebas desde un `git archive` limpio; la copia temporal y su archivo comprimido se eliminaron despues de la validacion.
 
 ## 5. Que falta
 

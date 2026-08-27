@@ -1,6 +1,6 @@
 # Estado de correcciones de agent-framework
 
-**Ultima actualizacion:** 2026-08-27 (rev 17)
+**Ultima actualizacion:** 2026-08-27 (rev 18)
 **Estado general:** Inicializacion directa transaccional; pilotos y procedencia pendientes
 **Fase activa:** Fase 6 — validacion interna previa a pilotos
 **Rama de trabajo:** `codex/estabilizacion-framework`
@@ -101,6 +101,24 @@ La clasificacion confirmo que `_dryrun2/` era una salida generada para `proyecto
 - No existe una suite automatica que demuestre una instalacion reproducible.
 
 ## 7. Registro de avance
+
+### 2026-08-27 — Rev 18
+
+**Completado:**
+
+- La inicializacion transaccional se registro en el commit `c7e76b3`.
+- Se exporto `HEAD` mediante `git archive` hacia una ruta temporal independiente.
+- La exportacion se elimino despues de la comprobacion.
+
+**Evidencia:**
+
+- El contrato de plantilla aprobo desde la exportacion limpia.
+- Las 22 pruebas automaticas aprobaron desde la exportacion limpia.
+- El arbol de trabajo quedo limpio despues del commit funcional.
+
+**Resultado:**
+
+La evidencia confirma que la atomicidad no depende de archivos sin registrar ni de residuos del entorno de desarrollo.
 
 ### 2026-08-27 — Rev 17
 
