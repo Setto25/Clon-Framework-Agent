@@ -140,6 +140,11 @@ La clasificacion confirmo que `_dryrun2/` era una salida generada para `proyecto
 
 El criterio tecnico de seleccionar solo Skills activas queda implementado y probado. La eficacia real y la calidad de las recomendaciones todavia requieren proyectos piloto; la redistribucion continua bloqueada por procedencia y licencia.
 
+**Registro Git:**
+
+- Commit local: `1153a6f` (`feat: selecciona skills por proyecto`).
+- `main` local contiene el cambio funcional; no se ejecuto `push` ni se elimino ninguna rama.
+
 ### 2026-08-26 — Rev 14
 
 **Autorizacion:**

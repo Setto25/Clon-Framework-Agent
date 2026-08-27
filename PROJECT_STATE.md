@@ -94,6 +94,7 @@ Cada stack tiene LEEME.md con reglas adicionales, terminos tecnicos y procedimie
 42. **Trazabilidad de instancia.** `.estado-plantilla.json` registra la lista descubierta de Skills instaladas y la politica aplicada. Los `LEEME.md` de stacks ya no instruyen movimientos manuales.
 43. **Selector probado localmente.** Python 3, `argparse`, `pathlib`, `shutil`, `TypedDict` y `unittest` sostienen el flujo. Las 17 Skills, el contrato y 14 pruebas aprobaron el 2026-08-27.
 44. **Inicializacion unica.** `inicializar_proyecto.sh` quedo reducido a un adaptador que delega argumentos en Python; ya no genera catalogos alternativos ni sugiere movimientos manuales.
+45. **Selector versionado localmente.** El cambio funcional se registro en `1153a6f`; `main` local lo contiene sin publicar en `origin` ni eliminar ramas.
 
 ## 5. Que falta
 
