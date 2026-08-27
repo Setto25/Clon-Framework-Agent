@@ -1,4 +1,6 @@
 #!/bin/bash
+# DEPRECADO — usar inicializar_proyecto.py en su lugar.
+# Se mantiene temporalmente como respaldo. Requiere bash + perl (Git for Windows).
 # Inicializa un nuevo proyecto a partir de la plantilla del framework agéntico.
 # Uso: ./scripts/inicializar_proyecto.sh <nombre-proyecto> [idioma-nombres]
 
