@@ -1,8 +1,8 @@
 # Estado de correcciones de agent-framework
 
-**Ultima actualizacion:** 2026-08-27 (rev 15)
-**Estado general:** Seleccion explicita de Skills comprobada; pilotos y procedencia pendientes
-**Fase activa:** Fase 6 — pilotos funcionales de Skills y stacks
+**Ultima actualizacion:** 2026-08-27 (rev 16)
+**Estado general:** Compatibilidad e inicializacion endurecidas; pilotos y procedencia pendientes
+**Fase activa:** Fase 6 — validacion interna previa a pilotos
 **Rama de trabajo:** `codex/estabilizacion-framework`
 
 ## 1. Proposito
@@ -101,6 +101,37 @@ La clasificacion confirmo que `_dryrun2/` era una salida generada para `proyecto
 - No existe una suite automatica que demuestre una instalacion reproducible.
 
 ## 7. Registro de avance
+
+### 2026-08-27 — Rev 16
+
+**Alcance:**
+
+- El usuario indico continuar las correcciones del framework sin crear todavia un proyecto nuevo.
+
+**Completado:**
+
+- Se eliminaron afirmaciones absolutas y obsoletas sobre herramientas, sandbox y descubrimiento automatico en los deltas de Antigravity, Claude y Codex.
+- Se retiro la atribucion incorrecta `Antigravity (OpenAI)` y la referencia inexistente `.agents/rules/{{NOMBRE_PROYECTO}}_contexto.md`.
+- `plantilla/AGENTS.md` ahora exige comprobar capacidades observables de cada sesion.
+- El contrato avanzo a version `2` y el framework a `0.2.0-alpha.2`.
+- `NOMBRE_PROYECTO_ENV` se deriva con escape JSON; nombre e idioma rechazan caracteres de control y longitudes no razonables.
+- El registro inicial del proyecto ya no copia el historial del framework. Documenta version, Skills instaladas y siguiente paso propios.
+- Se creo `pruebas/prueba_compatibilidad_agentes.py` y se ampliaron las pruebas de creacion con entradas dotenv adversariales y memoria inicial.
+
+**Tecnologias:**
+
+- Python 3, `unicodedata`, `json`, placeholders derivados y `unittest`.
+
+**Evidencia local:**
+
+- El contrato de plantilla aprobo.
+- Las 18 pruebas automaticas aprobaron.
+- Un nombre con comillas y `#` quedo escapado; un nombre con salto de linea fue rechazado sin publicar el destino.
+- El barrido no encontro las afirmaciones obsoletas ni la ruta inexistente corregida.
+
+**Resultado:**
+
+La plantilla deja de depender de suposiciones sobre productos concretos, evita inyeccion de lineas en dotenv y entrega una memoria inicial perteneciente al proyecto generado. Los pilotos siguen pospuestos por decision del usuario.
 
 ### 2026-08-27 — Rev 15
 
@@ -450,7 +481,7 @@ El usuario indico que otras Skills tambien pueden contener adaptaciones de produ
 
 ## 8. Siguiente paso exacto
 
-Ejecutar un primer piloto real con core automatico y una seleccion minima confirmada. Si el stack es FastAPI, comenzar con `fastapi-setup` y registrar recomendacion, seleccion efectiva, tiempo, errores y seguridad frente a una ejecucion sin Skill.
+Verificar el cambio desde un clon local limpio. Mientras no se cree un proyecto nuevo, continuar con auditorias internas reproducibles y dejar los pilotos pendientes de una decision explicita del usuario.
 
 ## 9. Bloqueos
 

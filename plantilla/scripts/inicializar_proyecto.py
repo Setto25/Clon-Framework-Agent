@@ -169,6 +169,19 @@ def crear_prefijo_variables(nombre_proyecto: str) -> str:
     return prefijo
 
 
+def validar_texto_una_linea(valor: str, clave: str, longitud_maxima: int) -> str:
+    """Valida un texto breve que se inserta en encabezados o configuracion."""
+    limpio = valor.strip()
+    if not limpio:
+        raise ValueError(f"{clave} no puede estar vacio")
+    if len(limpio) > longitud_maxima:
+        raise ValueError(f"{clave} supera el maximo de {longitud_maxima} caracteres")
+    controles = [caracter for caracter in limpio if unicodedata.category(caracter).startswith("C")]
+    if controles:
+        raise ValueError(f"{clave} contiene caracteres de control no permitidos")
+    return limpio
+
+
 def completar_valores(
     contrato: ContratoPlantilla,
     valores: dict[str, str],
@@ -181,11 +194,15 @@ def completar_valores(
 
     resultado = dict(VALORES_PREDETERMINADOS)
     resultado.update(valores)
-    nombre = resultado.get("NOMBRE_PROYECTO", "").strip()
-    if not nombre:
-        raise ValueError("NOMBRE_PROYECTO es obligatorio")
+    nombre = validar_texto_una_linea(resultado.get("NOMBRE_PROYECTO", ""), "NOMBRE_PROYECTO", 120)
     resultado["NOMBRE_PROYECTO"] = nombre
-    resultado.setdefault("IDIOMA_NOMBRES", "español")
+    idioma = validar_texto_una_linea(
+        resultado.get("IDIOMA_NOMBRES", "español"),
+        "IDIOMA_NOMBRES",
+        40,
+    )
+    resultado["IDIOMA_NOMBRES"] = idioma
+    resultado["NOMBRE_PROYECTO_ENV"] = json.dumps(nombre, ensure_ascii=False)
     resultado["PREFIJO_VARIABLES"] = crear_prefijo_variables(nombre)
     resultado["IDENTIFICADOR_PROYECTO"] = resultado["PREFIJO_VARIABLES"].lower()
     resultado["FECHA"] = datetime.now().astimezone().date().isoformat()
@@ -355,6 +372,10 @@ def main() -> int:
         if argumentos.idioma_nombres:
             valores["IDIOMA_NOMBRES"] = argumentos.idioma_nombres
         valores.update(analizar_valores_directos(argumentos.valor))
+        valores["VERSION_FRAMEWORK"] = contrato["version_framework"]
+        valores["LISTA_SKILLS_INSTALADAS"] = "\n".join(
+            f"- `{nombre}`" for nombre in skills_instaladas
+        )
         valores_completos, pendientes = completar_valores(contrato, valores, argumentos.permitir_pendientes)
         archivos = resolver_archivos(raiz, contrato["archivos_incluidos"])
         cambios = preparar_cambios(archivos, valores_completos)

@@ -18,6 +18,8 @@ Un conjunto de archivos que se copian a cualquier proyecto nuevo para darle al a
 - **Memoria de errores**: skill `lecciones-aprendidas` para no repetir ciclos de depuracion ya resueltos.
 - **Creacion segura**: una CLI copia la plantilla, resuelve su contrato, protege `.env`, registra la version de origen e inicializa Git mediante una operacion atomica.
 - **Verificacion de memoria**: un comando comprueba documentos obligatorios, placeholders y datos iniciales pendientes.
+- **Compatibilidad basada en capacidades**: los deltas de agente verifican herramientas, sandbox y descubrimiento real en vez de prometer comportamientos por marca.
+- **Inicializacion trazable**: `.env` escapa el nombre visible y el registro inicial enumera la version del framework y las Skills efectivamente instaladas.
 
 Niveles de estructura:
 
@@ -316,7 +318,7 @@ python scripts\validar_contrato_plantilla.py
 python -m unittest discover -s pruebas -p "prueba_*.py" -v
 ```
 
-La suite comprueba creacion completa, seleccion exacta de Skills, rechazo de nombres desconocidos, memoria pendiente, limpieza atomica, proteccion de `.env`, vigencia del inventario y ausencia de instrucciones obsoletas o destructivas. El workflow `.github/workflows/validacion.yml` ejecuta la misma validacion en Windows y Ubuntu con Python 3.9 y 3.12.
+La suite comprueba creacion completa, seleccion exacta de Skills, rechazo de nombres desconocidos, nombres seguros para dotenv, memoria propia del proyecto, referencias de agentes, limpieza atomica, proteccion de `.env`, vigencia del inventario y ausencia de instrucciones obsoletas o destructivas. El workflow `.github/workflows/validacion.yml` ejecuta la misma validacion en Windows y Ubuntu con Python 3.9 y 3.12.
 
 ---
 
@@ -407,6 +409,7 @@ Desde la raiz del meta-repositorio tambien existen:
 - `pruebas/prueba_inventario_skills.py`: control de vigencia del inventario de Skills;
 - `pruebas/prueba_calidad_skills.py`: invariantes estructurales y operativas de las 17 Skills;
 - `pruebas/prueba_catalogo_skills.py`: politica de core automatico y clasificacion del catalogo;
+- `pruebas/prueba_compatibilidad_agentes.py`: referencias existentes y capacidades no presupuestas por agente;
 - `.github/workflows/validacion.yml`: matriz de CI para Windows, Ubuntu y dos versiones de Python;
 - `auditoria/inventario_skills.json`: rutas, tamaños y huellas del contenido auditado;
 - `ATRIBUCIONES.md`: inventario de procedencia y licencias pendientes.

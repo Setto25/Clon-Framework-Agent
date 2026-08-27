@@ -1,6 +1,6 @@
 {
-  "version_contrato": 1,
-  "version_framework": "0.2.0-alpha.1",
+  "version_contrato": 2,
+  "version_framework": "0.2.0-alpha.2",
   "sintaxis_placeholder": "{{CLAVE}}",
   "rutas_excluidas": [
     ".agents/skills"
@@ -24,6 +24,11 @@
       "origen": "usuario",
       "descripcion": "Identifica el proyecto generado."
     },
+    "NOMBRE_PROYECTO_ENV": {
+      "obligatorio": true,
+      "origen": "derivado",
+      "descripcion": "Representa el nombre visible escapado para archivos dotenv."
+    },
     "IDIOMA_NOMBRES": {
       "obligatorio": true,
       "origen": "usuario",
@@ -43,6 +48,16 @@
       "obligatorio": true,
       "origen": "derivado",
       "descripcion": "Registra la fecha de inicializacion."
+    },
+    "VERSION_FRAMEWORK": {
+      "obligatorio": true,
+      "origen": "derivado",
+      "descripcion": "Registra la version exacta del framework de origen."
+    },
+    "LISTA_SKILLS_INSTALADAS": {
+      "obligatorio": true,
+      "origen": "derivado",
+      "descripcion": "Enumera las Skills presentes en la instancia inicial."
     },
     "ZONA_HORARIA": {
       "obligatorio": true,

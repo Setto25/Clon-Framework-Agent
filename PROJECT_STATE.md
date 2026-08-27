@@ -1,8 +1,8 @@
 # Estado del proyecto: agent-framework
 
-**Ultima actualizacion:** 2026-08-27 (rev 17)
-**Estado general:** Seleccion explicita de Skills comprobada; pilotos y procedencia pendientes
-**Fase activa:** Fase 6 — pilotos funcionales de Skills y stacks
+**Ultima actualizacion:** 2026-08-27 (rev 18)
+**Estado general:** Compatibilidad e inicializacion endurecidas; pilotos y procedencia pendientes
+**Fase activa:** Fase 6 — validacion interna previa a pilotos
 
 ## 1. Objetivo
 
@@ -95,6 +95,11 @@ Cada stack tiene LEEME.md con reglas adicionales, terminos tecnicos y procedimie
 43. **Selector probado localmente.** Python 3, `argparse`, `pathlib`, `shutil`, `TypedDict` y `unittest` sostienen el flujo. Las 17 Skills, el contrato y 14 pruebas aprobaron el 2026-08-27.
 44. **Inicializacion unica.** `inicializar_proyecto.sh` quedo reducido a un adaptador que delega argumentos en Python; ya no genera catalogos alternativos ni sugiere movimientos manuales.
 45. **Selector versionado localmente.** El cambio funcional se registro en `1153a6f`; `main` local lo contiene sin publicar en `origin` ni eliminar ramas.
+46. **Capacidades verificables por agente.** Los deltas de Antigravity, Claude y Codex ya no atribuyen acceso, descubrimiento o proveedor por suposicion; cada sesion comprueba herramientas, sandbox y permisos observables.
+47. **Referencia inexistente eliminada.** Se retiro `.agents/rules/{{NOMBRE_PROYECTO}}_contexto.md`, que nunca formo parte de la plantilla, y una prueba impide reintroducirla junto con afirmaciones obsoletas.
+48. **Nombre seguro para dotenv.** El contrato `2` y la version `0.2.0-alpha.2` derivan `NOMBRE_PROYECTO_ENV` mediante JSON, limitan nombre e idioma y rechazan caracteres de control antes de escribir.
+49. **Historial limpio por proyecto.** `REGISTRO_CAMBIOS.md` dejo de heredar decisiones internas de `agent-framework`; ahora registra fecha, version de origen, Skills instaladas y siguiente paso de la instancia.
+50. **Regresion ampliada.** La suite tiene 18 pruebas e incluye referencias comunes, capacidades obsoletas, escape dotenv, rechazo de saltos de linea y memoria inicial propia.
 
 ## 5. Que falta
 
@@ -102,8 +107,8 @@ Cada stack tiene LEEME.md con reglas adicionales, terminos tecnicos y procedimie
 - **Stack backend-fastapi.** Creado con skill `fastapi-setup`. Sin validacion en proyecto real todavia.
 - **Procedencia de Skills.** La fuente y licencia deben resolverse antes de cualquier redistribucion. Las correcciones para uso personal quedan permitidas y registradas.
 - **Validacion funcional.** La estructura y las invariantes de seguridad estan probadas, pero cada Skill tecnica necesita un escenario piloto que mida si mejora el resultado frente a trabajar sin ella.
-- **Estabilizacion previa al piloto.** Antes de consumir la plantilla en un proyecto real se deben corregir la linea base Git, la seguridad de `.env`, el contrato de placeholders, el inicializador y las referencias ausentes. El avance detallado vive en `ESTADO_CORRECCIONES.md`.
+- **CI remota.** La matriz Windows/Ubuntu y Python 3.9/3.12 no puede considerarse aprobada hasta ejecutar GitHub Actions; no se publicara solo para obtener esa evidencia.
 
 ## 6. Siguiente paso logico
 
-Ejecutar el primer piloto real con el core automatico y una seleccion minima confirmada, comenzando por `fastapi-setup` si el nuevo proyecto usa FastAPI. Registrar recomendacion, seleccion efectiva, tiempo, errores y seguridad frente a una ejecucion sin la Skill. Mantener bloqueada la redistribucion hasta completar procedencia y licencia.
+Mientras los pilotos permanezcan pospuestos, verificar el commit resultante desde un clon local limpio y continuar la auditoria interna de referencias, seguridad y compatibilidad. Despues, ejecutar un piloto real solo cuando el usuario decida crear un proyecto. Mantener bloqueada la redistribucion hasta completar procedencia y licencia.

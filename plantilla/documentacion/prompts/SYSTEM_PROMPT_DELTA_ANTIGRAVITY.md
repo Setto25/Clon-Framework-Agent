@@ -1,25 +1,20 @@
 # Delta para Antigravity — {{NOMBRE_PROYECTO}}
 
 **Aplica sobre:** `SYSTEM_PROMPT_BASE.md`
-**Agente:** Antigravity (OpenAI)
+**Agente:** Antigravity
 
 ---
 
-## Nota de automatización
+## Verificacion de capacidades
 
-En la IDE, `AGENTS.md` aporta las reglas del proyecto automáticamente. Este archivo se conserva para configuraciones administradas o portables donde se necesite un `system_instruction` explícito.
+Antes de actuar, se comprueba si la version y configuracion utilizadas cargan `AGENTS.md`, `.agents/rules/` y `.agents/skills/`. Si no existe evidencia observable, se adjuntan o leen explicitamente los archivos necesarios.
 
-## Descubrimiento automático
+Este archivo se conserva para configuraciones administradas o portables donde se necesite una instruccion de sistema explicita. No sustituye `AGENTS.md` ni `PROJECT_STATE.md`.
 
-- Antigravity detecta Skills en `.agents/skills/` y las invoca mediante `$nombre-skill`
-- Las reglas en `.agents/rules/` se aplican automáticamente
-- La regla `.agents/rules/{{NOMBRE_PROYECTO}}_contexto.md` debe configurarse como **Always On**
+## Operacion condicionada por herramientas
 
-## Diferencia operativa
-
-A diferencia de Claude, Antigravity puede ejecutar código directamente. Sin embargo:
-
-- No ejecutar acciones destructivas sin confirmación del usuario
-- No modificar infraestructura compartida sin autorización explícita
-- Respetar el ciclo: leer estado → proponer → ejecutar → documentar
-- Invocar `$cerrar-modulo` al completar trabajo verificado
+- Solo se ejecuta codigo cuando la sesion expone una herramienta autorizada para ello.
+- Se respetan los limites de filesystem, red y aprobacion indicados por la plataforma.
+- No se ejecutan acciones destructivas ni se modifica infraestructura compartida sin autorizacion explicita.
+- Se sigue el ciclo: leer estado → proponer → ejecutar → verificar → documentar.
+- Se consulta `cerrar-modulo` al completar trabajo verificado si la Skill esta instalada.

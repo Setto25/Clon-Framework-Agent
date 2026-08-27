@@ -56,26 +56,24 @@ Un módulo solo se considera terminado cuando el código está implementado, las
 
 ### Con Antigravity
 
-- Las Skills se descubren automáticamente en `.agents/skills/`
-- Las reglas en `.agents/rules/` se aplican automáticamente
-- El agente invoca Skills mediante `$nombre-skill`
-- Se consulta `AGENTS.md` como contexto permanente
+- Se debe comprobar si la version utilizada descubre `AGENTS.md`, `.agents/rules/` y `.agents/skills/`.
+- Si no existe evidencia de descubrimiento, se deben adjuntar o leer explicitamente los archivos necesarios.
+- Solo se deben invocar Skills instaladas en la instancia.
 
 ### Con Claude
 
-- Leer completamente `AGENTS.md` como contexto inicial
-- Consultar Skills en `.agents/skills/` como documentación (no como herramientas automáticas)
-- Seguir las reglas de `AGENTS.md` manualmente
-- Usar `documentacion/prompts/SYSTEM_PROMPT_BASE.md` + delta correspondiente
-- Consultar `.agents/rules/claude.md` para reglas específicas
+- Se deben comprobar las herramientas y permisos de la sesion antes de asumir acceso a archivos o terminal.
+- Se debe leer completamente `AGENTS.md` como contexto inicial.
+- Se deben consultar las Skills instaladas mediante el mecanismo disponible o como documentacion local.
+- Se debe usar `documentacion/prompts/SYSTEM_PROMPT_BASE.md` junto con el delta correspondiente cuando la configuracion lo requiera.
+- Se debe consultar `.agents/rules/claude.md` para reglas especificas.
 
 ### Con Codex
 
-- Aplicar todas las reglas de `AGENTS.md`
-- Consultar documentación en `documentacion/`
-- Seguir el protocolo de Skills como documentación
-- Mantener compatibilidad con Antigravity
+- Se deben comprobar el sandbox, las rutas autorizadas, la red y las herramientas disponibles.
+- Se deben aplicar todas las reglas de `AGENTS.md` y consultar la documentacion pertinente.
+- Se deben usar solamente las Skills instaladas y expuestas en la sesion.
 
 ### Nota de compatibilidad
 
-Estas reglas son agnósticas del agente. Cada agente las interpreta según sus capacidades. No hay conflicto entre agentes. Cada uno opera dentro de sus limitaciones.
+Estas reglas son agnosticas del agente. Si una capacidad declarada por la plataforma contradice este documento, prevalece la capacidad observable y se actualiza la documentacion del proyecto.

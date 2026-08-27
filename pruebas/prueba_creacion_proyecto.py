@@ -115,6 +115,12 @@ class PruebasCreacionProyecto(unittest.TestCase):
         self.assertIsInstance(estado, dict)
         instaladas = estado.get("skills_instaladas") if isinstance(estado, dict) else None
         self.assertEqual(set(instaladas) if isinstance(instaladas, list) else set(), CORE_AUTOMATICO)
+        registro = (destino / "documentacion" / "REGISTRO_CAMBIOS.md").read_text(encoding="utf-8")
+        self.assertIn("agent-framework 0.2.0-alpha.2", registro)
+        for nombre in CORE_AUTOMATICO:
+            with self.subTest(skill_registrada=nombre):
+                self.assertIn(f"- `{nombre}`", registro)
+        self.assertNotIn("Stack backend-fastapi + skill fastapi-setup", registro)
 
     def test_instala_solo_skills_adicionales_confirmadas(self) -> None:
         """Confirma una seleccion mixta de core, stack y Skill opcional."""
@@ -177,6 +183,41 @@ class PruebasCreacionProyecto(unittest.TestCase):
         for fragmento in ("catalogo_skills.json", "mv .agents", "perl -pi", "grep -rl"):
             with self.subTest(fragmento=fragmento):
                 self.assertNotIn(fragmento, contenido)
+
+    def test_escapa_nombre_visible_en_dotenv(self) -> None:
+        """Confirma que comillas y comentarios no alteren PROJECT_NAME."""
+        destino = self.raiz_temporal / "proyecto-nombre-especial"
+        nombre = 'Proyecto "Especial" #1'
+        resultado = ejecutar(
+            [
+                sys.executable,
+                str(CREADOR),
+                str(destino),
+                nombre,
+                "--configuracion",
+                str(CONFIGURACION_EJEMPLO),
+            ]
+        )
+        self.assertEqual(resultado.returncode, 0, resultado.stdout + resultado.stderr)
+        contenido_env = (destino / ".env").read_text(encoding="utf-8")
+        self.assertIn('PROJECT_NAME="Proyecto \\"Especial\\" #1"', contenido_env)
+
+    def test_rechaza_nombre_con_salto_de_linea(self) -> None:
+        """Impide que el nombre visible inyecte otra linea de configuracion."""
+        destino = self.raiz_temporal / "proyecto-nombre-invalido"
+        resultado = ejecutar(
+            [
+                sys.executable,
+                str(CREADOR),
+                str(destino),
+                "Proyecto Valido\nVARIABLE_INYECTADA=1",
+                "--configuracion",
+                str(CONFIGURACION_EJEMPLO),
+            ]
+        )
+        self.assertNotEqual(resultado.returncode, 0)
+        self.assertIn("caracteres de control", resultado.stderr)
+        self.assertFalse(destino.exists())
 
     def test_rechaza_memoria_con_pendientes(self) -> None:
         """Confirma que una instancia provisional no se certifique como completa."""

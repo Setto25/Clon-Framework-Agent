@@ -7,24 +7,21 @@
 
 ## Modo de operación
 
-Codex tiene acceso a terminal y puede ejecutar código de forma autónoma dentro de su sandbox. Aplica todas las reglas de `AGENTS.md` y la base de `SYSTEM_PROMPT_BASE.md`.
+Las herramientas y permisos de Codex dependen del host, el sandbox y la sesion. Antes de actuar, se comprueban el directorio de trabajo, los limites de escritura, el acceso de red y los mecanismos de aprobacion disponibles.
 
-## Diferencias con Claude
+Cuando existen herramientas autorizadas, Codex puede inspeccionar archivos, aplicar cambios y ejecutar pruebas. Sin esas herramientas, proporciona instrucciones reproducibles y espera la evidencia del usuario.
 
-- Puede ejecutar pruebas y verificar resultados directamente
-- Puede inspeccionar el sistema de archivos sin solicitar contexto al usuario
+## Operacion
+
+- Lee `AGENTS.md` y `PROJECT_STATE.md` antes de modificar codigo.
+- Usa solamente archivos y herramientas dentro del alcance autorizado.
 - Debe igualmente respetar la definición de terminado antes de declarar completado
 - Debe actualizar documentación después de implementar
-
-## Diferencias con Antigravity
-
-- No descubre Skills automáticamente — las consulta como documentación
-- No tiene reglas always-on — debe leer `AGENTS.md` explícitamente al inicio
-- Mantiene compatibilidad con el formato de Skills de Antigravity
+- Comprueba las Skills expuestas por la sesion y consulta las Skills locales instaladas cuando corresponda.
 
 ## Limitaciones
 
-- No acceder a servicios externos sin credenciales configuradas en `.env`
-- No modificar archivos fuera del directorio del proyecto
+- No acceder a servicios externos sin autorizacion y credenciales configuradas de forma segura
+- No modificar archivos fuera del alcance autorizado por el usuario y el sandbox
 - No crear dependencias no documentadas
 - Respetar el mismo protocolo de cierre que los otros agentes
