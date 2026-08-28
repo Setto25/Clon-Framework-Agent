@@ -1,7 +1,7 @@
 # Estado del proyecto: agent-framework
 
-**Ultima actualizacion:** 2026-08-28 (rev 39)
-**Estado general:** Dos pilotos locales cerrados y validados; CI y procedencia pendientes
+**Ultima actualizacion:** 2026-08-28 (rev 40)
+**Estado general:** Dos pilotos locales cerrados y validados; CI remota solicitada y procedencia pendiente
 **Fase activa:** Fase 7 — cierre de validacion local y preparacion de CI
 
 ## 1. Objetivo
@@ -142,6 +142,7 @@ Cada stack tiene LEEME.md con reglas adicionales, terminos tecnicos y procedimie
 89. **Fricciones de pilotos sintetizadas.** `auditoria/sintesis_pilotos.md` registra la evidencia de los dos pilotos y prioriza tres mejoras: tratamiento reproducible de texto multilinea en PowerShell, validacion automatizada del frontend anidado y convencion documental para `interfaz/`. Las ACL de Windows y PostgreSQL local se delimitan como precondiciones de entorno, no como defectos funcionales de las Skills.
 90. **Flujos de pilotos endurecidos.** El inicializador rechaza la secuencia literal `` `n`` o `` `r`` en `--valor` y exige configuracion JSON para texto multilinea, con regresion de creacion. `scripts/validar_frontend_nextjs.py` valida `interfaz/package.json` y ejecuta `test`, `lint` y `build` con `npm.cmd` en Windows. La ejecucion elevada contra el piloto real detecto una ACL de `.env.local`; no se alteraron permisos ni secretos.
 91. **Segundo piloto validado de forma reproducible.** Tras restaurar ACL heredadas en el entorno local, `D:\PROYECTOS\piloto-inventario-web\interfaz` aprobo `npm run test` (2 pruebas), `npm run lint` y `npm run build` mediante el validador del framework. `vitest.config.mts` evita que las pruebas aisladas carguen `.env.local`; el aviso de compatibilidad de Vite quedo eliminado.
+92. **Rama de estabilizacion publicada.** El commit `bf56889` se publico en `origin/codex/estabilizacion-framework` sin modificar `origin/main`, activando la matriz de GitHub Actions. La API del repositorio requiere autenticacion para consultar sus ejecuciones desde esta sesion; la conclusion remota debe verificarse en GitHub antes de declarar aprobada la CI.
 
 ## 5. Que falta
 
@@ -149,8 +150,8 @@ Cada stack tiene LEEME.md con reglas adicionales, terminos tecnicos y procedimie
 - **Stack backend-fastapi.** El piloto uso `fastapi-setup` y valido setup, configuracion tipada, rutas, esquemas, servicio, migraciones, persistencia PostgreSQL y pruebas. Quedan autenticacion y autorizacion fuera de alcance hasta confirmar actores y exposicion.
 - **Procedencia de Skills.** La fuente y licencia deben resolverse antes de cualquier redistribucion. Las correcciones para uso personal quedan permitidas y registradas.
 - **Validacion funcional.** La estructura y las invariantes de seguridad estan probadas, pero cada Skill tecnica necesita un escenario piloto que mida si mejora el resultado frente a trabajar sin ella.
-- **CI remota.** La matriz Windows/Ubuntu y Python 3.9/3.12 no puede considerarse aprobada hasta ejecutar GitHub Actions; no se publicara solo para obtener esa evidencia.
+- **CI remota.** La matriz Windows/Ubuntu y Python 3.9/3.12 fue solicitada mediante la rama publicada; no puede considerarse aprobada hasta comprobar su conclusion en GitHub.
 
 ## 6. Siguiente paso logico
 
-Revisar los cambios locales y decidir expresamente si se publica la rama para ejecutar la CI remota. Toda exposicion futura requiere definir actores, autenticacion y autorizacion; la procedencia de Skills debe resolverse antes de redistribuir el framework.
+Comprobar la conclusion de GitHub Actions para `codex/estabilizacion-framework`, revisar los cambios locales posteriores y resolver la procedencia de Skills antes de redistribuir el framework. Toda exposicion futura requiere definir actores, autenticacion y autorizacion.

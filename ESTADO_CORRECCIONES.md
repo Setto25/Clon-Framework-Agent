@@ -1,7 +1,7 @@
 # Estado de correcciones de agent-framework
 
 **Ultima actualizacion:** 2026-08-28 (rev 31)
-**Estado general:** Dos pilotos locales cerrados y validados; CI y procedencia pendientes
+**Estado general:** Dos pilotos locales cerrados y validados; CI remota solicitada y procedencia pendiente
 **Fase activa:** Fase 7 — cierre de validacion local y preparacion de CI
 **Rama de trabajo:** `codex/estabilizacion-framework`
 
@@ -144,6 +144,16 @@ La friccion de texto multilinea queda corregida. El validador frontend queda dis
 **Resultado:**
 
 Los dos pilotos locales requeridos completaron su cierre tecnico. Solo permanecen la revision de cambios, la CI remota y la procedencia/licencia previa a una redistribucion.
+
+### 2026-08-28 — Rev 37
+
+**Completado:**
+
+- Se publico `codex/estabilizacion-framework` en `origin` hasta el commit `bf56889`, sin modificar `origin/main`.
+
+**Resultado:**
+
+La matriz de GitHub Actions queda solicitada por el evento `push`. La API del repositorio devolvio `404` sin autenticacion desde esta sesion, por lo que su conclusion debe comprobarse en la interfaz de GitHub antes de cerrar la CI.
 
 ### 2026-08-28 — Rev 33
 
@@ -863,7 +873,7 @@ El usuario indico que otras Skills tambien pueden contener adaptaciones de produ
 
 ## 8. Siguiente paso exacto
 
-Revisar los cambios locales y decidir expresamente si se publica la rama para ejecutar la CI remota; cualquier exposicion futura requiere requisitos de identidad y autorizacion. Mantener bloqueada la redistribucion hasta resolver la procedencia de Skills.
+Comprobar la conclusion de GitHub Actions para `codex/estabilizacion-framework`; cualquier exposicion futura requiere requisitos de identidad y autorizacion. Mantener bloqueada la redistribucion hasta resolver la procedencia de Skills.
 
 ## 9. Bloqueos
 
