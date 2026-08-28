@@ -1,7 +1,7 @@
 # Estado de correcciones de agent-framework
 
-**Ultima actualizacion:** 2026-08-28 (rev 41)
-**Estado general:** Dos pilotos locales cerrados y validados; correccion de CI para Windows preparada y procedencia pendiente
+**Ultima actualizacion:** 2026-08-28 (rev 42)
+**Estado general:** CI aprobada en todas las plataformas; auditoria de procedencia focalizada y uso privado vigente
 **Fase activa:** Fase 7 — cierre de validacion local y preparacion de CI
 **Rama de trabajo:** `codex/estabilizacion-framework`
 
@@ -214,6 +214,18 @@ Se publica la correccion final para una nueva ejecucion de CI remota. La conclus
 **Resultado:**
 
 Ubuntu aprobo la correccion anterior. Se prepara una nueva ejecucion para confirmar los dos trabajos de Windows antes de cerrar la matriz.
+
+### 2026-08-28 — Rev 42
+
+**Completado:**
+
+- La matriz remota aprobo Windows y Ubuntu con Python 3.9 y 3.12 para `fa50664`.
+- Se audito la procedencia declarada de `mobile-flutter` sin modificar Skills ni preparar redistribucion.
+- La fuente publica confirma el plugin `flutter-development` y las tres Skills relacionadas, pero no aporta una licencia accesible ni la revision exacta que originaria la adaptacion.
+
+**Resultado:**
+
+El framework queda validado para uso privado. La licencia de `mobile-flutter` se registra como no verificable y no es necesario resolverla mientras no se pretenda redistribuir.
 
 ### 2026-08-28 — Rev 33
 

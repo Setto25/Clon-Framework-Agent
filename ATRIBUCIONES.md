@@ -1,7 +1,7 @@
 # Atribuciones y procedencia
 
 **Ultima revision:** 2026-08-28
-**Estado:** Inventario incompleto; uso personal y redistribucion bloqueada
+**Estado:** Auditoria focalizada completada; uso personal permitido y redistribucion bloqueada
 
 ## 1. Proposito
 
@@ -40,7 +40,7 @@ El inventario mecanico reproducible vive en `auditoria/inventario_skills.json`. 
 - Componente declarado: `flutter-development`.
 - Material local relacionado: `flutter-state-management`, `flutter-performance` y `flutter-animations`.
 - Transformaciones declaradas localmente: fusion, reordenamiento hacia TDD, compresion, traduccion y alineacion con las reglas del framework.
-- Hallazgo: el arbol publico revisado el 2026-08-26 no mostro un archivo de licencia visible. La referencia local a MIT queda pendiente de evidencia primaria.
+- Hallazgo: la revision focalizada del 2026-08-28 confirmo que el README enumera el plugin y las tres Skills relacionadas, pero la raiz publica de `main` no lista licencia y los nombres habituales `LICENSE` y `LICENSE.md` no devolvieron un documento accesible. La referencia local a MIT queda descartada como hecho no demostrado. Vease `auditoria/auditoria_procedencia_2026-08-28.md`.
 
 ## 5. Datos que faltan por cada fuente
 

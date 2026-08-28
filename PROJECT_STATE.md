@@ -1,7 +1,7 @@
 # Estado del proyecto: agent-framework
 
-**Ultima actualizacion:** 2026-08-28 (rev 44)
-**Estado general:** Dos pilotos locales cerrados y validados; correccion de CI para Windows preparada y procedencia pendiente
+**Ultima actualizacion:** 2026-08-28 (rev 45)
+**Estado general:** CI aprobada en todas las plataformas; auditoria de procedencia focalizada y uso privado vigente
 **Fase activa:** Fase 7 — cierre de validacion local y preparacion de CI
 
 ## 1. Objetivo
@@ -147,6 +147,7 @@ Cada stack tiene LEEME.md con reglas adicionales, terminos tecnicos y procedimie
 94. **Diagnostico remoto acotado.** La segunda ejecucion fallo tambien en Ubuntu/Python 3.12 pese a que clonaciones frescas y archivos Git locales coinciden. La CI registra ahora el commit, el inventario calculado y el inventario esperado antes de la suite para identificar la divergencia sin desactivar la comprobacion.
 95. **Orden de inventario independiente de plataforma.** La traza remota mostro archivos individuales identicos y una huella conjunta distinta. La causa fue ordenar objetos `Path`, cuya comparacion depende de la plataforma. `inventariar_skills.py` ordena ahora por rutas POSIX textuales y una regresion cubre mayusculas; se regenero el inventario y se retiro la traza temporal de CI.
 96. **Padres temporales normalizados.** El creador resuelve el padre esperado antes de comparar la ubicacion del temporal, evitando un rechazo falso de Windows sin aceptar rutas fuera del directorio controlado. La extraccion de inventario en pruebas declara el directorio seguro solo para su propio proceso Git, sin alterar la configuracion global.
+97. **CI aprobada y licencia no verificable.** La matriz remota aprobo Windows y Ubuntu con Python 3.9 y 3.12. La revision focalizada confirmo la fuente Flutter y sus tres Skills, pero no encontro licencia aplicable ni revision de origen identificada; el marco se conserva para uso privado sin redistribucion.
 
 ## 5. Que falta
 
@@ -154,8 +155,8 @@ Cada stack tiene LEEME.md con reglas adicionales, terminos tecnicos y procedimie
 - **Stack backend-fastapi.** El piloto uso `fastapi-setup` y valido setup, configuracion tipada, rutas, esquemas, servicio, migraciones, persistencia PostgreSQL y pruebas. Quedan autenticacion y autorizacion fuera de alcance hasta confirmar actores y exposicion.
 - **Procedencia de Skills.** La fuente y licencia deben resolverse antes de cualquier redistribucion. Las correcciones para uso personal quedan permitidas y registradas.
 - **Validacion funcional.** La estructura y las invariantes de seguridad estan probadas, pero cada Skill tecnica necesita un escenario piloto que mida si mejora el resultado frente a trabajar sin ella.
-- **CI remota.** Ubuntu ya aprobo tras hacer determinista el inventario. Se preparo una correccion para el rechazo falso de rutas temporales en Windows; no puede considerarse aprobada hasta comprobar la nueva conclusion en GitHub.
+- **CI remota.** La matriz aprobo Windows y Ubuntu con Python 3.9 y 3.12 en la rama de estabilizacion.
 
 ## 6. Siguiente paso logico
 
-Publicar la correccion de rutas temporales en `codex/estabilizacion-framework` y comprobar la nueva matriz de GitHub Actions. Resolver la procedencia de Skills antes de redistribuir el framework. Toda exposicion futura requiere definir actores, autenticacion y autorizacion.
+Mantener la rama de estabilizacion como linea validada para uso privado. Si en el futuro se desea redistribuir, primero identificar el commit de origen o conseguir autorizacion del autor para `mobile-flutter`. Toda exposicion futura requiere definir actores, autenticacion y autorizacion.
