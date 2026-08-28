@@ -1,7 +1,7 @@
 # Estado de correcciones de agent-framework
 
-**Ultima actualizacion:** 2026-08-28 (rev 45)
-**Estado general:** CI aprobada e integrada en main local; inicio conversacional desde IDE formalizado para uso privado
+**Ultima actualizacion:** 2026-08-28 (rev 46)
+**Estado general:** CI aprobada e integrada en main local; uso conversacional y traslado privado mediante GitHub documentados
 **Fase activa:** Fase 7 — cierre de validacion local y preparacion de CI
 **Rama de trabajo:** `main` local; `codex/estabilizacion-framework` se conserva como historial de estabilizacion
 
@@ -260,6 +260,17 @@ La documentacion de uso coincide con el estado real de `main` local y puede orie
 **Resultado:**
 
 Una persona puede pedir al agente que use el framework sin preparar JSON ni comandos; la CLI segura sigue siendo la unica via que crea la instancia.
+
+### 2026-08-28 — Rev 46
+
+**Completado:**
+
+- El README documenta como publicar conscientemente el framework, clonarlo en otro PC y mantenerlo separado de los proyectos consumidores.
+- La actualizacion remota usa `git pull --ff-only` y aclara que las instancias existentes no reciben cambios implicitos.
+
+**Resultado:**
+
+El traslado privado mediante GitHub queda explicado sin ejecutar ninguna publicacion como parte de esta revision.
 
 ### 2026-08-28 — Rev 33
 

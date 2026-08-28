@@ -1,7 +1,7 @@
 # Estado del proyecto: agent-framework
 
-**Ultima actualizacion:** 2026-08-28 (rev 48)
-**Estado general:** CI aprobada e integrada en main local; inicio conversacional desde IDE formalizado para uso privado
+**Ultima actualizacion:** 2026-08-28 (rev 49)
+**Estado general:** CI aprobada e integrada en main local; uso conversacional y traslado privado mediante GitHub documentados
 **Fase activa:** Fase 7 — cierre de validacion local y preparacion de CI
 
 ## 1. Objetivo
@@ -151,6 +151,7 @@ Cada stack tiene LEEME.md con reglas adicionales, terminos tecnicos y procedimie
 98. **Integracion local cerrada.** `main` se adelanto por fast-forward hasta `8bf5dbc`, que incorpora la estabilizacion validada y la auditoria privada. `origin/main` no se modifico; la rama remota de estabilizacion conserva el ultimo commit publicado de CI.
 99. **README alineado con evidencia.** La guia de uso ya declara los dos pilotos privados y la matriz de CI aprobada. Distingue las garantias tecnicas comprobadas de la procedencia externa pendiente, que solo limita una futura redistribucion.
 100. **Entrada conversacional formalizada.** `iniciar-proyecto` convierte la frase de inicio desde un IDE en una entrevista breve, recomendacion explicada, confirmacion de destino y Skills, y ejecucion de la CLI ya validada. No crea archivos antes de esa confirmacion y conserva la ruta manual como alternativa reproducible.
+101. **Uso entre computadores documentado.** El README separa la publicacion consciente del framework, su clonacion en otro PC y la creacion de proyectos consumidores como repositorios hermanos. `git pull --ff-only` actualiza solo el meta-repositorio; las instancias no se modifican implicitamente.
 
 ## 5. Que falta
 

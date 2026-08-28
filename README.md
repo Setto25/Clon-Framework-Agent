@@ -99,6 +99,50 @@ Usa el framework ubicado en D:\PROYECTOS\agent-framework para iniciar un proyect
 
 La Skill `iniciar-proyecto` recopila objetivo, usuarios, MVP, exclusiones, infraestructura, destino y siguiente paso. Luego recomienda Skills, muestra el resumen y espera la confirmacion de los nombres exactos antes de crear archivos. El agente prepara internamente la configuracion y ejecuta la misma CLI segura documentada abajo. Si el IDE no descubre Skills de forma automatica, se adjuntan `AGENTS.md`, `PROJECT_STATE.md` y `plantilla/.agents/skills/iniciar-proyecto/SKILL.md` como contexto.
 
+### Uso desde otro PC mediante GitHub
+
+GitHub transporta el meta-repositorio entre computadores; no se clona dentro del proyecto consumidor. Antes de publicar cambios se comprueba la visibilidad del repositorio remoto. Si el contenido debe seguir siendo privado, el repositorio de GitHub tambien debe ser privado.
+
+En el PC que contiene la version validada, primero se revisa que no haya cambios sin registrar y que commits faltan en el remoto:
+
+```powershell
+Set-Location D:\PROYECTOS\agent-framework
+git status
+git log --oneline origin/main..main
+```
+
+Solo cuando la persona decide publicar esa version en el remoto configurado se ejecuta:
+
+```powershell
+git push origin main
+```
+
+En el otro PC se clona el framework una sola vez, en una carpeta propia:
+
+```powershell
+Set-Location D:\PROYECTOS
+git clone https://github.com/Setto25/agent-framework.git agent-framework
+Set-Location D:\PROYECTOS\agent-framework
+```
+
+Los repositorios privados solicitan autenticacion de GitHub mediante el administrador de credenciales o el mecanismo configurado en el equipo. Despues se abre `D:\PROYECTOS\agent-framework` en el IDE y se usa el inicio asistido. El proyecto resultante se crea como carpeta hermana, por ejemplo:
+
+```text
+D:\PROYECTOS\
+├── agent-framework\
+└── mi-proyecto\
+```
+
+Para recibir actualizaciones posteriores, se ejecuta solamente en la copia de `agent-framework` y con su arbol limpio:
+
+```powershell
+Set-Location D:\PROYECTOS\agent-framework
+git status
+git pull --ff-only origin main
+```
+
+Cada proyecto consumidor conserva su propio repositorio Git. Un `git pull` del framework no actualiza automaticamente los proyectos ya creados; las Skills nuevas se incorporan de forma explicita mediante `scripts/agregar_skills.py`.
+
 ### Flujo manual: configuracion completa
 
 1. Consulta el catalogo. El agente puede recomendar Skills segun el objetivo y el stack confirmado, pero la persona debe aprobar sus nombres exactos.
