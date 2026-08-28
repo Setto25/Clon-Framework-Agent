@@ -1,7 +1,7 @@
 # Estado de correcciones de agent-framework
 
 **Ultima actualizacion:** 2026-08-28 (rev 31)
-**Estado general:** Dos pilotos locales cerrados y validados; CI remota solicitada y procedencia pendiente
+**Estado general:** Dos pilotos locales cerrados y validados; correccion de CI publicada y procedencia pendiente
 **Fase activa:** Fase 7 — cierre de validacion local y preparacion de CI
 **Rama de trabajo:** `codex/estabilizacion-framework`
 
@@ -154,6 +154,21 @@ Los dos pilotos locales requeridos completaron su cierre tecnico. Solo permanece
 **Resultado:**
 
 La matriz de GitHub Actions queda solicitada por el evento `push`. La API del repositorio devolvio `404` sin autenticacion desde esta sesion, por lo que su conclusion debe comprobarse en la interfaz de GitHub antes de cerrar la CI.
+
+### 2026-08-28 — Rev 38
+
+**Completado:**
+
+- Se corrigio `prueba_inventario_skills.py` para calcular la huella sobre `git archive HEAD` en un temporal controlado, en lugar de depender de atributos de la copia de trabajo del runner.
+
+**Evidencia:**
+
+- La regresion de inventario, el contrato y las 50 pruebas aprobaron localmente.
+- Un clon fresco de la rama remota y un archivo Git local generaron la misma huella inventariada.
+
+**Resultado:**
+
+Se publica una ejecucion correctiva de la matriz remota. La conclusion de GitHub Actions sigue siendo el criterio pendiente para cerrar la CI.
 
 ### 2026-08-28 — Rev 33
 
@@ -873,7 +888,7 @@ El usuario indico que otras Skills tambien pueden contener adaptaciones de produ
 
 ## 8. Siguiente paso exacto
 
-Comprobar la conclusion de GitHub Actions para `codex/estabilizacion-framework`; cualquier exposicion futura requiere requisitos de identidad y autorizacion. Mantener bloqueada la redistribucion hasta resolver la procedencia de Skills.
+Comprobar la conclusion de GitHub Actions para `codex/estabilizacion-framework` tras la correccion del inventario; cualquier exposicion futura requiere requisitos de identidad y autorizacion. Mantener bloqueada la redistribucion hasta resolver la procedencia de Skills.
 
 ## 9. Bloqueos
 
