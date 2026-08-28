@@ -1,7 +1,7 @@
 # Estado de correcciones de agent-framework
 
-**Ultima actualizacion:** 2026-08-28 (rev 46)
-**Estado general:** CI aprobada e integrada en main local; uso conversacional y traslado privado mediante GitHub documentados
+**Ultima actualizacion:** 2026-08-28 (rev 47)
+**Estado general:** main publicada y reproducible mediante GitHub; uso conversacional y pilotos validados
 **Fase activa:** Fase 7 — cierre de validacion local y preparacion de CI
 **Rama de trabajo:** `main` local; `codex/estabilizacion-framework` se conserva como historial de estabilizacion
 
@@ -271,6 +271,18 @@ Una persona puede pedir al agente que use el framework sin preparar JSON ni coma
 **Resultado:**
 
 El traslado privado mediante GitHub queda explicado sin ejecutar ninguna publicacion como parte de esta revision.
+
+### 2026-08-28 — Rev 47
+
+**Completado:**
+
+- El usuario autorizo publicar `main` en GitHub.
+- Se comprobo que `origin/main` era ancestro directo, el contrato aprobo y la suite completo 51 pruebas.
+- Los 43 commits locales se publicaron por fast-forward desde `831e1a6` hasta `aa55f03`.
+
+**Resultado:**
+
+La rama `main` local quedo sincronizada con `origin/main` y ya puede clonarse desde otro computador.
 
 ### 2026-08-28 — Rev 33
 

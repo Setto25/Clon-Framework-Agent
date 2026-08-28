@@ -1,7 +1,7 @@
 # Estado del proyecto: agent-framework
 
-**Ultima actualizacion:** 2026-08-28 (rev 49)
-**Estado general:** CI aprobada e integrada en main local; uso conversacional y traslado privado mediante GitHub documentados
+**Ultima actualizacion:** 2026-08-28 (rev 50)
+**Estado general:** main publicada y reproducible mediante GitHub; uso conversacional y pilotos validados
 **Fase activa:** Fase 7 — cierre de validacion local y preparacion de CI
 
 ## 1. Objetivo
@@ -152,6 +152,7 @@ Cada stack tiene LEEME.md con reglas adicionales, terminos tecnicos y procedimie
 99. **README alineado con evidencia.** La guia de uso ya declara los dos pilotos privados y la matriz de CI aprobada. Distingue las garantias tecnicas comprobadas de la procedencia externa pendiente, que solo limita una futura redistribucion.
 100. **Entrada conversacional formalizada.** `iniciar-proyecto` convierte la frase de inicio desde un IDE en una entrevista breve, recomendacion explicada, confirmacion de destino y Skills, y ejecucion de la CLI ya validada. No crea archivos antes de esa confirmacion y conserva la ruta manual como alternativa reproducible.
 101. **Uso entre computadores documentado.** El README separa la publicacion consciente del framework, su clonacion en otro PC y la creacion de proyectos consumidores como repositorios hermanos. `git pull --ff-only` actualiza solo el meta-repositorio; las instancias no se modifican implicitamente.
+102. **Main publicada con autorizacion explicita.** Los 43 commits locales se publicaron por avance lineal desde `831e1a6` hasta `aa55f03` en `origin/main`, despues de aprobar el contrato y las 51 pruebas. No se reescribio historial y la rama local quedo sincronizada con el remoto.
 
 ## 5. Que falta
 
@@ -163,4 +164,4 @@ Cada stack tiene LEEME.md con reglas adicionales, terminos tecnicos y procedimie
 
 ## 6. Siguiente paso logico
 
-Usar `main` local como linea validada para instanciar proyectos privados. Si en el futuro se desea redistribuir, primero identificar el commit de origen o conseguir autorizacion del autor para `mobile-flutter`. Toda exposicion futura requiere definir actores, autenticacion y autorizacion.
+Clonar o actualizar `main` desde GitHub en los equipos autorizados y usarla para instanciar proyectos. Si en el futuro se amplia la redistribucion, primero identificar el commit de origen o conseguir autorizacion del autor para `mobile-flutter`. Toda exposicion futura requiere definir actores, autenticacion y autorizacion.
