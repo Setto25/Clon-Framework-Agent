@@ -44,6 +44,12 @@ def ejecutar(argumentos: list[str], raiz: Path = RAIZ_FRAMEWORK) -> subprocess.C
     )
 
 
+def escribir_texto_lf(ruta: Path, contenido: str) -> None:
+    """Escribe texto UTF-8 con saltos LF sin depender de APIs posteriores a Python 3.9."""
+    with ruta.open("w", encoding="utf-8", newline="\n") as flujo:
+        flujo.write(contenido)
+
+
 def calcular_huellas(raiz: Path) -> dict[str, str]:
     """Calcula las huellas SHA-256 de todos los archivos de una ruta."""
     return {
@@ -119,6 +125,44 @@ class PruebasCreacionProyecto(unittest.TestCase):
         shutil.copytree(PLANTILLA, destino, copy_function=shutil.copy2)
         return destino
 
+    def inicializar_git(self, destino: Path, confirmar: bool) -> str | None:
+        """Crea un repositorio temporal y confirma su contenido cuando se solicita."""
+        resultado_inicio = ejecutar(["git", "init"], destino)
+        self.assertEqual(
+            resultado_inicio.returncode,
+            0,
+            resultado_inicio.stdout + resultado_inicio.stderr,
+        )
+        if not confirmar:
+            return None
+        resultado_agregar = ejecutar(["git", "add", "."], destino)
+        self.assertEqual(
+            resultado_agregar.returncode,
+            0,
+            resultado_agregar.stdout + resultado_agregar.stderr,
+        )
+        resultado_commit = ejecutar(
+            [
+                "git",
+                "-c",
+                "user.name=Pruebas agent-framework",
+                "-c",
+                "user.email=pruebas@example.invalid",
+                "commit",
+                "-m",
+                "Registra plantilla sin inicializar",
+            ],
+            destino,
+        )
+        self.assertEqual(
+            resultado_commit.returncode,
+            0,
+            resultado_commit.stdout + resultado_commit.stderr,
+        )
+        resultado_head = ejecutar(["git", "rev-parse", "HEAD"], destino)
+        self.assertEqual(resultado_head.returncode, 0, resultado_head.stderr)
+        return resultado_head.stdout.strip()
+
     def escribir_configuracion(
         self,
         nombre_archivo: str,
@@ -131,11 +175,7 @@ class PruebasCreacionProyecto(unittest.TestCase):
             raise AssertionError("La configuracion de ejemplo no es un objeto JSON")
         datos.update(valores_adicionales)
         ruta = self.raiz_temporal / nombre_archivo
-        ruta.write_text(
-            json.dumps(datos, ensure_ascii=False),
-            encoding="utf-8",
-            newline="\n",
-        )
+        escribir_texto_lf(ruta, json.dumps(datos, ensure_ascii=False))
         return ruta
 
     def test_crea_proyecto_completo_y_protege_entorno(self) -> None:
@@ -162,7 +202,7 @@ class PruebasCreacionProyecto(unittest.TestCase):
         instaladas = estado.get("skills_instaladas") if isinstance(estado, dict) else None
         self.assertEqual(set(instaladas) if isinstance(instaladas, list) else set(), CORE_AUTOMATICO)
         registro = (destino / "documentacion" / "REGISTRO_CAMBIOS.md").read_text(encoding="utf-8")
-        self.assertIn("agent-framework 0.2.0-alpha.7", registro)
+        self.assertIn("agent-framework 0.2.0-alpha.8", registro)
         for nombre in CORE_AUTOMATICO:
             with self.subTest(skill_registrada=nombre):
                 self.assertIn(f"- `{nombre}`", registro)
@@ -350,10 +390,9 @@ class PruebasCreacionProyecto(unittest.TestCase):
         """Impide que la inicializacion lea contenido enlazado fuera de la copia."""
         destino = self.copiar_plantilla("copia-enlace-externo")
         archivo_externo = self.raiz_temporal / "contenido-externo.txt"
-        archivo_externo.write_text(
+        escribir_texto_lf(
+            archivo_externo,
             "Este contenido debe permanecer fuera de la copia.\n",
-            encoding="utf-8",
-            newline="\n",
         )
         enlace = destino / "enlace-externo.txt"
         try:
@@ -422,7 +461,7 @@ class PruebasCreacionProyecto(unittest.TestCase):
         temporal = self.raiz_temporal / "temporal-permisos"
         temporal.mkdir()
         archivo = temporal / "solo-lectura.txt"
-        archivo.write_text("Contenido preservado.\n", encoding="utf-8", newline="\n")
+        escribir_texto_lf(archivo, "Contenido preservado.\n")
         contenido_antes = archivo.read_bytes()
         archivo.chmod(stat.S_IREAD)
         modulo.normalizar_permisos_arbol(temporal)
@@ -599,10 +638,9 @@ class PruebasCreacionProyecto(unittest.TestCase):
                     if not isinstance(zona_horaria, dict):
                         raise AssertionError("ZONA_HORARIA no declara un campo contractual")
                     zona_horaria["origen"] = ["usuario"] if caso == "origen-no-textual" else "externo"
-                ruta_contrato.write_text(
+                escribir_texto_lf(
+                    ruta_contrato,
                     json.dumps(contrato, ensure_ascii=False, indent=2) + "\n",
-                    encoding="utf-8",
-                    newline="\n",
                 )
                 huellas_antes = calcular_huellas(destino)
                 resultado = ejecutar(
@@ -629,10 +667,9 @@ class PruebasCreacionProyecto(unittest.TestCase):
         if isinstance(configuracion, dict):
             configuracion["SIGUIENTE_PASO"] = "Resolver {{VALOR_FUTURO}}"
         ruta_configuracion = self.raiz_temporal / "configuracion-placeholder.json"
-        ruta_configuracion.write_text(
+        escribir_texto_lf(
+            ruta_configuracion,
             json.dumps(configuracion, ensure_ascii=False),
-            encoding="utf-8",
-            newline="\n",
         )
         huellas_antes = calcular_huellas(destino)
         resultado = ejecutar(
@@ -652,13 +689,103 @@ class PruebasCreacionProyecto(unittest.TestCase):
         self.assertFalse((destino / ".git").exists())
         self.assertFalse((destino / ".estado-plantilla.json").exists())
 
+    def test_inicializacion_directa_acepta_repositorio_limpio_preexistente(self) -> None:
+        """Conserva un repositorio limpio y aplica la configuracion sin crear otro Git."""
+        destino = self.copiar_plantilla("copia-git-limpio")
+        head_antes = self.inicializar_git(destino, confirmar=True)
+        resultado = ejecutar(
+            [
+                sys.executable,
+                str(destino / "scripts" / "inicializar_proyecto.py"),
+                "Proyecto Git Limpio",
+                "español",
+                "--configuracion",
+                str(CONFIGURACION_EJEMPLO),
+            ],
+            destino,
+        )
+        self.assertEqual(resultado.returncode, 0, resultado.stdout + resultado.stderr)
+        self.assertTrue((destino / ".git").is_dir())
+        self.assertTrue((destino / ".estado-plantilla.json").is_file())
+        head_despues = ejecutar(["git", "rev-parse", "HEAD"], destino)
+        self.assertEqual(head_despues.returncode, 0, head_despues.stderr)
+        self.assertEqual(head_despues.stdout.strip(), head_antes)
+
+    def test_inicializacion_directa_acepta_repositorio_sin_commit(self) -> None:
+        """Conserva un repositorio preexistente que todavia no contiene commits."""
+        destino = self.copiar_plantilla("copia-git-sin-commit")
+        self.inicializar_git(destino, confirmar=False)
+        resultado = ejecutar(
+            [
+                sys.executable,
+                str(destino / "scripts" / "inicializar_proyecto.py"),
+                "Proyecto Git Nuevo",
+                "español",
+                "--configuracion",
+                str(CONFIGURACION_EJEMPLO),
+            ],
+            destino,
+        )
+        self.assertEqual(resultado.returncode, 0, resultado.stdout + resultado.stderr)
+        self.assertTrue((destino / ".git").is_dir())
+        self.assertTrue((destino / ".estado-plantilla.json").is_file())
+        referencia = ejecutar(["git", "rev-parse", "--verify", "HEAD"], destino)
+        self.assertNotEqual(referencia.returncode, 0)
+
+    def test_inicializacion_directa_rechaza_repositorio_con_cambios(self) -> None:
+        """Preserva un repositorio preexistente cuando contiene cambios rastreados."""
+        destino = self.copiar_plantilla("copia-git-con-cambios")
+        self.inicializar_git(destino, confirmar=True)
+        ruta_gitignore = destino / ".gitignore"
+        contenido_modificado = ruta_gitignore.read_text(encoding="utf-8") + "\n# Cambio de prueba.\n"
+        escribir_texto_lf(ruta_gitignore, contenido_modificado)
+        resultado = ejecutar(
+            [
+                sys.executable,
+                str(destino / "scripts" / "inicializar_proyecto.py"),
+                "Proyecto Git Modificado",
+                "español",
+                "--configuracion",
+                str(CONFIGURACION_EJEMPLO),
+            ],
+            destino,
+        )
+        self.assertNotEqual(resultado.returncode, 0)
+        self.assertIn("cambios rastreados sin confirmar", resultado.stderr)
+        self.assertEqual(ruta_gitignore.read_text(encoding="utf-8"), contenido_modificado)
+        self.assertTrue((destino / ".git").is_dir())
+        self.assertTrue((destino / ".plantilla-framework").is_file())
+        self.assertFalse((destino / ".estado-plantilla.json").exists())
+
+    def test_inicializacion_directa_rechaza_operacion_git_activa(self) -> None:
+        """Preserva la copia cuando un repositorio preexistente esta en una operacion Git."""
+        destino = self.copiar_plantilla("copia-git-operacion-activa")
+        self.inicializar_git(destino, confirmar=True)
+        marcador = destino / ".git" / "rebase-merge"
+        marcador.mkdir()
+        resultado = ejecutar(
+            [
+                sys.executable,
+                str(destino / "scripts" / "inicializar_proyecto.py"),
+                "Proyecto Git Operacion",
+                "español",
+                "--configuracion",
+                str(CONFIGURACION_EJEMPLO),
+            ],
+            destino,
+        )
+        self.assertNotEqual(resultado.returncode, 0)
+        self.assertIn("operacion Git activa: rebase-merge", resultado.stderr)
+        self.assertTrue(marcador.is_dir())
+        self.assertTrue((destino / ".plantilla-framework").is_file())
+        self.assertFalse((destino / ".estado-plantilla.json").exists())
+
     def test_inicializacion_directa_revierte_git_si_env_no_esta_protegido(self) -> None:
         """Confirma que un fallo posterior a git init restaure la copia manual."""
         destino = self.copiar_plantilla("copia-gitignore-invalido")
-        (destino / ".gitignore").write_text(
+        escribir_texto_lf(
+            destino / ".gitignore",
             "# Configuracion deliberadamente invalida para la prueba.\n",
-            encoding="utf-8",
-            newline="\n",
         )
         huellas_antes = calcular_huellas(destino)
         resultado = ejecutar(
@@ -682,10 +809,9 @@ class PruebasCreacionProyecto(unittest.TestCase):
         """Confirma que un fallo tardio restaure archivos, centinela y Git."""
         destino = self.copiar_plantilla("copia-fallo-tardio")
         ruta_infraestructura = destino / "infraestructura"
-        ruta_infraestructura.write_text(
+        escribir_texto_lf(
+            ruta_infraestructura,
             "Bloquea deliberadamente la creacion del directorio de registros.\n",
-            encoding="utf-8",
-            newline="\n",
         )
         huellas_antes = calcular_huellas(destino)
         resultado = ejecutar(

@@ -1,7 +1,7 @@
 # Estado del proyecto: agent-framework
 
-**Ultima actualizacion:** 2026-08-27 (rev 28)
-**Estado general:** Publicacion y recursos acotados; pilotos y procedencia pendientes
+**Ultima actualizacion:** 2026-08-28 (rev 29)
+**Estado general:** Compatibilidad local y Git preexistente auditados; pilotos y procedencia pendientes
 **Fase activa:** Fase 6 — validacion interna previa a pilotos
 
 ## 1. Objetivo
@@ -125,6 +125,9 @@ Cada stack tiene LEEME.md con reglas adicionales, terminos tecnicos y procedimie
 73. **Publicacion revalidada.** El destino se comprueba inmediatamente antes de `os.replace`; si aparecio durante la creacion se conserva y el temporal propio se elimina. La proteccion es de mejor esfuerzo ante una carrera hostil ocurrida entre esa comprobacion y la llamada atomica.
 74. **Operaciones con tiempo finito.** Cada comando Git dispone de 30 segundos y el inicializador invocado por el creador de 120 segundos. La suite tiene 38 pruebas y cubre limites acumulados, JSON, valores, permisos, caché y publicacion tardia.
 75. **Exportacion de recursos aprobada.** El commit `534e906` aprobo el contrato y las 38 pruebas desde un `git archive` limpio; los temporales de la exportacion y de los escenarios adversariales se eliminaron.
+76. **Piso Python corregido y vigilado.** La version `0.2.0-alpha.8` evita `Path.write_text(newline=)`, API posterior a Python 3.9, y analiza todos los modulos con la gramatica 3.9. La ejecucion real en ese interprete continua pendiente de la matriz remota porque el entorno local solo dispone de Python 3.13.
+77. **Validaciones duplicadas bajo contrato.** La autonomia de la copia exige conservar validaciones tanto en el meta-repositorio como en `plantilla/`; una prueba AST compara versiones, claves, origenes, limites y artefactos rechazados para impedir divergencias silenciosas.
+78. **Git preexistente delimitado.** El inicializador directo admite repositorios limpios con historial y repositorios sin primer commit. Rechaza cambios rastreados o preparados, repositorios invalidos y operaciones merge, rebase, cherry-pick, revert o bisect activas sin eliminar `.git` ni modificar la copia.
 
 ## 5. Que falta
 
@@ -136,4 +139,4 @@ Cada stack tiene LEEME.md con reglas adicionales, terminos tecnicos y procedimie
 
 ## 6. Siguiente paso logico
 
-Mientras los pilotos permanezcan pospuestos, auditar coherencia entre validaciones duplicadas, compatibilidad declarada con Python y estados Git preexistentes. Ejecutar un piloto real solo cuando el usuario decida crear un proyecto.
+Registrar el bloque de compatibilidad y Git, validarlo desde una exportacion limpia y dejar preparada la decision sobre CI remota o primer proyecto piloto.

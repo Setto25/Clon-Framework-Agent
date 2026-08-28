@@ -155,6 +155,8 @@ Esta contingencia conserva las 17 Skills y no aplica seleccion. No se recomienda
 
 El inicializador directo valida todos los reemplazos antes de escribir y ejecuta los cambios como una transaccion local. Si falla despues de crear Git, `.env`, estado o directorios auxiliares, restaura la copia y conserva el centinela para permitir un nuevo intento.
 
+Si la copia manual ya contiene `.git`, se admite un repositorio limpio con commits o todavia sin commits. Se rechazan cambios rastreados, cambios preparados y operaciones de merge, rebase, cherry-pick, revert o bisect activas. Los archivos no rastreados se preservan y no bloquean la inicializacion, porque el inicializador solo modifica las rutas declaradas por el contrato.
+
 `scripts/inicializar_proyecto.sh` es solo un adaptador de compatibilidad: localiza Python y delega todos los argumentos en `inicializar_proyecto.py`. `$iniciar-proyecto` puede recomendar desde el catalogo y ejecutar la misma CLI Python; una recomendacion nunca sustituye la confirmacion explicita.
 
 ---
@@ -328,7 +330,7 @@ python scripts\validar_contrato_plantilla.py
 python -m unittest discover -s pruebas -p "prueba_*.py" -v
 ```
 
-La suite comprueba creacion completa, seleccion exacta de Skills, rechazo de nombres desconocidos, nombres seguros para dotenv, memoria propia del proyecto, referencias de agentes, limpieza atomica, proteccion de `.env`, vigencia del inventario y ausencia de instrucciones obsoletas o destructivas. El workflow `.github/workflows/validacion.yml` ejecuta la misma validacion en Windows y Ubuntu con Python 3.9 y 3.12.
+La suite comprueba creacion completa, seleccion exacta de Skills, rechazo de nombres desconocidos, nombres seguros para dotenv, memoria propia del proyecto, referencias de agentes, limpieza atomica, proteccion de `.env`, estados Git preexistentes, coherencia de limites, gramatica de Python 3.9, vigencia del inventario y ausencia de instrucciones obsoletas o destructivas. El analisis estatico impide APIs de `pathlib` posteriores al piso declarado; la ejecucion real en Python 3.9 corresponde a la matriz pendiente de GitHub Actions. El workflow `.github/workflows/validacion.yml` ejecuta la misma validacion en Windows y Ubuntu con Python 3.9 y 3.12.
 
 ---
 
@@ -420,6 +422,7 @@ Desde la raiz del meta-repositorio tambien existen:
 - `pruebas/prueba_calidad_skills.py`: invariantes estructurales y operativas de las 17 Skills;
 - `pruebas/prueba_catalogo_skills.py`: politica de core automatico y clasificacion del catalogo;
 - `pruebas/prueba_compatibilidad_agentes.py`: referencias existentes y capacidades no presupuestas por agente;
+- `pruebas/prueba_compatibilidad_python.py`: gramatica Python 3.9 y coherencia de constantes duplicadas;
 - `.github/workflows/validacion.yml`: matriz de CI para Windows, Ubuntu y dos versiones de Python;
 - `auditoria/inventario_skills.json`: rutas, tamaños y huellas del contenido auditado;
 - `ATRIBUCIONES.md`: inventario de procedencia y licencias pendientes.

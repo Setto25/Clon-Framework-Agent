@@ -79,6 +79,15 @@ SUFIJOS_ARTEFACTOS_GENERADOS: tuple[str, ...] = (".pyc", ".pyo")
 MAXIMO_BYTES_JSON = 1024 * 1024
 MAXIMO_CARACTERES_VALOR = 100_000
 TIEMPO_MAXIMO_GIT_SEGUNDOS = 30
+MARCADORES_OPERACION_GIT: tuple[str, ...] = (
+    "MERGE_HEAD",
+    "CHERRY_PICK_HEAD",
+    "REVERT_HEAD",
+    "REBASE_HEAD",
+    "rebase-merge",
+    "rebase-apply",
+    "BISECT_LOG",
+)
 VALORES_PREDETERMINADOS: dict[str, str] = {
     "ESTADO_BREVE": "Inicializando",
     "FASE_ACTIVA": "Fase 0 — Setup",
@@ -515,6 +524,12 @@ def preparar_cambios(archivos: list[Path], valores: dict[str, str]) -> dict[Path
     return cambios
 
 
+def escribir_texto_lf(ruta: Path, contenido: str) -> None:
+    """Escribe texto UTF-8 con saltos LF en versiones soportadas de Python."""
+    with ruta.open("w", encoding="utf-8", newline="\n") as flujo:
+        flujo.write(contenido)
+
+
 def escribir_cambios(cambios: dict[Path, str], raiz: Path) -> None:
     """Escribe cambios con respaldo temporal y restaura ante un fallo."""
     with tempfile.TemporaryDirectory(prefix="respaldo-inicializacion-") as directorio_temporal:
@@ -528,7 +543,7 @@ def escribir_cambios(cambios: dict[Path, str], raiz: Path) -> None:
             for archivo, contenido in cambios.items():
                 temporal = archivo.with_name(f".{archivo.name}.temporal")
                 temporales.append(temporal)
-                temporal.write_text(contenido, encoding="utf-8", newline="\n")
+                escribir_texto_lf(temporal, contenido)
                 os.replace(temporal, archivo)
         except OSError:
             for archivo in cambios:
@@ -557,20 +572,35 @@ def ejecutar_git(argumentos: list[str], raiz: Path, comprobar: bool = True) -> s
 
 
 def verificar_git(raiz: Path) -> None:
-    """Inicializa Git o rechaza cambios rastreados preexistentes."""
+    """Inicializa Git o valida un repositorio preexistente sin operaciones activas."""
     directorio_git = raiz / ".git"
     if not directorio_git.exists():
         ejecutar_git(["init"], raiz)
         return
-    referencia = ejecutar_git(["rev-parse", "--verify", "HEAD"], raiz, comprobar=False)
-    if referencia.returncode != 0:
-        return
-    cambios_trabajo = ejecutar_git(["diff", "--quiet"], raiz, comprobar=False)
-    cambios_preparados = ejecutar_git(["diff", "--cached", "--quiet"], raiz, comprobar=False)
-    if cambios_trabajo.returncode == 1 or cambios_preparados.returncode == 1:
-        raise ValueError("El repositorio contiene cambios rastreados sin confirmar")
-    if cambios_trabajo.returncode not in (0, 1) or cambios_preparados.returncode not in (0, 1):
+
+    repositorio = ejecutar_git(["rev-parse", "--is-inside-work-tree"], raiz, comprobar=False)
+    if repositorio.returncode != 0 or repositorio.stdout.strip() != "true":
+        raise ValueError(".git no describe un repositorio de trabajo valido")
+
+    for marcador in MARCADORES_OPERACION_GIT:
+        resultado_ruta = ejecutar_git(["rev-parse", "--git-path", marcador], raiz, comprobar=False)
+        if resultado_ruta.returncode != 0 or not resultado_ruta.stdout.strip():
+            raise ValueError("Git no pudo comprobar las operaciones activas del repositorio")
+        ruta_marcador = Path(resultado_ruta.stdout.strip())
+        if not ruta_marcador.is_absolute():
+            ruta_marcador = raiz / ruta_marcador
+        if ruta_marcador.exists():
+            raise ValueError(f"El repositorio contiene una operacion Git activa: {marcador}")
+
+    estado = ejecutar_git(
+        ["status", "--porcelain=v1", "--untracked-files=no"],
+        raiz,
+        comprobar=False,
+    )
+    if estado.returncode != 0:
         raise ValueError("Git no pudo comprobar el estado del repositorio")
+    if estado.stdout.strip():
+        raise ValueError("El repositorio contiene cambios rastreados sin confirmar")
 
 
 def verificar_env_ignorado(raiz: Path) -> None:
@@ -664,10 +694,9 @@ def aplicar_transaccion(
             if crear_env and not env_destino.exists():
                 shutil.copy2(raiz / ".env.ejemplo", env_destino)
                 env_creado = True
-            temporal_estado.write_text(
+            escribir_texto_lf(
+                temporal_estado,
                 json.dumps(estado_plantilla, ensure_ascii=False, indent=2) + "\n",
-                encoding="utf-8",
-                newline="\n",
             )
             os.replace(temporal_estado, ruta_estado)
             estado_creado = True

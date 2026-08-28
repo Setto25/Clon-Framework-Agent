@@ -1,7 +1,7 @@
 # Estado de correcciones de agent-framework
 
-**Ultima actualizacion:** 2026-08-27 (rev 26)
-**Estado general:** Publicacion y recursos acotados; pilotos y procedencia pendientes
+**Ultima actualizacion:** 2026-08-28 (rev 27)
+**Estado general:** Compatibilidad local y Git preexistente auditados; pilotos y procedencia pendientes
 **Fase activa:** Fase 6 — validacion interna previa a pilotos
 **Rama de trabajo:** `codex/estabilizacion-framework`
 
@@ -101,6 +101,31 @@ La clasificacion confirmo que `_dryrun2/` era una salida generada para `proyecto
 - No existe una suite automatica que demuestre una instalacion reproducible.
 
 ## 7. Registro de avance
+
+### 2026-08-28 — Rev 27
+
+**Completado:**
+
+- Se reemplazo `Path.write_text(newline=)`, que no forma parte de Python 3.9, por escritura mediante `Path.open` compatible con el piso declarado.
+- Se agrego `pruebas/prueba_compatibilidad_python.py` para analizar la gramatica 3.9, impedir APIs de `pathlib` posteriores y comparar constantes deliberadamente duplicadas.
+- Se endurecio la deteccion de repositorios Git preexistentes invalidos, con cambios rastreados o preparados y con operaciones merge, rebase, cherry-pick, revert o bisect activas.
+- Se probaron repositorios limpios con historial, repositorios sin primer commit, cambios rastreados y operaciones activas, preservando siempre el `.git` preexistente.
+- El framework avanzo a `0.2.0-alpha.8`.
+
+**Evidencia:**
+
+- El contrato de plantilla aprobo.
+- Las 44 pruebas automaticas aprobaron con Python 3.13.7 en Windows.
+- La prueba estatica recorrio todos los modulos Python con la gramatica 3.9.
+- No se modificaron Skills durante este bloque.
+
+**Limite:**
+
+El entorno local no dispone de un interprete Python 3.9. La compatibilidad ejecutada realmente en Python 3.9 y en Ubuntu continua pendiente de GitHub Actions; el analisis estatico reduce el riesgo, pero no sustituye esa matriz.
+
+**Resultado:**
+
+La auditoria local de coherencia, compatibilidad declarada y estados Git queda implementada. Falta registrar el cambio y repetir la suite desde una exportacion Git limpia.
 
 ### 2026-08-27 — Rev 26
 
@@ -686,7 +711,7 @@ El usuario indico que otras Skills tambien pueden contener adaptaciones de produ
 
 ## 8. Siguiente paso exacto
 
-Auditar coherencia entre validaciones duplicadas, compatibilidad declarada con Python y estados Git preexistentes. Mantener los pilotos pendientes de una decision explicita del usuario.
+Registrar el bloque de compatibilidad y Git, repetir la suite desde una exportacion limpia y mantener los pilotos pendientes de una decision explicita del usuario.
 
 ## 9. Bloqueos
 
