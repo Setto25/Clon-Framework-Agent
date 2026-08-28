@@ -377,6 +377,11 @@ def analizar_valores_directos(valores: list[str]) -> dict[str, str]:
         clave_limpia = clave.strip()
         if not clave_limpia or not valor.strip():
             raise ValueError(f"Valor invalido, se esperaba CLAVE=VALOR: {expresion}")
+        if "`n" in valor or "`r" in valor:
+            raise ValueError(
+                f"--valor contiene una secuencia literal de PowerShell para {clave_limpia}; "
+                "usar --configuracion con JSON para texto multilinea"
+            )
         if clave_limpia in resultado:
             raise ValueError(f"--valor repite la clave: {clave_limpia}")
         resultado[clave_limpia] = validar_caracteres_configuracion(valor, clave_limpia)

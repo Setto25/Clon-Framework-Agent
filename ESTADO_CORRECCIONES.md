@@ -1,8 +1,8 @@
 # Estado de correcciones de agent-framework
 
-**Ultima actualizacion:** 2026-08-28 (rev 28)
-**Estado general:** Auditoria local reproducible cerrada; CI, pilotos y procedencia pendientes
-**Fase activa:** Fase 6 — validacion interna previa a pilotos
+**Ultima actualizacion:** 2026-08-28 (rev 31)
+**Estado general:** Dos pilotos locales cerrados y validados; CI y procedencia pendientes
+**Fase activa:** Fase 7 — cierre de validacion local y preparacion de CI
 **Rama de trabajo:** `codex/estabilizacion-framework`
 
 ## 1. Proposito
@@ -44,9 +44,9 @@ El framework debe llegar a una version `v1.0.0` que cumpla estas condiciones:
 | 3 | Contrato unico de plantilla y placeholders | Completada | Manifiesto valido y placeholders sin duplicidad |
 | 4 | Reconstruir el inicializador | Completada | Un comando genera un proyecto completo y seguro |
 | 5 | Corregir wizard, documentos y referencias | Completada — CLI soportada | No existen archivos o rutas prometidas ausentes |
-| 6 | Validar Skills, stacks y agentes | En curso — selector aprobado, pilotos pendientes | Solo se descubren Skills activas y las guias estan comprobadas |
+| 6 | Validar Skills, stacks y agentes | Cerrada localmente — dos pilotos sintetizados | Selector, Skills evaluadas y recorridos locales comprobados |
 | 7 | Incorporar pruebas y CI | En curso — local aprobada | Matriz automatica aprobada en plataformas soportadas |
-| 8 | Ejecutar pilotos y publicar `v1.0.0` | Pendiente | Dos pilotos exitosos y release reproducible |
+| 8 | Ejecutar pilotos y publicar `v1.0.0` | Pendiente | CI remota aprobada, procedencia resuelta y release reproducible |
 
 ## 5. Linea base Git observada
 
@@ -101,6 +101,144 @@ La clasificacion confirmo que `_dryrun2/` era una salida generada para `proyecto
 - No existe una suite automatica que demuestre una instalacion reproducible.
 
 ## 7. Registro de avance
+
+### 2026-08-28 — Rev 34
+
+**Completado:**
+
+- Se creo y cerro `D:\PROYECTOS\piloto-inventario-web` con las Skills confirmadas `nextjs-fullstack` y `typescript-react`.
+- Next.js 16.3.3 aprobo dos pruebas Vitest, lint, build y recorrido HTTP repetido contra FastAPI local.
+
+**Resultado:**
+
+Los dos pilotos locales requeridos por el plan ya existen y completaron su flujo. Permanecen pendientes la CI remota, la procedencia/licencia para redistribucion y la sintesis de fricciones antes de proponer una release.
+
+### 2026-08-28 — Rev 35
+
+**Completado:**
+
+- El inicializador rechaza secuencias literales `` `n`` y `` `r`` de PowerShell en `--valor`, y dirige el texto multilinea hacia `--configuracion` JSON.
+- Se creo `scripts/validar_frontend_nextjs.py`, que exige los scripts `test`, `lint` y `build` en `interfaz/package.json` y los ejecuta desde ese subdirectorio con la variante correcta de npm para Windows.
+
+**Evidencia:**
+
+- La regresion de creacion, dos pruebas estructurales del validador, el contrato y la suite completa aprobaron localmente.
+- La ejecucion elevada contra el piloto real alcanzo Vitest, pero fue rechazada al abrir `interfaz/.env.local` por una ACL entre identidades. No se cambiaron permisos ni secretos.
+
+**Resultado:**
+
+La friccion de texto multilinea queda corregida. El validador frontend queda disponible y falta repetir su recorrido completo bajo una identidad con acceso local al entorno antes de promover CI remota.
+
+### 2026-08-28 — Rev 36
+
+**Completado:**
+
+- Se renombro la configuracion de Vitest a `vitest.config.mts`, eliminando el aviso de compatibilidad de Vite.
+- El validador reproducible ejecuto contra el piloto real `npm run test`, `npm run lint` y `npm run build` desde `interfaz/`.
+
+**Evidencia:**
+
+- Vitest aprobo 2 pruebas.
+- ESLint y el build de produccion de Next.js 16.3.3 aprobaron.
+
+**Resultado:**
+
+Los dos pilotos locales requeridos completaron su cierre tecnico. Solo permanecen la revision de cambios, la CI remota y la procedencia/licencia previa a una redistribucion.
+
+### 2026-08-28 — Rev 33
+
+**Completado:**
+
+- Se cerro el MVP local del primer piloto despues de revisar pruebas, migracion, recorrido HTTP, guia de operacion y memoria.
+- La instancia registro una leccion de entorno sobre ACL de Windows entre identidades de ejecucion, tras varios intentos fallidos de acceso a archivos nuevos.
+
+**Evidencia:**
+
+- El piloto mantuvo 7 pruebas aprobadas, la revision Alembic `20260828_01 (head)` y memoria valida.
+- La API no quedo en ejecucion despues de la comprobacion local.
+
+**Resultado:**
+
+El primer piloto satisface el criterio de cierre local para FastAPI y PostgreSQL. La advertencia deprecada de TestClient queda como deuda; autenticacion, autorizacion y exposicion siguen intencionalmente fuera de alcance. El siguiente hito es un segundo piloto independiente.
+
+### 2026-08-28 — Rev 32
+
+**Completado:**
+
+- El primer piloto reemplazo el almacenamiento en memoria por SQLAlchemy, Alembic y psycopg, con PostgreSQL como persistencia objetivo.
+- Se aplico la migracion `20260828_01` a PostgreSQL 18 local y un recorrido HTTP en `127.0.0.1` comprobó alta y lectura de productos contra esa instancia; el dato temporal se elimino al finalizar.
+- SQLite queda limitado a fixtures aislados de pruebas, mientras la persistencia real se verifica contra PostgreSQL.
+
+**Evidencia:**
+
+- `uv run --no-sync pytest -q` aprobo 7 pruebas; continua una advertencia deprecada externa de Starlette TestClient.
+- `uv run --no-sync alembic current` devolvio `20260828_01 (head)`.
+- `python scripts/verificar_memoria_proyecto.py . --json` valido la memoria del piloto.
+
+**Resultado:**
+
+El primer piloto valida la Skill `fastapi-setup` junto a la persistencia PostgreSQL y la puerta local de `seguridad-backend`. Autenticacion, autorizacion y exposicion permanecen fuera de su alcance; el siguiente criterio del framework es registrar las fricciones del cierre e iniciar un segundo piloto.
+
+### 2026-08-28 — Rev 31
+
+**Completado:**
+
+- Se creo `scripts/agregar_skills.py` para incorporar Skills confirmadas en una instancia inicializada sin reinicializarla.
+- El comando valida el estado registrado, las Skills instaladas y los enlaces; prepara la copia en un temporal y actualiza el estado solo despues de publicar rutas nuevas.
+- El primer piloto instalo `seguridad-backend` con el nuevo comando, documento su matriz local y endurecio el schema de productos contra propiedades no autorizadas y nombres vacios.
+- La revision no agrega controles que no corresponden al alcance confirmado: el piloto sigue aprobado solo para `127.0.0.1` y sin usuarios ni datos sensibles.
+- El framework avanzo a `0.2.0-alpha.10`.
+
+**Evidencia:**
+
+- La suite valida instalacion posterior byte por byte y rechazo de una Skill duplicada.
+- Las 47 pruebas automaticas aprobaron, incluida la incorporacion de varias Skills del mismo stack.
+- La revision del piloto aprobo 7 pruebas y su memoria valida sin placeholders ni pendientes de inicializacion.
+
+**Resultado:**
+
+La nueva Skill puede evaluarse en un piloto ya existente sin contradecir la politica de seleccion explicita. Ese piloto luego valido persistencia PostgreSQL; autenticacion y exposicion siguen fuera de alcance hasta contar con requisitos concretos.
+
+### 2026-08-28 — Rev 30
+
+**Completado:**
+
+- Se creo `seguridad-backend` como Skill core seleccionable, con referencias separadas para controles generales y FastAPI.
+- La Skill exige alcance, limites de confianza, matriz por endpoint, controles proporcionales, pruebas negativas y evidencia antes de recomendar exposicion.
+- Se consultaron OWASP ASVS 5.0.0, OWASP API Security Top 10 2023, OWASP REST Security Cheat Sheet y documentacion oficial de FastAPI; la redaccion local es original y las fuentes quedaron atribuidas.
+- `iniciar-proyecto` recomienda la Skill para backends expuestos o sensibles sin instalarla implicitamente.
+- El stack `backend-fastapi`, el README, las atribuciones, las pruebas y el inventario reflejan el nuevo catalogo.
+- El framework avanzo a `0.2.0-alpha.9` con 18 Skills y 35 archivos inventariados.
+
+**Evidencia:**
+
+- `quick_validate.py` aprobo `seguridad-backend` e `iniciar-proyecto`.
+- El contrato de plantilla aprobo.
+- Las 44 pruebas automaticas aprobaron.
+- Una prueba integral instalo `seguridad-backend` junto con `fastapi-setup` y comprobo todos sus archivos byte por byte.
+
+**Resultado:**
+
+La plantilla dispone de una puerta de seguridad backend verificable sin ampliar el core automatico. El piloto creado con `0.2.0-alpha.8` conserva su estado original y requiere una confirmacion separada para incorporar la nueva Skill.
+
+### 2026-08-28 — Rev 29
+
+**Completado:**
+
+- Se creo `D:\PROYECTOS\piloto-inventario-api` mediante `scripts/crear_proyecto.py`, con el core automatico y la Skill confirmada `fastapi-setup`.
+- El piloto configuro FastAPI, pydantic-settings, pytest y httpx con `uv`; el entorno selecciono Python 3.11.15.
+- Se implementaron configuracion tipada, `GET /salud`, `GET /productos` y `POST /productos`, con rutas, esquemas y servicio en memoria separados.
+- Cinco pruebas aprobaron y un recorrido E2E local comprobo salud, alta de un producto y lectura posterior.
+- La memoria generada aprobo `scripts/verificar_memoria_proyecto.py . --json` sin placeholders ni pendientes.
+
+**Friccion observada:**
+
+- La identidad aislada del editor creo archivos que el usuario local no pudo leer durante la sesion. Las pruebas se ejecutaron desde la misma identidad con un cache temporal de uv; es una limitacion del entorno de esta validacion, no una conclusion sobre la plantilla.
+- Starlette TestClient emitio una advertencia deprecada con la combinacion instalada de httpx; las pruebas aprobaron, pero debe revisarse antes del cierre del piloto.
+
+**Resultado:**
+
+El primer piloto queda iniciado y valida el uso real del selector y del stack FastAPI hasta su primer modulo. No satisface todavia el criterio de dos pilotos cerrados: falta persistencia SQLite y el cierre documentado de este piloto.
 
 ### 2026-08-28 — Rev 28
 
@@ -725,7 +863,7 @@ El usuario indico que otras Skills tambien pueden contener adaptaciones de produ
 
 ## 8. Siguiente paso exacto
 
-Elegir entre publicar la rama para ejecutar la CI remota o iniciar el primer proyecto piloto. Mantener bloqueada la redistribucion hasta resolver la procedencia de Skills.
+Revisar los cambios locales y decidir expresamente si se publica la rama para ejecutar la CI remota; cualquier exposicion futura requiere requisitos de identidad y autorizacion. Mantener bloqueada la redistribucion hasta resolver la procedencia de Skills.
 
 ## 9. Bloqueos
 

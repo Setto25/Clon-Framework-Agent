@@ -4,7 +4,7 @@ Framework agentico reutilizable para crear proyectos con agentes de IA, memoria 
 
 Extraido inicialmente del proyecto entrevoces. El creador y los verificadores tienen pruebas locales reproducibles; todavia falta validarlo en proyectos piloto reales.
 
-> **Estado de Skills:** las 17 Skills permanecen en el catalogo fuente y fueron revisadas estructuralmente. Un proyecto nuevo recibe solo `cerrar-modulo`, `lecciones-aprendidas`, `probar-e2e` y las Skills adicionales confirmadas mediante `--skill`. Su procedencia sigue incompleta, por lo que no se recomienda redistribuirlas.
+> **Estado de Skills:** las 18 Skills permanecen en el catalogo fuente y fueron revisadas estructuralmente. Un proyecto nuevo recibe solo `cerrar-modulo`, `lecciones-aprendidas`, `probar-e2e` y las Skills adicionales confirmadas mediante `--skill`. Su procedencia sigue incompleta, por lo que no se recomienda redistribuirlas.
 
 ---
 
@@ -29,9 +29,10 @@ plantilla/
 │   ├── rules/                   → Reglas base (superpowers, idioma, excepciones)
 │   └── skills/
 │       ├── cerrar-modulo/       ┐
-│       ├── evaluar-agente/      │ Skills de core incluidas y validadas estructuralmente
+│       ├── evaluar-agente/      │ Skills de core disponibles y validadas estructuralmente
 │       ├── iniciar-proyecto/    │ (no hay carpeta "core/" literal)
-│       ├── lecciones-aprendidas/┘
+│       ├── lecciones-aprendidas/│
+│       ├── seguridad-backend/   ┘
 │       ├── stacks/
 │       │   ├── backend-fastapi/
 │       │   │   └── skills/       → fastapi-setup
@@ -105,12 +106,22 @@ Copy-Item .\ejemplos\configuracion_proyecto.ejemplo.json D:\PROYECTOS\configurac
 3. Desde la raiz de `agent-framework`, ejecuta. Repite `--skill` por cada Skill adicional confirmada:
 
 ```powershell
-python scripts\crear_proyecto.py D:\PROYECTOS\mi-proyecto "Mi Proyecto" --configuracion D:\PROYECTOS\configuracion-mi-proyecto.json --skill fastapi-setup --skill evaluar-agente
+python scripts\crear_proyecto.py D:\PROYECTOS\mi-proyecto "Mi Proyecto" --configuracion D:\PROYECTOS\configuracion-mi-proyecto.json --skill fastapi-setup --skill seguridad-backend
 ```
 
 El destino no debe existir. El nombre visible puede contener espacios o acentos; el inicializador deriva por separado los identificadores tecnicos. El comando copia la base, instala el core automatico mas la seleccion explicita, crea `.env` ignorado por Git, registra las Skills en `.estado-plantilla.json` e inicializa un repositorio Git sin realizar commits.
 
+Para incorporar una Skill confirmada en un proyecto ya inicializado, sin reinicializarlo:
+
+```powershell
+python scripts\agregar_skills.py D:\PROYECTOS\mi-proyecto --skill seguridad-backend
+```
+
+El comando valida el estado, copia la Skill y sus referencias de forma transaccional y registra la actualizacion. Rechaza Skills desconocidas, repetidas o ya instaladas.
+
 Las entradas son estrictas: el JSON, los argumentos posicionales y cada `--valor` no pueden definir la misma clave más de una vez. Los campos con origen `derivado` los calcula exclusivamente el inicializador. También se rechazan claves desconocidas, tipos incompatibles y caracteres de control invisibles; los campos multilínea normales conservan saltos de línea y tabulaciones.
+
+En PowerShell, los valores multilínea deben ir en `--configuracion` como cadenas JSON con `\n` real de JSON o como listas de cadenas. No se debe usar `` `n`` dentro de `--valor`: el inicializador lo rechaza para impedir que esa secuencia quede impresa literalmente en la memoria del proyecto.
 
 La plantilla fuente y una copia manual deben ser árboles locales regulares. El creador rechaza enlaces simbólicos, junctions, reparse points y cruces hacia otro sistema de archivos antes de copiar. El destino tampoco puede existir previamente, incluso si solo es un enlace roto. Esta restricción evita leer contenido externo o publicar fuera de los límites resueltos.
 
@@ -133,6 +144,16 @@ git add -A
 git commit -m "init: crea la base del proyecto"
 ```
 
+### Validacion de un frontend Next.js anidado
+
+Cuando `create-next-app` se instale en `interfaz/` porque la raiz ya contiene la memoria de la plantilla, se valida desde la raiz del framework con:
+
+```powershell
+python scripts\validar_frontend_nextjs.py D:\PROYECTOS\mi-proyecto
+```
+
+El comando exige los scripts `test`, `lint` y `build` en `interfaz/package.json`, y los ejecuta con `npm` desde ese directorio. `--solo-verificar` comprueba solamente la estructura, sin instalar ni ejecutar dependencias.
+
 ### Flujo exploratorio con datos pendientes
 
 Se puede generar una instancia provisional con:
@@ -151,7 +172,7 @@ Si no puede usarse el creador raiz, se puede copiar **todo** el contenido de `pl
 python scripts\inicializar_proyecto.py "Mi Proyecto" "español" --configuracion D:\PROYECTOS\configuracion-mi-proyecto.json
 ```
 
-Esta contingencia conserva las 17 Skills y no aplica seleccion. No se recomienda copiar carpetas sueltas ni omitir `.agents`, `.gitignore`, `.gitattributes`, `.env.ejemplo`, `.plantilla-framework` o `configuracion_plantilla.json`: todos forman parte del contrato de la instancia.
+Esta contingencia conserva las 18 Skills y no aplica seleccion. No se recomienda copiar carpetas sueltas ni omitir `.agents`, `.gitignore`, `.gitattributes`, `.env.ejemplo`, `.plantilla-framework` o `configuracion_plantilla.json`: todos forman parte del contrato de la instancia.
 
 El inicializador directo valida todos los reemplazos antes de escribir y ejecuta los cambios como una transaccion local. Si falla despues de crear Git, `.env`, estado o directorios auxiliares, restaura la copia y conserva el centinela para permitir un nuevo intento.
 
@@ -243,6 +264,7 @@ Estos archivos son los del **proyecto instanciado**, no los de `agent-framework/
 |---|---|---|
 | `iniciar-proyecto` | Interfaz conversacional de la CLI y del catalogo | Cuando el proyecto deba crear otras instancias del framework |
 | `evaluar-agente` | Evalua intenciones, tool-use, prompt injection y limites de autoridad | Al crear o modificar agentes, prompts o tool-calling |
+| `seguridad-backend` | Modela riesgos y exige controles y pruebas negativas para backends HTTP y APIs | Antes de exponer un backend, autenticar identidades o procesar datos sensibles |
 
 ### Por stack
 
@@ -292,7 +314,7 @@ Estos archivos son los del **proyecto instanciado**, no los de `agent-framework/
 
 | Tecnologia | Stack | Skills disponibles |
 |---|---|---|
-| FastAPI / SQLAlchemy / Alembic / uv | backend-fastapi | fastapi-setup |
+| FastAPI / SQLAlchemy / Alembic / uv | backend-fastapi | fastapi-setup, seguridad-backend (core complementaria) |
 | Flutter / Dart | mobile-flutter | state-management, performance, animations |
 | Next.js 14+ / TypeScript / React | frontend-nextjs | nextjs-fullstack, typescript-react |
 | ESP32 / MicroPython / Arduino IoT | firmware-esp32 | desarrollar-firmware, diagnosticar-hardware |
@@ -372,6 +394,9 @@ plantilla/
 │       │   ├── SKILL.md
 │       │   └── referencias/                    ← Un .md por stack (vacios, se llenan con uso)
 │       ├── probar-e2e/SKILL.md
+│       ├── seguridad-backend/
+│       │   ├── SKILL.md
+│       │   └── referencias/
 │       ├── opcional/
 │       │   └── delegar-entre-agentes/SKILL.md
 │       └── stacks/
@@ -413,13 +438,14 @@ plantilla/
 Desde la raiz del meta-repositorio tambien existen:
 
 - `scripts/crear_proyecto.py`: creador atomico de una instancia nueva;
+- `scripts/agregar_skills.py`: instalador transaccional de Skills confirmadas en una instancia inicializada;
 - `scripts/catalogo_skills.py`: catalogo tipado para recomendaciones y seleccion explicita;
 - `scripts/validar_contrato_plantilla.py`: validador del contrato de la plantilla;
 - `scripts/inventariar_skills.py`: inventariador determinista con texto UTF-8/LF canonico para reproducibilidad entre sistemas;
 - `ejemplos/configuracion_proyecto.ejemplo.json`: punto de partida para una configuracion completa;
 - `pruebas/prueba_creacion_proyecto.py`: suite integral con biblioteca estandar;
 - `pruebas/prueba_inventario_skills.py`: control de vigencia del inventario de Skills;
-- `pruebas/prueba_calidad_skills.py`: invariantes estructurales y operativas de las 17 Skills;
+- `pruebas/prueba_calidad_skills.py`: invariantes estructurales y operativas de las 18 Skills;
 - `pruebas/prueba_catalogo_skills.py`: politica de core automatico y clasificacion del catalogo;
 - `pruebas/prueba_compatibilidad_agentes.py`: referencias existentes y capacidades no presupuestas por agente;
 - `pruebas/prueba_compatibilidad_python.py`: gramatica Python 3.9 y coherencia de constantes duplicadas;

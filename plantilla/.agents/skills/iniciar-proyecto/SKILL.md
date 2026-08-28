@@ -13,7 +13,7 @@ Se comprueba una sola de estas situaciones:
 
 1. **Meta-repositorio:** existen `plantilla/`, `scripts/crear_proyecto.py` y `scripts/catalogo_skills.py`. Se crea un destino nuevo fuera de `agent-framework`.
 2. **Copia sin inicializar:** existen `.plantilla-framework`, `configuracion_plantilla.json` y `scripts/inicializar_proyecto.py`. Se inicializa esa copia una sola vez. Esta ruta conserva las Skills que ya contenga y no realiza seleccion.
-3. **Proyecto inicializado:** existe `.estado-plantilla.json`. No se vuelve a ejecutar el inicializador.
+3. **Proyecto inicializado:** existe `.estado-plantilla.json`. No se vuelve a ejecutar el inicializador; una Skill adicional confirmada se incorpora mediante `scripts/agregar_skills.py` desde el meta-repositorio.
 
 Si las rutas no corresponden a esos contextos, se solicita la ruta correcta.
 
@@ -34,6 +34,8 @@ El agente contrasta el objetivo, las tecnologias confirmadas, el hardware y el t
 - las tres Skills automaticas: `cerrar-modulo`, `lecciones-aprendidas` y `probar-e2e`;
 - cada Skill adicional recomendada, con una razon breve vinculada al proyecto;
 - las Skills dudosas o innecesarias, cuando su exclusion evite ruido o autoridad excesiva.
+
+Cuando el proyecto incluya un backend HTTP o API que se expondra a red, autenticara identidades, aislara recursos por usuario o procesara datos sensibles, se recomienda `seguridad-backend` junto con la Skill del stack correspondiente. Su recomendacion tampoco autoriza instalarla.
 
 No se recomienda por coincidencia superficial ni se presupone un stack no confirmado. La recomendacion no se agrega al comando hasta que el usuario confirme sus nombres exactos. Una respuesta ambigua requiere una confirmacion mas precisa.
 
@@ -64,6 +66,16 @@ python scripts\inicializar_proyecto.py "<NOMBRE_VISIBLE>" "<IDIOMA>" --configura
 ```
 
 Esta ruta no filtra Skills. Para obtener seleccion explicita se vuelve al meta-repositorio y se usa `scripts/crear_proyecto.py`.
+
+### Desde un proyecto inicializado
+
+Se confirma cada nombre exacto y se ejecuta desde el meta-repositorio:
+
+```powershell
+python scripts\agregar_skills.py <RUTA_PROYECTO> --skill seguridad-backend
+```
+
+El comando valida que la instancia y su estado coincidan, prepara las Skills en un temporal, conserva las ya instaladas y actualiza `.estado-plantilla.json` de forma atomica. No reinicializa el proyecto ni reemplaza una Skill existente.
 
 ### Configuracion incompleta
 

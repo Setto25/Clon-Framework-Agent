@@ -28,13 +28,13 @@ def cargar_modulo() -> ModuleType:
 class PruebasCatalogoSkills(unittest.TestCase):
     """Verifica descubrimiento, categorias y core automatico."""
 
-    def test_descubre_diecisiete_nombres_unicos(self) -> None:
+    def test_descubre_dieciocho_nombres_unicos(self) -> None:
         """Confirma que todo el almacen fuente permanezca disponible."""
         modulo = cargar_modulo()
         registros = cast(list[dict[str, object]], modulo.descubrir_skills(RAIZ_SKILLS))
         nombres = [cast(str, registro["nombre"]) for registro in registros]
-        self.assertEqual(len(nombres), 17)
-        self.assertEqual(len(set(nombres)), 17)
+        self.assertEqual(len(nombres), 18)
+        self.assertEqual(len(set(nombres)), 18)
 
     def test_define_el_core_automatico_exacto(self) -> None:
         """Impide ampliar silenciosamente las Skills instaladas por defecto."""
@@ -51,6 +51,8 @@ class PruebasCatalogoSkills(unittest.TestCase):
         por_nombre = {cast(str, registro["nombre"]): registro for registro in registros}
         self.assertEqual(por_nombre["fastapi-setup"]["categoria"], "stack")
         self.assertEqual(por_nombre["fastapi-setup"]["stack"], "backend-fastapi")
+        self.assertEqual(por_nombre["seguridad-backend"]["categoria"], "core")
+        self.assertFalse(por_nombre["seguridad-backend"]["automatica"])
         self.assertEqual(por_nombre["delegar-entre-agentes"]["categoria"], "opcional")
         self.assertIsNone(por_nombre["delegar-entre-agentes"]["stack"])
 

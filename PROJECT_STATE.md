@@ -1,8 +1,8 @@
 # Estado del proyecto: agent-framework
 
-**Ultima actualizacion:** 2026-08-28 (rev 30)
-**Estado general:** Auditoria local reproducible cerrada; CI, pilotos y procedencia pendientes
-**Fase activa:** Fase 6 — validacion interna previa a pilotos
+**Ultima actualizacion:** 2026-08-28 (rev 39)
+**Estado general:** Dos pilotos locales cerrados y validados; CI y procedencia pendientes
+**Fase activa:** Fase 7 — cierre de validacion local y preparacion de CI
 
 ## 1. Objetivo
 
@@ -27,6 +27,7 @@ agent-framework/
     │   │   ├── evaluar-agente/
     │   │   ├── iniciar-proyecto/
     │   │   ├── lecciones-aprendidas/
+    │   │   ├── seguridad-backend/
     │   │   └── stacks/
     │   └── rules/
     │       ├── claude.md
@@ -40,7 +41,7 @@ agent-framework/
 
 | Stack | Skills | Origen |
 |---|---|---|
-| `backend-fastapi` | fastapi-setup | Creado para el framework (uv, SQLAlchemy, Alembic, pytest) |
+| `backend-fastapi` | fastapi-setup; seguridad-backend como core complementaria | Creado para el framework (uv, SQLAlchemy, Alembic, pytest, OWASP) |
 | `firmware-esp32` | desarrollar-firmware, diagnosticar-hardware | Extraido de entrevoces |
 | `frontend-nextjs` | nextjs-fullstack, typescript-react | Creado para el framework |
 | `ia-llm` | rag-local, fine-tuning-llm, agentes-multiagent | Creado para el framework |
@@ -129,15 +130,27 @@ Cada stack tiene LEEME.md con reglas adicionales, terminos tecnicos y procedimie
 77. **Validaciones duplicadas bajo contrato.** La autonomia de la copia exige conservar validaciones tanto en el meta-repositorio como en `plantilla/`; una prueba AST compara versiones, claves, origenes, limites y artefactos rechazados para impedir divergencias silenciosas.
 78. **Git preexistente delimitado.** El inicializador directo admite repositorios limpios con historial y repositorios sin primer commit. Rechaza cambios rastreados o preparados, repositorios invalidos y operaciones merge, rebase, cherry-pick, revert o bisect activas sin eliminar `.git` ni modificar la copia.
 79. **Exportacion de compatibilidad aprobada.** El commit `08b0b41` aprobo el contrato y las 44 pruebas desde un `git archive` limpio. El archivo y el directorio temporales se eliminaron al finalizar; la auditoria local previa a pilotos queda cerrada.
+80. **Primer piloto iniciado.** Se genero `D:\PROYECTOS\piloto-inventario-api` mediante la CLI con el core automatico y `fastapi-setup`. Su modulo inicial implementa configuracion tipada, salud y productos en memoria con cinco pruebas aprobadas y un recorrido E2E local aprobado. El piloto no se considera cerrado: SQLite y la revision de la advertencia de TestClient son el siguiente hito.
+81. **Seguridad backend como core seleccionable.** `seguridad-backend` modela actores, limites de confianza, autorizacion por funcion, objeto y propiedad, controles por riesgo, pruebas negativas y puerta de exposicion. Permanece fuera del core automatico para no contaminar proyectos sin backend; `iniciar-proyecto` la recomienda cuando una API se expone a red o procesa identidades y datos sensibles.
+82. **Version de plantilla `0.2.0-alpha.9`.** El catalogo contiene 18 Skills y 35 archivos inventariados. La nueva Skill y sus referencias se copian byte por byte mediante `--skill seguridad-backend`; el core automatico conserva exactamente tres Skills.
+83. **Instalacion posterior transaccional.** `scripts/agregar_skills.py` permite incorporar una Skill confirmada a un proyecto inicializado sin reinicializarlo. Verifica el estado y el arbol de Skills, prepara la copia en un temporal, conserva las Skills existentes y actualiza `.estado-plantilla.json` de forma atomica. Las pruebas cubren la incorporacion byte por byte y el rechazo de duplicados.
+84. **Primer piloto endurecido.** `D:\PROYECTOS\piloto-inventario-api` incorporo `seguridad-backend`; la entrada de productos rechaza propiedades no autorizadas y nombres vacios tras normalizacion. La revision aprueba exclusivamente el servicio local, sin declarar listos autenticacion, autorizacion, TLS, CORS ni limites de red.
+85. **Version de plantilla `0.2.0-alpha.10`.** El instalador posterior formaliza la seleccion confirmada para proyectos que ya existian al agregar una nueva Skill.
+86. **Persistencia PostgreSQL validada en el primer piloto.** `D:\PROYECTOS\piloto-inventario-api` incorporo SQLAlchemy, Alembic y psycopg, aplico la migracion inicial a PostgreSQL 18 local y verifico por HTTP la creacion y lectura de un producto, eliminando despues el dato temporal. SQLite se conserva solo para aislar las pruebas; no sustituye la integracion real.
+87. **Primer piloto cerrado.** El MVP local del piloto FastAPI tiene evidencia de pruebas, migracion, recorrido HTTP, memoria y guia de operacion. Registro una leccion concreta sobre ACL de Windows entre identidades de ejecucion; autenticacion, autorizacion y exposicion siguen fuera del alcance confirmado y no se declaran cubiertas.
+88. **Segundo piloto cerrado.** `D:\PROYECTOS\piloto-inventario-web` valido `nextjs-fullstack` y `typescript-react` con Next.js 16.3.3, pruebas, lint, build y un recorrido HTTP repetido contra el piloto FastAPI local. La memoria no conserva pendientes de inicializacion.
+89. **Fricciones de pilotos sintetizadas.** `auditoria/sintesis_pilotos.md` registra la evidencia de los dos pilotos y prioriza tres mejoras: tratamiento reproducible de texto multilinea en PowerShell, validacion automatizada del frontend anidado y convencion documental para `interfaz/`. Las ACL de Windows y PostgreSQL local se delimitan como precondiciones de entorno, no como defectos funcionales de las Skills.
+90. **Flujos de pilotos endurecidos.** El inicializador rechaza la secuencia literal `` `n`` o `` `r`` en `--valor` y exige configuracion JSON para texto multilinea, con regresion de creacion. `scripts/validar_frontend_nextjs.py` valida `interfaz/package.json` y ejecuta `test`, `lint` y `build` con `npm.cmd` en Windows. La ejecucion elevada contra el piloto real detecto una ACL de `.env.local`; no se alteraron permisos ni secretos.
+91. **Segundo piloto validado de forma reproducible.** Tras restaurar ACL heredadas en el entorno local, `D:\PROYECTOS\piloto-inventario-web\interfaz` aprobo `npm run test` (2 pruebas), `npm run lint` y `npm run build` mediante el validador del framework. `vitest.config.mts` evita que las pruebas aisladas carguen `.env.local`; el aviso de compatibilidad de Vite quedo eliminado.
 
 ## 5. Que falta
 
-- **Validacion con proyecto real.** Ningun proyecto ha consumido la plantilla todavia. El primer uso real revelara friccion en el wizard de iniciar-proyecto, gaps en las reglas, y skills que sobran o faltan.
-- **Stack backend-fastapi.** Creado con skill `fastapi-setup`. Sin validacion en proyecto real todavia.
+- **Validacion con proyecto real.** Dos pilotos independientes completaron sus flujos locales, sus fricciones fueron sintetizadas y el validador frontend se ejecuto de extremo a extremo. Falta validar en CI remota.
+- **Stack backend-fastapi.** El piloto uso `fastapi-setup` y valido setup, configuracion tipada, rutas, esquemas, servicio, migraciones, persistencia PostgreSQL y pruebas. Quedan autenticacion y autorizacion fuera de alcance hasta confirmar actores y exposicion.
 - **Procedencia de Skills.** La fuente y licencia deben resolverse antes de cualquier redistribucion. Las correcciones para uso personal quedan permitidas y registradas.
 - **Validacion funcional.** La estructura y las invariantes de seguridad estan probadas, pero cada Skill tecnica necesita un escenario piloto que mida si mejora el resultado frente a trabajar sin ella.
 - **CI remota.** La matriz Windows/Ubuntu y Python 3.9/3.12 no puede considerarse aprobada hasta ejecutar GitHub Actions; no se publicara solo para obtener esa evidencia.
 
 ## 6. Siguiente paso logico
 
-Elegir entre publicar la rama para ejecutar la CI remota o iniciar el primer proyecto piloto. La procedencia de Skills debe resolverse antes de redistribuir el framework.
+Revisar los cambios locales y decidir expresamente si se publica la rama para ejecutar la CI remota. Toda exposicion futura requiere definir actores, autenticacion y autorizacion; la procedencia de Skills debe resolverse antes de redistribuir el framework.

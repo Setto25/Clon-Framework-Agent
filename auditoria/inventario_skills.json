@@ -1,10 +1,10 @@
 {
   "version_inventario": 2,
   "raiz": "plantilla/.agents/skills",
-  "huella_conjunto_sha256": "e02656014bdba8188517642ed3b3794fab85072b9a5c813ec25029b65f789f6b",
+  "huella_conjunto_sha256": "428271a28d389078e8a62a78561c56d7855f921125b1d3fbe844c00f2c05596b",
   "resumen": {
-    "archivos": 32,
-    "skills": 17,
+    "archivos": 35,
+    "skills": 18,
     "declaraciones_procedencia": 1
   },
   "skills": [
@@ -22,8 +22,8 @@
     },
     {
       "ruta": "iniciar-proyecto/SKILL.md",
-      "bytes": 4255,
-      "sha256": "54110252407497b9ae058df94980d47c9ac06392b832b034b0f7435afa15a599",
+      "bytes": 5085,
+      "sha256": "068e0e6c3d637db1ce6c8127f471bb48f684321f0e33ef389eb909a2f0fe28bc",
       "nombre": "iniciar-proyecto"
     },
     {
@@ -43,6 +43,12 @@
       "bytes": 1739,
       "sha256": "a799efb45a87fe44ccfa049facf11387b7214833f06b0ec89626448c0f487282",
       "nombre": "probar-e2e"
+    },
+    {
+      "ruta": "seguridad-backend/SKILL.md",
+      "bytes": 4694,
+      "sha256": "014951143fe49700fc7a627c599633d56196e787545b2badd55fbd601b0ac783",
+      "nombre": "seguridad-backend"
     },
     {
       "ruta": "stacks/backend-fastapi/skills/fastapi-setup/SKILL.md",
@@ -158,9 +164,19 @@
       "sha256": "6a93d8dd35630cb976d171a7227de8a454322d4c46836a5bc5e49b3bf5e6b8ad"
     },
     {
+      "ruta": "seguridad-backend/referencias/controles_backend.md",
+      "bytes": 4547,
+      "sha256": "4396735ba87cb27b09a46986e9b40cf1b4aabe6863ad6cfb01c9978f1014640f"
+    },
+    {
+      "ruta": "seguridad-backend/referencias/fastapi.md",
+      "bytes": 3146,
+      "sha256": "f9a07c0ec1ebf5c0a8f8d093cd730f7bd0caf524d12934fdfb9b7ab46facadcb"
+    },
+    {
       "ruta": "stacks/backend-fastapi/LEEME.md",
-      "bytes": 2585,
-      "sha256": "16313a849ace6fd2b2909f32b8750e05a32b2fa64c0c66d926f5cb10bdf5532a"
+      "bytes": 3124,
+      "sha256": "288919b923a0285c1093271dfafa1d3448133deca3a9ae6064fbc188b9f72eb7"
     },
     {
       "ruta": "stacks/firmware-esp32/domain-packs/audio-embebido/LEEME.md",

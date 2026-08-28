@@ -34,9 +34,9 @@ class PruebasCalidadSkills(unittest.TestCase):
         """Localiza los manifiestos distribuidos."""
         self.manifiestos = sorted(RAIZ_SKILLS.rglob("SKILL.md"))
 
-    def test_conserva_las_diecisiete_skills(self) -> None:
+    def test_conserva_las_dieciocho_skills(self) -> None:
         """Confirma que la mejora no elimine ninguna Skill inventariada."""
-        self.assertEqual(len(self.manifiestos), 17)
+        self.assertEqual(len(self.manifiestos), 18)
 
     def test_frontmatter_identifica_cada_carpeta(self) -> None:
         """Confirma nombre, descripcion y correspondencia con la carpeta."""

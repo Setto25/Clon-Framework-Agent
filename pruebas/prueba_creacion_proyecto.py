@@ -21,6 +21,7 @@ from unittest import mock
 
 RAIZ_FRAMEWORK = Path(__file__).resolve().parent.parent
 CREADOR = RAIZ_FRAMEWORK / "scripts" / "crear_proyecto.py"
+AGREGADOR_SKILLS = RAIZ_FRAMEWORK / "scripts" / "agregar_skills.py"
 CONFIGURACION_EJEMPLO = RAIZ_FRAMEWORK / "ejemplos" / "configuracion_proyecto.ejemplo.json"
 SKILLS_ORIGEN = RAIZ_FRAMEWORK / "plantilla" / ".agents" / "skills"
 ADAPTADOR_BASH = RAIZ_FRAMEWORK / "plantilla" / "scripts" / "inicializar_proyecto.sh"
@@ -202,16 +203,40 @@ class PruebasCreacionProyecto(unittest.TestCase):
         instaladas = estado.get("skills_instaladas") if isinstance(estado, dict) else None
         self.assertEqual(set(instaladas) if isinstance(instaladas, list) else set(), CORE_AUTOMATICO)
         registro = (destino / "documentacion" / "REGISTRO_CAMBIOS.md").read_text(encoding="utf-8")
-        self.assertIn("agent-framework 0.2.0-alpha.8", registro)
+        self.assertIn("agent-framework 0.2.0-alpha.10", registro)
         for nombre in CORE_AUTOMATICO:
             with self.subTest(skill_registrada=nombre):
                 self.assertIn(f"- `{nombre}`", registro)
         self.assertNotIn("Stack backend-fastapi + skill fastapi-setup", registro)
 
+    def test_rechaza_escape_multilinea_literal_de_powershell(self) -> None:
+        """Rechaza un valor que PowerShell no convirtio en salto de linea real."""
+        destino = self.raiz_temporal / "proyecto-escape-powershell"
+        resultado = ejecutar(
+            [
+                sys.executable,
+                str(CREADOR),
+                str(destino),
+                "Proyecto Escape",
+                "--configuracion",
+                str(CONFIGURACION_EJEMPLO),
+                "--valor",
+                "LISTA_OBLIGATORIOS=- Primera tarea`n- Segunda tarea",
+            ]
+        )
+        self.assertNotEqual(resultado.returncode, 0)
+        self.assertIn("--configuracion", resultado.stderr)
+        self.assertFalse(destino.exists())
+
     def test_instala_solo_skills_adicionales_confirmadas(self) -> None:
         """Confirma una seleccion mixta de core, stack y Skill opcional."""
         destino = self.raiz_temporal / "proyecto-seleccionado"
-        adicionales = {"fastapi-setup", "evaluar-agente", "delegar-entre-agentes"}
+        adicionales = {
+            "fastapi-setup",
+            "seguridad-backend",
+            "evaluar-agente",
+            "delegar-entre-agentes",
+        }
         resultado = ejecutar(
             [
                 sys.executable,
@@ -222,6 +247,8 @@ class PruebasCreacionProyecto(unittest.TestCase):
                 str(CONFIGURACION_EJEMPLO),
                 "--skill",
                 "fastapi-setup",
+                "--skill",
+                "seguridad-backend",
                 "--skill",
                 "evaluar-agente",
                 "--skill",
@@ -240,6 +267,70 @@ class PruebasCreacionProyecto(unittest.TestCase):
         )
         self.assertFalse(
             (destino / ".agents" / "skills" / "stacks" / "frontend-nextjs").exists()
+        )
+
+    def test_agrega_skill_confirmada_a_proyecto_inicializado(self) -> None:
+        """Confirma la instalacion posterior sin reinicializar la instancia."""
+        destino = self.crear_completo("proyecto-con-skill-agregada")
+        resultado = ejecutar(
+            [
+                sys.executable,
+                str(AGREGADOR_SKILLS),
+                str(destino),
+                "--skill",
+                "seguridad-backend",
+            ]
+        )
+        self.assertEqual(resultado.returncode, 0, resultado.stdout + resultado.stderr)
+        skills_origen = descubrir_skills(SKILLS_ORIGEN)
+        skills_destino = descubrir_skills(destino / ".agents" / "skills")
+        self.assertEqual(set(skills_destino), CORE_AUTOMATICO | {"seguridad-backend"})
+        self.assertEqual(
+            calcular_huellas(skills_origen["seguridad-backend"]),
+            calcular_huellas(skills_destino["seguridad-backend"]),
+        )
+        estado: object = json.loads((destino / ".estado-plantilla.json").read_text(encoding="utf-8"))
+        self.assertIsInstance(estado, dict)
+        instaladas = estado.get("skills_instaladas") if isinstance(estado, dict) else None
+        self.assertEqual(set(instaladas) if isinstance(instaladas, list) else set(), set(skills_destino))
+        historial = estado.get("actualizaciones_skills") if isinstance(estado, dict) else None
+        self.assertIsInstance(historial, list)
+
+    def test_rechaza_skill_ya_instalada_sin_alterar_estado(self) -> None:
+        """Impide repetir una Skill y conserva la instancia sin cambios."""
+        destino = self.crear_completo("proyecto-con-skill-existente")
+        estado_antes = (destino / ".estado-plantilla.json").read_bytes()
+        resultado = ejecutar(
+            [
+                sys.executable,
+                str(AGREGADOR_SKILLS),
+                str(destino),
+                "--skill",
+                "cerrar-modulo",
+            ]
+        )
+        self.assertNotEqual(resultado.returncode, 0)
+        self.assertEqual((destino / ".estado-plantilla.json").read_bytes(), estado_antes)
+
+    def test_agrega_varias_skills_del_mismo_stack(self) -> None:
+        """Conserva el LEEME cuando incorpora un stack completo por primera vez."""
+        destino = self.crear_completo("proyecto-con-stack-agregado")
+        resultado = ejecutar(
+            [
+                sys.executable,
+                str(AGREGADOR_SKILLS),
+                str(destino),
+                "--skill",
+                "desarrollar-firmware",
+                "--skill",
+                "diagnosticar-hardware",
+            ]
+        )
+        self.assertEqual(resultado.returncode, 0, resultado.stdout + resultado.stderr)
+        skills_destino = descubrir_skills(destino / ".agents" / "skills")
+        self.assertTrue({"desarrollar-firmware", "diagnosticar-hardware"}.issubset(skills_destino))
+        self.assertTrue(
+            (destino / ".agents" / "skills" / "stacks" / "firmware-esp32" / "LEEME.md").is_file()
         )
 
     def test_rechaza_una_skill_desconocida_sin_publicar_destino(self) -> None:

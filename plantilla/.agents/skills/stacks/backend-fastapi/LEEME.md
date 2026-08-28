@@ -5,7 +5,8 @@
 
 ## Que ofrece el catalogo fuente
 
-- Skills: `fastapi-setup`
+- Skill del stack: `fastapi-setup`
+- Skill core complementaria: `seguridad-backend` para modelar amenazas, autorizacion y pruebas negativas antes de exponer la API
 - Patron router/schema/service como convencion de estructura
 - uv como gestor de proyecto por defecto (en vez de pip+venv)
 
@@ -17,6 +18,8 @@ stacks/backend-fastapi/
 └── skills/
     └── fastapi-setup/       # Setup, estructura, Alembic, pydantic-settings, TDD con pytest
 ```
+
+`seguridad-backend` vive en el core porque tambien aplica a futuros stacks backend. Se selecciona por nombre y no se duplica dentro de este stack.
 
 ## Reglas adicionales de implementacion
 
@@ -64,6 +67,12 @@ Desde la raiz de `agent-framework`, la Skill se confirma al crear la instancia:
 
 ```powershell
 python scripts\crear_proyecto.py <DESTINO> "<NOMBRE>" --configuracion <CONFIGURACION> --skill fastapi-setup
+```
+
+Antes de exponer la API a red o procesar identidades y datos sensibles, se confirman ambas Skills:
+
+```powershell
+python scripts\crear_proyecto.py <DESTINO> "<NOMBRE>" --configuracion <CONFIGURACION> --skill fastapi-setup --skill seguridad-backend
 ```
 
 No se mueven carpetas manualmente. En una instancia generada, este `LEEME.md` acompaña exclusivamente a las Skills del stack que fueron confirmadas.
