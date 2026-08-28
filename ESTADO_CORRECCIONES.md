@@ -170,6 +170,16 @@ La matriz de GitHub Actions queda solicitada por el evento `push`. La API del re
 
 Se publica una ejecucion correctiva de la matriz remota. La conclusion de GitHub Actions sigue siendo el criterio pendiente para cerrar la CI.
 
+### 2026-08-28 — Rev 39
+
+**Completado:**
+
+- Se agrego una traza acotada a la CI que muestra el commit descargado, el inventario calculado y el inventario registrado antes de la suite.
+
+**Resultado:**
+
+La segunda ejecucion fallo en Ubuntu/Python 3.12 con una huella inesperada pese a reproducirse correctamente en clonaciones frescas. La siguiente ejecucion entregara la evidencia necesaria para corregir sin relajar la invariabilidad del inventario.
+
 ### 2026-08-28 — Rev 33
 
 **Completado:**

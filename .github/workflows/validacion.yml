@@ -29,6 +29,11 @@ jobs:
           python-version: ${{ matrix.python }}
       - name: Valida el contrato
         run: python scripts/validar_contrato_plantilla.py
+      - name: Registra el inventario versionado
+        run: |
+          git rev-parse HEAD
+          python scripts/inventariar_skills.py
+          cat auditoria/inventario_skills.json
       - name: Ejecuta las pruebas
         run: python -m unittest discover -s pruebas -p "prueba_*.py" -v
       - name: Confirma que Skills permanece intacto

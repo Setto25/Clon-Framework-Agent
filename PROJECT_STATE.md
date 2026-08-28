@@ -1,7 +1,7 @@
 # Estado del proyecto: agent-framework
 
-**Ultima actualizacion:** 2026-08-28 (rev 41)
-**Estado general:** Dos pilotos locales cerrados y validados; correccion de CI publicada y procedencia pendiente
+**Ultima actualizacion:** 2026-08-28 (rev 42)
+**Estado general:** Dos pilotos locales cerrados y validados; diagnostico de CI publicado y procedencia pendiente
 **Fase activa:** Fase 7 — cierre de validacion local y preparacion de CI
 
 ## 1. Objetivo
@@ -144,6 +144,7 @@ Cada stack tiene LEEME.md con reglas adicionales, terminos tecnicos y procedimie
 91. **Segundo piloto validado de forma reproducible.** Tras restaurar ACL heredadas en el entorno local, `D:\PROYECTOS\piloto-inventario-web\interfaz` aprobo `npm run test` (2 pruebas), `npm run lint` y `npm run build` mediante el validador del framework. `vitest.config.mts` evita que las pruebas aisladas carguen `.env.local`; el aviso de compatibilidad de Vite quedo eliminado.
 92. **Rama de estabilizacion publicada.** El commit `bf56889` se publico en `origin/codex/estabilizacion-framework` sin modificar `origin/main`, activando la matriz de GitHub Actions. La API del repositorio requiere autenticacion para consultar sus ejecuciones desde esta sesion; la conclusion remota debe verificarse en GitHub antes de declarar aprobada la CI.
 93. **Inventario de CI aislado de la copia de trabajo.** La primera ejecucion remota detecto una divergencia de huellas entre la copia del runner y el inventario versionado. `prueba_inventario_skills.py` ahora extrae las Skills desde `git archive HEAD` hacia un temporal controlado antes de compararlas, mientras conserva la regresion LF/CRLF. La prueba verifica asi el contenido publicado y no atributos locales del checkout.
+94. **Diagnostico remoto acotado.** La segunda ejecucion fallo tambien en Ubuntu/Python 3.12 pese a que clonaciones frescas y archivos Git locales coinciden. La CI registra ahora el commit, el inventario calculado y el inventario esperado antes de la suite para identificar la divergencia sin desactivar la comprobacion.
 
 ## 5. Que falta
 
