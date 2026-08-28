@@ -1,10 +1,10 @@
 {
   "version_inventario": 2,
   "raiz": "plantilla/.agents/skills",
-  "huella_conjunto_sha256": "6e811f840ec399caf805cc0953bf462ed990127fcd889677725584db8a69847d",
+  "huella_conjunto_sha256": "c3e9168be3bfbaed576162277b3ae0446025e67e3bd6b480c383619eb80b6e15",
   "resumen": {
-    "archivos": 35,
-    "skills": 18,
+    "archivos": 37,
+    "skills": 20,
     "declaraciones_procedencia": 1
   },
   "skills": [
@@ -34,8 +34,8 @@
     },
     {
       "ruta": "opcional/delegar-entre-agentes/SKILL.md",
-      "bytes": 3359,
-      "sha256": "ccdcab1050438055311bc8152cc847b45de521a62f769cb4589dc8f73c0c733e",
+      "bytes": 4700,
+      "sha256": "320a9b82b2ef4afd4e6e8369fc684bd1b3bd35b2e400d3aed8f60a7199b37567",
       "nombre": "delegar-entre-agentes"
     },
     {
@@ -69,6 +69,12 @@
       "nombre": "diagnosticar-hardware"
     },
     {
+      "ruta": "stacks/frontend-nextjs/skills/diseno-ui-web/SKILL.md",
+      "bytes": 5352,
+      "sha256": "723770e7fc4092c0435151b68d74716c796d74fad4befb3ae9cf004510954e87",
+      "nombre": "diseno-ui-web"
+    },
+    {
       "ruta": "stacks/frontend-nextjs/skills/nextjs-fullstack/SKILL.md",
       "bytes": 9505,
       "sha256": "0612f3d90848bf220832491e6ba881a31130d4425a27f262c40ae1ebb3947d07",
@@ -97,6 +103,12 @@
       "bytes": 11857,
       "sha256": "4ae9fbd93c4ab985b4a69811dfced2235fd7b8da9e394e96f775e64c1ddfbc94",
       "nombre": "rag-local"
+    },
+    {
+      "ruta": "stacks/mobile-flutter/skills/diseno-ui-flutter/SKILL.md",
+      "bytes": 4873,
+      "sha256": "f87ea26854e24470436f2eed73ecc515ddfc4236852d5dfbd5f5ee7b80c489de",
+      "nombre": "diseno-ui-flutter"
     },
     {
       "ruta": "stacks/mobile-flutter/skills/flutter-animations/SKILL.md",

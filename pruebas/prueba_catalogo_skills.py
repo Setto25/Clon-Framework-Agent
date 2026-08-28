@@ -28,13 +28,13 @@ def cargar_modulo() -> ModuleType:
 class PruebasCatalogoSkills(unittest.TestCase):
     """Verifica descubrimiento, categorias y core automatico."""
 
-    def test_descubre_dieciocho_nombres_unicos(self) -> None:
+    def test_descubre_veinte_nombres_unicos(self) -> None:
         """Confirma que todo el almacen fuente permanezca disponible."""
         modulo = cargar_modulo()
         registros = cast(list[dict[str, object]], modulo.descubrir_skills(RAIZ_SKILLS))
         nombres = [cast(str, registro["nombre"]) for registro in registros]
-        self.assertEqual(len(nombres), 18)
-        self.assertEqual(len(set(nombres)), 18)
+        self.assertEqual(len(nombres), 20)
+        self.assertEqual(len(set(nombres)), 20)
 
     def test_define_el_core_automatico_exacto(self) -> None:
         """Impide ampliar silenciosamente las Skills instaladas por defecto."""
