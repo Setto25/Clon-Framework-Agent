@@ -539,10 +539,11 @@ class PruebasCreacionProyecto(unittest.TestCase):
         modulo = cargar_modulo_creador()
         temporal = self.raiz_temporal / ".proyecto-temporal-publicacion"
         destino = self.raiz_temporal / "destino-aparecido"
+        padre_lexico = self.raiz_temporal / ".." / self.raiz_temporal.name
         temporal.mkdir()
         destino.mkdir()
         with self.assertRaisesRegex(ValueError, "aparecio durante la creacion"):
-            modulo.publicar_temporal(temporal, destino, self.raiz_temporal)
+            modulo.publicar_temporal(temporal, destino, padre_lexico)
         self.assertTrue(temporal.is_dir())
         self.assertTrue(destino.is_dir())
 

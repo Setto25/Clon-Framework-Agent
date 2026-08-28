@@ -254,7 +254,8 @@ def eliminar_temporal(destino_temporal: Path, padre: Path) -> None:
     if not destino_temporal.exists():
         return
     temporal_resuelto = destino_temporal.resolve()
-    if temporal_resuelto.parent != padre or not temporal_resuelto.name.startswith(".proyecto-temporal-"):
+    padre_resuelto = padre.resolve(strict=True)
+    if temporal_resuelto.parent != padre_resuelto or not temporal_resuelto.name.startswith(".proyecto-temporal-"):
         raise ValueError(f"Se rechazo eliminar un temporal inesperado: {temporal_resuelto}")
     shutil.rmtree(temporal_resuelto)
 
@@ -262,7 +263,8 @@ def eliminar_temporal(destino_temporal: Path, padre: Path) -> None:
 def publicar_temporal(destino_temporal: Path, destino: Path, padre: Path) -> None:
     """Publica el temporal solo si el destino continua libre y bien delimitado."""
     temporal_resuelto = destino_temporal.resolve(strict=True)
-    if temporal_resuelto.parent != padre or not temporal_resuelto.name.startswith(".proyecto-temporal-"):
+    padre_resuelto = padre.resolve(strict=True)
+    if temporal_resuelto.parent != padre_resuelto or not temporal_resuelto.name.startswith(".proyecto-temporal-"):
         raise ValueError(f"Se rechazo publicar un temporal inesperado: {temporal_resuelto}")
     if os.path.lexists(destino):
         raise ValueError(f"El destino aparecio durante la creacion y no sera reemplazado: {destino}")

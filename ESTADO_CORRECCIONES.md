@@ -1,7 +1,7 @@
 # Estado de correcciones de agent-framework
 
-**Ultima actualizacion:** 2026-08-28 (rev 31)
-**Estado general:** Dos pilotos locales cerrados y validados; correccion final de CI publicada y procedencia pendiente
+**Ultima actualizacion:** 2026-08-28 (rev 41)
+**Estado general:** Dos pilotos locales cerrados y validados; correccion de CI para Windows preparada y procedencia pendiente
 **Fase activa:** Fase 7 — cierre de validacion local y preparacion de CI
 **Rama de trabajo:** `codex/estabilizacion-framework`
 
@@ -196,6 +196,24 @@ La segunda ejecucion fallo en Ubuntu/Python 3.12 con una huella inesperada pese 
 **Resultado:**
 
 Se publica la correccion final para una nueva ejecucion de CI remota. La conclusion de GitHub Actions sigue siendo el criterio pendiente antes de declarar la matriz aprobada.
+
+### 2026-08-28 — Rev 41
+
+**Completado:**
+
+- Se identifico que Windows resolvia el padre del temporal con una representacion distinta de la ruta recibida por el creador.
+- `crear_proyecto.py` resuelve ambos lados antes de validar el padre y mantiene el requisito de que el temporal pertenezca al directorio controlado.
+- Se amplio la regresion de publicacion tardia con un padre expresado lexicalmente.
+- La prueba de inventario declara `safe.directory` solo en su proceso Git para funcionar bajo identidades de ejecucion distintas, sin modificar configuracion global.
+
+**Evidencia:**
+
+- El contrato de plantilla aprobo.
+- La suite completa aprobo 51 pruebas localmente.
+
+**Resultado:**
+
+Ubuntu aprobo la correccion anterior. Se prepara una nueva ejecucion para confirmar los dos trabajos de Windows antes de cerrar la matriz.
 
 ### 2026-08-28 — Rev 33
 

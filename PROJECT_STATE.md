@@ -1,7 +1,7 @@
 # Estado del proyecto: agent-framework
 
-**Ultima actualizacion:** 2026-08-28 (rev 43)
-**Estado general:** Dos pilotos locales cerrados y validados; correccion final de CI publicada y procedencia pendiente
+**Ultima actualizacion:** 2026-08-28 (rev 44)
+**Estado general:** Dos pilotos locales cerrados y validados; correccion de CI para Windows preparada y procedencia pendiente
 **Fase activa:** Fase 7 — cierre de validacion local y preparacion de CI
 
 ## 1. Objetivo
@@ -146,6 +146,7 @@ Cada stack tiene LEEME.md con reglas adicionales, terminos tecnicos y procedimie
 93. **Inventario de CI aislado de la copia de trabajo.** La primera ejecucion remota detecto una divergencia de huellas entre la copia del runner y el inventario versionado. `prueba_inventario_skills.py` ahora extrae las Skills desde `git archive HEAD` hacia un temporal controlado antes de compararlas, mientras conserva la regresion LF/CRLF. La prueba verifica asi el contenido publicado y no atributos locales del checkout.
 94. **Diagnostico remoto acotado.** La segunda ejecucion fallo tambien en Ubuntu/Python 3.12 pese a que clonaciones frescas y archivos Git locales coinciden. La CI registra ahora el commit, el inventario calculado y el inventario esperado antes de la suite para identificar la divergencia sin desactivar la comprobacion.
 95. **Orden de inventario independiente de plataforma.** La traza remota mostro archivos individuales identicos y una huella conjunta distinta. La causa fue ordenar objetos `Path`, cuya comparacion depende de la plataforma. `inventariar_skills.py` ordena ahora por rutas POSIX textuales y una regresion cubre mayusculas; se regenero el inventario y se retiro la traza temporal de CI.
+96. **Padres temporales normalizados.** El creador resuelve el padre esperado antes de comparar la ubicacion del temporal, evitando un rechazo falso de Windows sin aceptar rutas fuera del directorio controlado. La extraccion de inventario en pruebas declara el directorio seguro solo para su propio proceso Git, sin alterar la configuracion global.
 
 ## 5. Que falta
 
@@ -153,8 +154,8 @@ Cada stack tiene LEEME.md con reglas adicionales, terminos tecnicos y procedimie
 - **Stack backend-fastapi.** El piloto uso `fastapi-setup` y valido setup, configuracion tipada, rutas, esquemas, servicio, migraciones, persistencia PostgreSQL y pruebas. Quedan autenticacion y autorizacion fuera de alcance hasta confirmar actores y exposicion.
 - **Procedencia de Skills.** La fuente y licencia deben resolverse antes de cualquier redistribucion. Las correcciones para uso personal quedan permitidas y registradas.
 - **Validacion funcional.** La estructura y las invariantes de seguridad estan probadas, pero cada Skill tecnica necesita un escenario piloto que mida si mejora el resultado frente a trabajar sin ella.
-- **CI remota.** La matriz Windows/Ubuntu y Python 3.9/3.12 fue solicitada nuevamente tras hacer determinista el orden del inventario; no puede considerarse aprobada hasta comprobar su conclusion en GitHub.
+- **CI remota.** Ubuntu ya aprobo tras hacer determinista el inventario. Se preparo una correccion para el rechazo falso de rutas temporales en Windows; no puede considerarse aprobada hasta comprobar la nueva conclusion en GitHub.
 
 ## 6. Siguiente paso logico
 
-Comprobar la conclusion de GitHub Actions para `codex/estabilizacion-framework` tras la correccion del inventario y resolver la procedencia de Skills antes de redistribuir el framework. Toda exposicion futura requiere definir actores, autenticacion y autorizacion.
+Publicar la correccion de rutas temporales en `codex/estabilizacion-framework` y comprobar la nueva matriz de GitHub Actions. Resolver la procedencia de Skills antes de redistribuir el framework. Toda exposicion futura requiere definir actores, autenticacion y autorizacion.

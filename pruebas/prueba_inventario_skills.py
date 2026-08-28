@@ -52,7 +52,14 @@ class PruebasInventarioSkills(unittest.TestCase):
     def extraer_skills_versionadas(self, destino: Path) -> None:
         """Extrae las Skills registradas en Git sin depender de la copia de trabajo."""
         resultado = subprocess.run(
-            ["git", "archive", "--format=tar", "HEAD:plantilla/.agents/skills"],
+            [
+                "git",
+                "-c",
+                f"safe.directory={RAIZ_FRAMEWORK.as_posix()}",
+                "archive",
+                "--format=tar",
+                "HEAD:plantilla/.agents/skills",
+            ],
             cwd=RAIZ_FRAMEWORK,
             check=False,
             capture_output=True,
