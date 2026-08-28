@@ -1,7 +1,7 @@
 # Estado de correcciones de agent-framework
 
-**Ultima actualizacion:** 2026-08-28 (rev 43)
-**Estado general:** CI aprobada e integrada en main local; auditoria de procedencia focalizada y uso privado vigente
+**Ultima actualizacion:** 2026-08-28 (rev 44)
+**Estado general:** CI aprobada e integrada en main local; documentacion de uso alineada y uso privado vigente
 **Fase activa:** Fase 7 — cierre de validacion local y preparacion de CI
 **Rama de trabajo:** `main` local; `codex/estabilizacion-framework` se conserva como historial de estabilizacion
 
@@ -238,6 +238,17 @@ El framework queda validado para uso privado. La licencia de `mobile-flutter` se
 **Resultado:**
 
 `main` local es la linea validada para uso privado; el remoto se conserva sin publicar esta integracion.
+
+### 2026-08-28 — Rev 44
+
+**Completado:**
+
+- Se corrigieron las afirmaciones obsoletas del README sobre pilotos y la matriz de CI.
+- La guia ahora diferencia las protecciones tecnicas comprobadas de la procedencia externa que solo condiciona una redistribucion futura.
+
+**Resultado:**
+
+La documentacion de uso coincide con el estado real de `main` local y puede orientar la creacion de proyectos privados.
 
 ### 2026-08-28 — Rev 33
 

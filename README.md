@@ -2,7 +2,7 @@
 
 Framework agentico reutilizable para crear proyectos con agentes de IA, memoria operativa y reglas de desarrollo desde el primer commit.
 
-Extraido inicialmente del proyecto entrevoces. El creador y los verificadores tienen pruebas locales reproducibles; todavia falta validarlo en proyectos piloto reales.
+Extraido inicialmente del proyecto entrevoces. El creador y los verificadores tienen pruebas locales reproducibles, dos pilotos privados completados y una matriz de CI aprobada en Windows y Ubuntu con Python 3.9 y 3.12.
 
 > **Estado de Skills:** las 18 Skills permanecen en el catalogo fuente y fueron revisadas estructuralmente. Un proyecto nuevo recibe solo `cerrar-modulo`, `lecciones-aprendidas`, `probar-e2e` y las Skills adicionales confirmadas mediante `--skill`. Su procedencia sigue incompleta, por lo que no se recomienda redistribuirlas.
 
@@ -14,7 +14,7 @@ Un conjunto de archivos que se copian a cualquier proyecto nuevo para darle al a
 
 - **Reglas de proceso — "superpowers" (Nivel 0, base)**: brainstorming estructurado, TDD red-green-refactor, depuracion sistematica en 4 fases. Viven en `.agents/rules/claude.md §2`. Se decidio no implementarlos como Skill separado: son comportamiento base obligatorio cuando se carga el conjunto de reglas y no requieren invocacion nominal. No aparecen en el catalogo de stacks/ ni en opcional/. No confundir con Skills opcionales como `delegar-entre-agentes`.
 - **Estructura de documentacion**: AGENTS.md, PROJECT_STATE.md, REGISTRO_CAMBIOS.md, PLAN_DESARROLLO.md y otros como convencion.
-- **Skills agrupados por stack**: guias existentes para FastAPI, Flutter, Next.js, ESP32/firmware y LLM/RAG, pendientes de auditoria individual.
+- **Skills agrupados por stack**: guias para FastAPI, Flutter, Next.js, ESP32/firmware y LLM/RAG. Su procedencia se registra en `ATRIBUCIONES.md`; no toda licencia externa esta verificada.
 - **Memoria de errores**: skill `lecciones-aprendidas` para no repetir ciclos de depuracion ya resueltos.
 - **Creacion segura**: una CLI copia la plantilla, resuelve su contrato, protege `.env`, registra la version de origen e inicializa Git mediante una operacion atomica.
 - **Verificacion de memoria**: un comando comprueba documentos obligatorios, placeholders y datos iniciales pendientes.
@@ -69,7 +69,7 @@ plantilla/
 - **Domain-packs son stubs**: solo hay estructura reservada, sin contenido operativo.
 - **`delegar-entre-agentes` es aspiracional**: vive en `opcional/`, sin evidencia de uso real en entrevoces, y no se activa por defecto. Util solo cuando el agente pierde decisiones importantes que PROJECT_STATE.md no captura (razonamiento en curso, decision a medias). En la practica, PROJECT_STATE.md suele ser suficiente.
 - No instala una recomendacion del agente sin confirmacion explicita del usuario.
-- No certifica las Skills existentes: su calidad, procedencia y licencia siguen pendientes de auditoria.
+- No certifica una licencia de redistribucion para las Skills con procedencia externa incompleta. Su estructura, inventario y copia se verifican automaticamente.
 - No cubre Prisma, pandas/ML, Go, Rust ni infraestructura/DevOps con Skills dedicadas.
 
 ---
@@ -352,20 +352,21 @@ python scripts\validar_contrato_plantilla.py
 python -m unittest discover -s pruebas -p "prueba_*.py" -v
 ```
 
-La suite comprueba creacion completa, seleccion exacta de Skills, rechazo de nombres desconocidos, nombres seguros para dotenv, memoria propia del proyecto, referencias de agentes, limpieza atomica, proteccion de `.env`, estados Git preexistentes, coherencia de limites, gramatica de Python 3.9, vigencia del inventario y ausencia de instrucciones obsoletas o destructivas. El analisis estatico impide APIs de `pathlib` posteriores al piso declarado; la ejecucion real en Python 3.9 corresponde a la matriz pendiente de GitHub Actions. El workflow `.github/workflows/validacion.yml` ejecuta la misma validacion en Windows y Ubuntu con Python 3.9 y 3.12.
+La suite comprueba creacion completa, seleccion exacta de Skills, rechazo de nombres desconocidos, nombres seguros para dotenv, memoria propia del proyecto, referencias de agentes, limpieza atomica, proteccion de `.env`, estados Git preexistentes, coherencia de limites, gramatica de Python 3.9, vigencia del inventario y ausencia de instrucciones obsoletas o destructivas. El analisis estatico impide APIs de `pathlib` posteriores al piso declarado; la ejecucion real de la matriz ya aprobo en Windows y Ubuntu con Python 3.9 y 3.12.
 
 ---
 
-## 10. Estado actual y proxima validacion pendiente
+## 10. Estado actual y siguiente uso recomendado
 
-Extraido de un unico proyecto real (entrevoces). **Todavia no fue probado en un segundo proyecto.** La creacion atomica, la configuracion completa, el rechazo de pendientes y la inmutabilidad de Skills si fueron comprobados en directorios temporales.
+El framework se valido en dos pilotos privados: una API de inventario con FastAPI y PostgreSQL, y un panel web de inventario con Next.js que consume esa API local. Ambos cerraron sus pruebas, y la matriz de CI aprobo en Windows y Ubuntu con Python 3.9 y 3.12.
 
-La proxima vez que se use:
-1. Documentar las fricciones de la CLI, las recomendaciones y la seleccion efectiva en [`PROJECT_STATE.md`](PROJECT_STATE.md), seccion "Que falta".
-2. Registrar cualquier defecto de una Skill, su correccion comprobada, la fuente probable y el efecto observado.
-3. Completar la auditoria de procedencia y licencia antes de redistribuir Skills.
+Para el siguiente proyecto privado:
 
-El objetivo es que dos proyectos piloto completen el flujo antes de publicar `v1.0.0`.
+1. Crear la instancia mediante `scripts/crear_proyecto.py` y seleccionar solo las Skills necesarias.
+2. Documentar las fricciones de la CLI, las recomendaciones y la seleccion efectiva en el `PROJECT_STATE.md` de la instancia.
+3. Registrar cualquier defecto de una Skill, su correccion comprobada y el efecto observado.
+
+La procedencia de algunas Skills externas permanece incompleta. Esto no bloquea el uso privado; solo debe resolverse antes de una redistribucion.
 
 ---
 
