@@ -1,7 +1,7 @@
 # Estado de correcciones de agent-framework
 
 **Ultima actualizacion:** 2026-08-28 (rev 31)
-**Estado general:** Dos pilotos locales cerrados y validados; correccion de CI publicada y procedencia pendiente
+**Estado general:** Dos pilotos locales cerrados y validados; correccion final de CI publicada y procedencia pendiente
 **Fase activa:** Fase 7 — cierre de validacion local y preparacion de CI
 **Rama de trabajo:** `codex/estabilizacion-framework`
 
@@ -179,6 +179,23 @@ Se publica una ejecucion correctiva de la matriz remota. La conclusion de GitHub
 **Resultado:**
 
 La segunda ejecucion fallo en Ubuntu/Python 3.12 con una huella inesperada pese a reproducirse correctamente en clonaciones frescas. La siguiente ejecucion entregara la evidencia necesaria para corregir sin relajar la invariabilidad del inventario.
+
+### 2026-08-28 — Rev 40
+
+**Completado:**
+
+- Se identifico que los 35 archivos individuales coincidian y que solo variaba la huella conjunta.
+- `inventariar_skills.py` ordena ahora por rutas POSIX textuales en vez de comparar objetos `Path` dependientes de la plataforma.
+- Se regenero el inventario, se agrego la regresion de orden y se retiro la traza temporal de la CI.
+
+**Evidencia:**
+
+- La regresion de inventario aprobo tres pruebas.
+- El contrato y la suite completa aprobaron 51 pruebas localmente.
+
+**Resultado:**
+
+Se publica la correccion final para una nueva ejecucion de CI remota. La conclusion de GitHub Actions sigue siendo el criterio pendiente antes de declarar la matriz aprobada.
 
 ### 2026-08-28 — Rev 33
 

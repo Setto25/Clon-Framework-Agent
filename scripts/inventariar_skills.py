@@ -107,6 +107,17 @@ def detectar_declaraciones(contenido: str, ruta: str) -> list[DeclaracionProcede
     return declaraciones
 
 
+def ordenar_rutas(raiz: Path, archivos: list[Path]) -> list[tuple[str, Path]]:
+    """Ordena rutas por su forma POSIX para no depender de la plataforma."""
+    rutas = ((archivo.relative_to(raiz).as_posix(), archivo) for archivo in archivos)
+    return sorted(rutas, key=lambda elemento: elemento[0])
+
+
+def ordenar_archivos(raiz: Path) -> list[tuple[str, Path]]:
+    """Obtiene y ordena los archivos inventariables de una raiz."""
+    return ordenar_rutas(raiz, [archivo for archivo in raiz.rglob("*") if archivo.is_file()])
+
+
 def crear_inventario(raiz: Path) -> InventarioSkills:
     """Lee el catalogo fuente y construye un inventario ordenado."""
     raiz_resuelta = raiz.expanduser().resolve()
@@ -118,8 +129,7 @@ def crear_inventario(raiz: Path) -> InventarioSkills:
     declaraciones: list[DeclaracionProcedencia] = []
     componentes_huella: list[bytes] = []
 
-    for archivo in sorted(ruta for ruta in raiz_resuelta.rglob("*") if ruta.is_file()):
-        ruta_relativa = archivo.relative_to(raiz_resuelta).as_posix()
+    for ruta_relativa, archivo in ordenar_archivos(raiz_resuelta):
         contenido_bytes = normalizar_para_huella(archivo, archivo.read_bytes())
         huella = calcular_sha256(contenido_bytes)
         componentes_huella.append(f"{ruta_relativa}\0{huella}\n".encode("utf-8"))

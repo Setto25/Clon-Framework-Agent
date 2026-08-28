@@ -1,7 +1,7 @@
 {
   "version_inventario": 2,
   "raiz": "plantilla/.agents/skills",
-  "huella_conjunto_sha256": "428271a28d389078e8a62a78561c56d7855f921125b1d3fbe844c00f2c05596b",
+  "huella_conjunto_sha256": "88ef7f6765acac97041d023da6c4b0bcdd9a3cf8ad19ff20df4155d7d6be3d13",
   "resumen": {
     "archivos": 35,
     "skills": 18,
@@ -179,14 +179,14 @@
       "sha256": "288919b923a0285c1093271dfafa1d3448133deca3a9ae6064fbc188b9f72eb7"
     },
     {
-      "ruta": "stacks/firmware-esp32/domain-packs/audio-embebido/LEEME.md",
-      "bytes": 1959,
-      "sha256": "6d2dca0bb4158ecc2facad20bb8dea0d200cb551f1f54ca0a44e4711d7b5932f"
-    },
-    {
       "ruta": "stacks/firmware-esp32/LEEME.md",
       "bytes": 2551,
       "sha256": "2200f7d791ae4a464f86ee05ef821df77293ae403c1677da4f8c266e87997841"
+    },
+    {
+      "ruta": "stacks/firmware-esp32/domain-packs/audio-embebido/LEEME.md",
+      "bytes": 1959,
+      "sha256": "6d2dca0bb4158ecc2facad20bb8dea0d200cb551f1f54ca0a44e4711d7b5932f"
     },
     {
       "ruta": "stacks/frontend-nextjs/LEEME.md",

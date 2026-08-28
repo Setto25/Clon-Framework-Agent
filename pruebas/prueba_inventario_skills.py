@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import io
+import importlib.util
 import os
 import subprocess
 import sys
@@ -16,6 +17,16 @@ from pathlib import Path
 RAIZ_FRAMEWORK = Path(__file__).resolve().parent.parent
 INVENTARIADOR = RAIZ_FRAMEWORK / "scripts" / "inventariar_skills.py"
 INVENTARIO_REGISTRADO = RAIZ_FRAMEWORK / "auditoria" / "inventario_skills.json"
+
+
+def cargar_inventariador() -> object:
+    """Carga el modulo para probar el orden independiente de la plataforma."""
+    especificacion = importlib.util.spec_from_file_location("inventariador_pruebas", INVENTARIADOR)
+    if especificacion is None or especificacion.loader is None:
+        raise RuntimeError("No se pudo cargar scripts/inventariar_skills.py")
+    modulo = importlib.util.module_from_spec(especificacion)
+    especificacion.loader.exec_module(modulo)
+    return modulo
 
 
 class PruebasInventarioSkills(unittest.TestCase):
@@ -94,6 +105,17 @@ class PruebasInventarioSkills(unittest.TestCase):
                 self.assertEqual(resultado.returncode, 0, resultado.stdout + resultado.stderr)
                 salidas.append(resultado.stdout)
         self.assertEqual(salidas[0], salidas[1])
+
+    def test_ordenamiento_usa_rutas_posix(self) -> None:
+        """Ordena rutas con mayusculas de forma identica en cualquier plataforma."""
+        modulo = cargar_inventariador()
+        with tempfile.TemporaryDirectory(prefix="inventario-orden-") as temporal:
+            raiz = Path(temporal)
+            rutas = modulo.ordenar_rutas(
+                raiz,
+                [raiz / "zeta/archivo.md", raiz / "Alfa/archivo.md", raiz / "alfa/archivo.md"],
+            )
+        self.assertEqual([ruta for ruta, _ in rutas], ["Alfa/archivo.md", "alfa/archivo.md", "zeta/archivo.md"])
 
 
 if __name__ == "__main__":
