@@ -1,7 +1,7 @@
 # Estado del proyecto: agent-framework
 
-**Ultima actualizacion:** 2026-08-28 (rev 47)
-**Estado general:** CI aprobada e integrada en main local; documentacion de uso alineada y uso privado vigente
+**Ultima actualizacion:** 2026-08-28 (rev 48)
+**Estado general:** CI aprobada e integrada en main local; inicio conversacional desde IDE formalizado para uso privado
 **Fase activa:** Fase 7 — cierre de validacion local y preparacion de CI
 
 ## 1. Objetivo
@@ -150,6 +150,7 @@ Cada stack tiene LEEME.md con reglas adicionales, terminos tecnicos y procedimie
 97. **CI aprobada y licencia no verificable.** La matriz remota aprobo Windows y Ubuntu con Python 3.9 y 3.12. La revision focalizada confirmo la fuente Flutter y sus tres Skills, pero no encontro licencia aplicable ni revision de origen identificada; el marco se conserva para uso privado sin redistribucion.
 98. **Integracion local cerrada.** `main` se adelanto por fast-forward hasta `8bf5dbc`, que incorpora la estabilizacion validada y la auditoria privada. `origin/main` no se modifico; la rama remota de estabilizacion conserva el ultimo commit publicado de CI.
 99. **README alineado con evidencia.** La guia de uso ya declara los dos pilotos privados y la matriz de CI aprobada. Distingue las garantias tecnicas comprobadas de la procedencia externa pendiente, que solo limita una futura redistribucion.
+100. **Entrada conversacional formalizada.** `iniciar-proyecto` convierte la frase de inicio desde un IDE en una entrevista breve, recomendacion explicada, confirmacion de destino y Skills, y ejecucion de la CLI ya validada. No crea archivos antes de esa confirmacion y conserva la ruta manual como alternativa reproducible.
 
 ## 5. Que falta
 

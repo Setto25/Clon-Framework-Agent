@@ -1,11 +1,34 @@
 ---
 name: iniciar-proyecto
-description: Inicializa una instancia nueva de agent-framework, recomienda Skills segun el contexto y aplica solamente el core automatico mas las Skills confirmadas por el usuario. Usar al crear un proyecto desde la plantilla o completar su configuracion inicial.
+description: Guia una entrevista para crear un proyecto con agent-framework, recomienda Skills y ejecuta la CLI solo despues de confirmar el destino y la seleccion. Usar cuando una persona diga que quiere usar el framework desde su IDE.
 ---
 
 # Iniciar proyecto
 
-Esta Skill actua como interfaz conversacional de los scripts soportados. La recomendacion de una Skill no autoriza su instalacion.
+Esta Skill es la entrada conversacional de los scripts soportados. Permite que una persona abra su IDE y diga que quiere usar `agent-framework`, sin conocer JSON ni comandos. La recomendacion de una Skill no autoriza su instalacion.
+
+## Entrada conversacional desde el IDE
+
+Cuando la persona diga "usa el framework", "inicia un proyecto con agent-framework" o una peticion equivalente, se confirma la ruta del meta-repositorio y se leen su `AGENTS.md` y `PROJECT_STATE.md`. Si el IDE ya abrio el meta-repositorio, se usa esa raiz; si no, se solicita o utiliza la ruta que la persona indique.
+
+Se conduce una entrevista breve. Se solicitan en un solo bloque solo los datos que falten:
+
+1. objetivo y usuarios;
+2. MVP obligatorio;
+3. exclusiones explicitas;
+4. infraestructura, stack y restricciones de entorno confirmados;
+5. nombre visible y carpeta de destino inexistente;
+6. siguiente paso que la persona espera despues de crear la base.
+
+No se obliga a la persona a nombrar Skills ni a editar JSON. El agente convierte las respuestas al contrato de configuracion despues de leer `configuracion_plantilla.json`. Si falta un dato obligatorio, se pregunta; no se inventa ni se interpreta una exclusion como autorizacion para instalar una Skill.
+
+Despues de la entrevista se consulta el catalogo, se recomiendan las Skills adicionales con una razon concreta y se muestra un resumen. Solo al recibir confirmacion explicita del destino y de los nombres exactos se prepara la configuracion y se ejecuta la CLI. Si la persona no confirma, se conserva la conversacion como propuesta y no se escribe nada.
+
+El mensaje minimo que puede usar la persona es:
+
+```text
+Usa el framework ubicado en D:\PROYECTOS\agent-framework para iniciar un proyecto nuevo. Guiame con las preguntas necesarias.
+```
 
 ## Identificar el contexto
 

@@ -89,7 +89,17 @@ d:\PROYECTOS\
     └── ...
 ```
 
-### Flujo recomendado: configuracion completa
+### Inicio asistido desde un IDE
+
+La ruta mas simple es abrir `D:\PROYECTOS\agent-framework` en VS Code, Antigravity u otro IDE con agente y escribir:
+
+```text
+Usa el framework ubicado en D:\PROYECTOS\agent-framework para iniciar un proyecto nuevo. Guiame con las preguntas necesarias.
+```
+
+La Skill `iniciar-proyecto` recopila objetivo, usuarios, MVP, exclusiones, infraestructura, destino y siguiente paso. Luego recomienda Skills, muestra el resumen y espera la confirmacion de los nombres exactos antes de crear archivos. El agente prepara internamente la configuracion y ejecuta la misma CLI segura documentada abajo. Si el IDE no descubre Skills de forma automatica, se adjuntan `AGENTS.md`, `PROJECT_STATE.md` y `plantilla/.agents/skills/iniciar-proyecto/SKILL.md` como contexto.
+
+### Flujo manual: configuracion completa
 
 1. Consulta el catalogo. El agente puede recomendar Skills segun el objetivo y el stack confirmado, pero la persona debe aprobar sus nombres exactos.
 

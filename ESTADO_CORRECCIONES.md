@@ -1,7 +1,7 @@
 # Estado de correcciones de agent-framework
 
-**Ultima actualizacion:** 2026-08-28 (rev 44)
-**Estado general:** CI aprobada e integrada en main local; documentacion de uso alineada y uso privado vigente
+**Ultima actualizacion:** 2026-08-28 (rev 45)
+**Estado general:** CI aprobada e integrada en main local; inicio conversacional desde IDE formalizado para uso privado
 **Fase activa:** Fase 7 — cierre de validacion local y preparacion de CI
 **Rama de trabajo:** `main` local; `codex/estabilizacion-framework` se conserva como historial de estabilizacion
 
@@ -249,6 +249,17 @@ El framework queda validado para uso privado. La licencia de `mobile-flutter` se
 **Resultado:**
 
 La documentacion de uso coincide con el estado real de `main` local y puede orientar la creacion de proyectos privados.
+
+### 2026-08-28 — Rev 45
+
+**Completado:**
+
+- `iniciar-proyecto` formaliza la entrada conversacional desde un IDE con las preguntas necesarias, recomendacion de Skills y confirmacion previa a la escritura.
+- El README documenta el mensaje de inicio y como adjuntar el contexto cuando un IDE no descubre Skills automaticamente.
+
+**Resultado:**
+
+Una persona puede pedir al agente que use el framework sin preparar JSON ni comandos; la CLI segura sigue siendo la unica via que crea la instancia.
 
 ### 2026-08-28 — Rev 33
 
