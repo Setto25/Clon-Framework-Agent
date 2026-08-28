@@ -1,7 +1,7 @@
 # Estado de correcciones de agent-framework
 
-**Ultima actualizacion:** 2026-08-28 (rev 27)
-**Estado general:** Compatibilidad local y Git preexistente auditados; pilotos y procedencia pendientes
+**Ultima actualizacion:** 2026-08-28 (rev 28)
+**Estado general:** Auditoria local reproducible cerrada; CI, pilotos y procedencia pendientes
 **Fase activa:** Fase 6 — validacion interna previa a pilotos
 **Rama de trabajo:** `codex/estabilizacion-framework`
 
@@ -101,6 +101,20 @@ La clasificacion confirmo que `_dryrun2/` era una salida generada para `proyecto
 - No existe una suite automatica que demuestre una instalacion reproducible.
 
 ## 7. Registro de avance
+
+### 2026-08-28 — Rev 28
+
+**Completado:**
+
+- El bloque de compatibilidad Python, coherencia de validaciones y estados Git se registro en `08b0b41`.
+- Se exporto ese commit mediante `git archive` hacia una ruta temporal aislada.
+- El contrato y las 44 pruebas aprobaron sin utilizar archivos ignorados del arbol activo.
+- El ZIP y el directorio de exportacion se eliminaron despues de la comprobacion.
+- La rama local `main` se adelanta por fast-forward al cierre documental, sin `push`, rebase ni eliminacion de ramas.
+
+**Resultado:**
+
+La auditoria local previa a pilotos queda cerrada. Los siguientes criterios de salida requieren una decision externa: publicar para ejecutar la matriz remota, iniciar los dos pilotos o completar la procedencia necesaria para redistribucion.
 
 ### 2026-08-28 — Rev 27
 
@@ -711,7 +725,7 @@ El usuario indico que otras Skills tambien pueden contener adaptaciones de produ
 
 ## 8. Siguiente paso exacto
 
-Registrar el bloque de compatibilidad y Git, repetir la suite desde una exportacion limpia y mantener los pilotos pendientes de una decision explicita del usuario.
+Elegir entre publicar la rama para ejecutar la CI remota o iniciar el primer proyecto piloto. Mantener bloqueada la redistribucion hasta resolver la procedencia de Skills.
 
 ## 9. Bloqueos
 

@@ -1,7 +1,7 @@
 # Estado del proyecto: agent-framework
 
-**Ultima actualizacion:** 2026-08-28 (rev 29)
-**Estado general:** Compatibilidad local y Git preexistente auditados; pilotos y procedencia pendientes
+**Ultima actualizacion:** 2026-08-28 (rev 30)
+**Estado general:** Auditoria local reproducible cerrada; CI, pilotos y procedencia pendientes
 **Fase activa:** Fase 6 — validacion interna previa a pilotos
 
 ## 1. Objetivo
@@ -128,6 +128,7 @@ Cada stack tiene LEEME.md con reglas adicionales, terminos tecnicos y procedimie
 76. **Piso Python corregido y vigilado.** La version `0.2.0-alpha.8` evita `Path.write_text(newline=)`, API posterior a Python 3.9, y analiza todos los modulos con la gramatica 3.9. La ejecucion real en ese interprete continua pendiente de la matriz remota porque el entorno local solo dispone de Python 3.13.
 77. **Validaciones duplicadas bajo contrato.** La autonomia de la copia exige conservar validaciones tanto en el meta-repositorio como en `plantilla/`; una prueba AST compara versiones, claves, origenes, limites y artefactos rechazados para impedir divergencias silenciosas.
 78. **Git preexistente delimitado.** El inicializador directo admite repositorios limpios con historial y repositorios sin primer commit. Rechaza cambios rastreados o preparados, repositorios invalidos y operaciones merge, rebase, cherry-pick, revert o bisect activas sin eliminar `.git` ni modificar la copia.
+79. **Exportacion de compatibilidad aprobada.** El commit `08b0b41` aprobo el contrato y las 44 pruebas desde un `git archive` limpio. El archivo y el directorio temporales se eliminaron al finalizar; la auditoria local previa a pilotos queda cerrada.
 
 ## 5. Que falta
 
@@ -139,4 +140,4 @@ Cada stack tiene LEEME.md con reglas adicionales, terminos tecnicos y procedimie
 
 ## 6. Siguiente paso logico
 
-Registrar el bloque de compatibilidad y Git, validarlo desde una exportacion limpia y dejar preparada la decision sobre CI remota o primer proyecto piloto.
+Elegir entre publicar la rama para ejecutar la CI remota o iniciar el primer proyecto piloto. La procedencia de Skills debe resolverse antes de redistribuir el framework.
