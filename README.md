@@ -8,6 +8,34 @@ Extraido inicialmente del proyecto entrevoces. El creador y los verificadores ti
 
 ---
 
+## Guia rapida
+
+**Requisitos:** Git, Python 3.9+ y un agente compatible (Claude, Antigravity, Codex u otro que lea AGENTS.md).
+
+### Inicio asistido (recomendado)
+
+Abre `agent-framework/` en tu IDE con agente y escribe:
+
+```text
+Usa el framework ubicado en D:\PROYECTOS\agent-framework para iniciar un proyecto nuevo. Guiame con las preguntas necesarias.
+```
+
+El agente conduce una entrevista, recomienda Skills y crea el proyecto tras tu confirmacion.
+
+### Inicio manual
+
+```powershell
+python scripts\catalogo_skills.py                          # ver Skills disponibles
+python scripts\crear_proyecto.py D:\PROYECTOS\mi-proyecto "Mi Proyecto" --skill fastapi-setup
+python D:\PROYECTOS\mi-proyecto\scripts\verificar_memoria_proyecto.py D:\PROYECTOS\mi-proyecto
+```
+
+Para detalles, flujos alternativos y contingencias, ver §3 mas abajo.
+
+---
+
+
+
 ## 1. Que es esto
 
 Un conjunto de archivos que se copian a cualquier proyecto nuevo para darle al agente:
@@ -46,7 +74,7 @@ plantilla/
 │       │   └── mobile-flutter/
 │       │       └── skills/       → flutter-state-management, performance, animations
 │       └── opcional/
-│           └── delegar-entre-agentes/ → Aspiracional, sin uso real probado
+│           └── delegar-entre-agentes/ → Formaliza traspasos entre agentes distintos
 └── documentacion/               → Plan, documentacion tecnica, operacion y prompts
 ```
 
@@ -67,7 +95,7 @@ plantilla/
 - No genera el producto por si mismo: crea su base de trabajo, memoria y contexto.
 - No reemplaza revision humana del codigo generado.
 - **Domain-packs son stubs**: solo hay estructura reservada, sin contenido operativo.
-- **`delegar-entre-agentes` es aspiracional**: vive en `opcional/`, sin evidencia de uso real en entrevoces, y no se activa por defecto. Util solo cuando el agente pierde decisiones importantes que PROJECT_STATE.md no captura (razonamiento en curso, decision a medias). En la practica, PROJECT_STATE.md suele ser suficiente.
+- **`delegar-entre-agentes` es opcional**: vive en `opcional/` y se instala con `--skill delegar-entre-agentes`. Formaliza el traspaso de trabajo entre agentes distintos (Claude, Antigravity, Codex) con protocolo de entrega, recepcion y template rapido. Cuando basta actualizar `PROJECT_STATE.md §8`, no hace falta esta Skill.
 - No instala una recomendacion del agente sin confirmacion explicita del usuario.
 - No certifica una licencia de redistribucion para las Skills con procedencia externa incompleta. Su estructura, inventario y copia se verifican automaticamente.
 - No cubre Prisma, pandas/ML, Go, Rust ni infraestructura/DevOps con Skills dedicadas.
@@ -340,7 +368,7 @@ Estos archivos son los del **proyecto instanciado**, no los de `agent-framework/
 
 | Skill | Que hace | Cuando considerar |
 |---|---|---|
-| `delegar-entre-agentes` | Prepara un traspaso documentado entre agentes capturando lo que PROJECT_STATE.md no puede: razonamiento en curso, decisiones a medias | Cuando el contexto del agente se agota en medio de una tarea compleja y PROJECT_STATE.md §8 no alcanza para retomar sin perdida. En la practica rara vez ocurre — PROJECT_STATE.md suele ser suficiente. Sin evidencia de uso real en entrevoces. |
+| `delegar-entre-agentes` | Formaliza traspasos entre agentes distintos (Claude, Antigravity, Codex) con protocolo de entrega, recepcion y template rapido | Cuando se cambia de herramienta entre sesiones y hay decisiones activas o razonamiento en curso que PROJECT_STATE.md §8 no alcanza a capturar. Cuando basta actualizar §8, no hace falta esta Skill. |
 
 ---
 

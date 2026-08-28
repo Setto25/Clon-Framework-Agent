@@ -1,53 +1,97 @@
 ---
 name: delegar-entre-agentes
-description: "OPCIONAL — Sin evidencia de uso real (extraido de entrevoces, 6 hitos sin handoffs formales). Usar cuando el limite de contexto dentro de una sesion hace que el agente pierda decisiones importantes que PROJECT_STATE.md no captura — por ejemplo, un razonamiento en curso o una decision a medias. En la practica, PROJECT_STATE.md suele ser suficiente para el handoff entre sesiones, asi que este skill rara vez se necesita. No activar por defecto en proyectos nuevos."
+description: "OPCIONAL — Formaliza el traspaso de trabajo entre agentes distintos (Claude, Antigravity, Codex u otros) sobre el mismo proyecto. Usar cuando se cambia de herramienta entre sesiones y hay decisiones activas, razonamiento en curso o contexto que PROJECT_STATE.md §8 no alcanza a capturar. No usar para handoffs simples donde basta actualizar PROJECT_STATE.md."
 ---
 
 # Delegar entre agentes
 
-> **Skill opcional — rara vez necesario.** Antes de usarlo, verifica que `PROJECT_STATE.md §8` (Siguiente paso logico) este completo. En la mayoria de los casos eso es suficiente para que un agente nuevo retome sin perdida. Usa este skill solo si hay razonamiento en curso o decisiones a medias que no caben en PROJECT_STATE.md.
+## Para que sirve
 
-## Cuando delegar
+Cuando se trabaja en un proyecto con varios agentes — por ejemplo, Claude en VS Code para analisis profundo, Antigravity con Gemini para ejecucion rapida en el IDE, y Codex para tareas autonomas en background — el traspaso necesita mas que un "siguiente paso" en PROJECT_STATE.md.
 
-- El contexto del agente se agoto en medio de una tarea compleja y hay decisiones activas que PROJECT_STATE.md no puede capturar en su formato.
-- La tarea se beneficia del descubrimiento automatico de Skills (→ Antigravity).
-- Se necesita ejecucion autonoma en background sin supervision (→ Codex).
-- Se necesita analisis profundo con contexto largo y edicion iterativa (→ Claude Code).
-- El usuario cambia de herramienta por preferencia o disponibilidad.
+Esta Skill formaliza ese traspaso para que el agente receptor pueda continuar sin perdida de contexto significativa.
 
-## Protocolo de handoff
+## Cuando usar
 
-1. Actualizar `PROJECT_STATE.md` con estado exacto (no "en progreso" — qué está hecho y qué falta).
-2. Escribir en `documentacion/REGISTRO_CAMBIOS.md` qué se avanzó en esta sesión.
-3. Documentar en `PROJECT_STATE.md` §8 (Siguiente paso lógico):
-   - Agente que entrega y motivo del handoff.
-   - Agente destino recomendado y por qué.
-   - Tarea concreta pendiente (1 oración imperativa).
-   - Archivos relevantes (máximo 5 rutas).
-   - Decisión que el usuario debe tomar antes de continuar (si aplica).
-   - Bloqueos conocidos que el siguiente agente encontrará.
-4. NO dejar trabajo a medias sin tests ni documentación — cerrar hasta donde se verificó.
+- Se cambia de herramienta por preferencia, disponibilidad o porque la tarea se beneficia de las fortalezas de otro agente.
+- Hay razonamiento en curso, decisiones a medias o contexto de sesion que no cabe en PROJECT_STATE.md §8.
+- Se agoto el contexto del agente actual en medio de una tarea compleja.
+- La tarea requiere capacidades especificas de otro agente (descubrimiento automatico, ejecucion autonoma, contexto largo).
 
-## Lo que NO es un handoff válido
+## Cuando NO usar
 
-- Pedir "termina esto" sin contexto de qué "esto" incluye.
-- Duplicar el trabajo del otro agente por no leer `PROJECT_STATE.md`.
-- Cambiar de agente por frustración sin diagnosticar el problema real.
+Si el cambio es simple y PROJECT_STATE.md §8 ya tiene el siguiente paso claro, no hace falta esta Skill. Basta con actualizar PROJECT_STATE.md y abrir la nueva sesion con el template del README §5.
+
+## Protocolo de entrega
+
+El agente que termina la sesion debe:
+
+1. **Cerrar hasta donde se verifico.** No dejar archivos modificados sin commit ni trabajo a medias sin tests ni documentacion.
+2. **Actualizar `PROJECT_STATE.md`** con estado exacto — no "en progreso", sino que esta hecho y que falta.
+3. **Escribir en `documentacion/REGISTRO_CAMBIOS.md`** que se avanzo en esta sesion.
+4. **Documentar el traspaso en `PROJECT_STATE.md` §8** con:
+   - agente que entrega y motivo del cambio;
+   - agente destino recomendado y por que;
+   - tarea concreta pendiente (1 oracion imperativa);
+   - archivos relevantes (maximo 5 rutas);
+   - decisiones abiertas que el usuario debe tomar antes de continuar;
+   - bloqueos conocidos que el siguiente agente encontrara.
+5. **Hacer commit** con un mensaje descriptivo del avance.
+
+### Template rapido de traspaso
+
+El agente puede generar este bloque al final de la sesion para facilitar la continuidad:
+
+```
+## Traspaso de sesion
+
+**Agente saliente:** [nombre y herramienta]
+**Motivo del cambio:** [limite de contexto / preferencia / tarea especifica]
+**Agente recomendado:** [nombre y por que]
+
+### Estado al cerrar
+- Ultimo cambio: [que se hizo]
+- Tests: [pasan / fallan / pendientes]
+- Commit: [hash o pendiente]
+
+### Pendiente inmediato
+[1 oracion imperativa: "Implementar X en Y usando Z"]
+
+### Archivos clave
+1. [ruta]
+2. [ruta]
+
+### Decisiones abiertas
+- [decision que el usuario debe tomar]
+
+### Bloqueos
+- [bloqueo conocido, o "ninguno"]
+```
+
+## Lo que NO es un handoff valido
+
+- Pedir "termina esto" sin contexto de que "esto" incluye.
+- Duplicar el trabajo del otro agente por no leer PROJECT_STATE.md.
+- Cambiar de agente por frustracion sin diagnosticar el problema real.
 - Dejar archivos modificados sin commit ni registro.
+- Asumir que el agente anterior hizo todo correctamente sin verificar.
 
-## Recepción del handoff
+## Protocolo de recepcion
 
 El agente que recibe debe:
 
 1. Leer `AGENTS.md` y `PROJECT_STATE.md` (como siempre).
-2. Verificar §8 para entender qué se espera.
+2. Verificar §8 para entender que se espera y si hay un traspaso documentado.
 3. Confirmar con el usuario si hay decisiones pendientes documentadas.
-4. NO asumir que el trabajo previo está correcto — verificar con tests o inspección.
+4. NO asumir que el trabajo previo esta correcto — verificar con tests o inspeccion antes de continuar.
+5. Si encuentra inconsistencias entre el estado documentado y el estado real, reportar antes de actuar.
 
 ## Agentes conocidos y sus fortalezas
 
-| Agente | Ejecuta código | Fortaleza | Limitación principal |
-|---|---|---|---|
-| Claude Code | Sí (bash, edición, tests, git) | Contexto largo, análisis profundo, edición iterativa con aprobación del usuario | Requiere aprobación para acciones riesgosas; contexto se comprime en sesiones largas |
-| Antigravity | Sí (ejecución directa en IDE) | Descubrimiento automático de Skills (`$nombre`), rules always-on | Contexto limitado por sesión; atado al IDE |
-| Codex CLI | Sí (terminal autónoma) | Ejecución autónoma en background, sin supervisión continua | No descubre Skills automáticamente; contexto aislado por invocación |
+| Agente | Fortaleza principal | Cuando elegirlo |
+|---|---|---|
+| Claude (VS Code / Claude Code) | Contexto largo, analisis profundo, edicion iterativa con aprobacion | Tareas de analisis, refactorizacion compleja, revision de arquitectura |
+| Antigravity (Gemini) | Descubrimiento automatico de Skills y rules, ejecucion directa en IDE | Desarrollo rapido, tareas que usan Skills del proyecto, flujos de implementacion |
+| Codex CLI | Ejecucion autonoma en background sin supervision continua | Tareas bien definidas que pueden correr solas: tests, migraciones, generacion de codigo repetitivo |
+
+Esta tabla es orientativa. Las capacidades reales dependen de la version y configuracion de cada herramienta. El agente debe comprobar sus herramientas y permisos observables, no asumir capacidades por marca.

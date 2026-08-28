@@ -18,7 +18,7 @@
 | Cerrar modulo | `.agents/skills/cerrar-modulo/SKILL.md` |
 | Evaluar un agente, si la Skill esta instalada | `.agents/skills/evaluar-agente/SKILL.md` |
 | Crear otro proyecto, si la Skill esta instalada | `.agents/skills/iniciar-proyecto/SKILL.md` |
-| Handoff, si la Skill opcional esta instalada | `.agents/skills/delegar-entre-agentes/SKILL.md` — usar solo si `PROJECT_STATE.md §8` no alcanza para retomar. |
+| Cambio de agente, si la Skill opcional esta instalada | `.agents/skills/delegar-entre-agentes/SKILL.md` — protocolo de traspaso entre agentes distintos. |
 
 ## NO leer por defecto
 
