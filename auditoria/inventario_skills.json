@@ -1,10 +1,10 @@
 {
   "version_inventario": 2,
   "raiz": "plantilla/.agents/skills",
-  "huella_conjunto_sha256": "c3e9168be3bfbaed576162277b3ae0446025e67e3bd6b480c383619eb80b6e15",
+  "huella_conjunto_sha256": "e92c25389472a8507deb4562ac32a4c143327940a38692634fd42b270c3702f1",
   "resumen": {
-    "archivos": 37,
-    "skills": 20,
+    "archivos": 38,
+    "skills": 21,
     "declaraciones_procedencia": 1
   },
   "skills": [
@@ -37,6 +37,12 @@
       "bytes": 4700,
       "sha256": "320a9b82b2ef4afd4e6e8369fc684bd1b3bd35b2e400d3aed8f60a7199b37567",
       "nombre": "delegar-entre-agentes"
+    },
+    {
+      "ruta": "opcional/protocolo-debugging/SKILL.md",
+      "bytes": 1977,
+      "sha256": "6cca7f73863883e450b4f0a1b6e9325cb365bdd0de4e38e872ad2aec85f59fad",
+      "nombre": "protocolo-debugging"
     },
     {
       "ruta": "probar-e2e/SKILL.md",
