@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import os
 import re
@@ -78,6 +79,27 @@ NOMBRES_ARTEFACTOS_GENERADOS: frozenset[str] = frozenset(
 SUFIJOS_ARTEFACTOS_GENERADOS: tuple[str, ...] = (".pyc", ".pyo")
 MAXIMO_BYTES_JSON = 1024 * 1024
 MAXIMO_CARACTERES_VALOR = 100_000
+RUTAS_GESTIONADAS_BASE: tuple[str, ...] = (
+    "configuracion_plantilla.json",
+    "scripts/inicializar_proyecto.py",
+    "scripts/inicializar_proyecto.sh",
+    "scripts/verificar_memoria_proyecto.py",
+)
+
+
+def calcular_huellas_gestionadas(raiz: Path) -> dict[str, str]:
+    """Registra Skills y scripts que futuras actualizaciones pueden reemplazar."""
+    archivos: set[Path] = set()
+    raiz_skills = raiz / ".agents" / "skills"
+    archivos.update(archivo for archivo in raiz_skills.rglob("*") if archivo.is_file())
+    for relativa in RUTAS_GESTIONADAS_BASE:
+        ruta = raiz / Path(relativa)
+        if ruta.is_file():
+            archivos.add(ruta)
+    return {
+        archivo.relative_to(raiz).as_posix(): hashlib.sha256(archivo.read_bytes()).hexdigest()
+        for archivo in sorted(archivos, key=lambda ruta: ruta.relative_to(raiz).as_posix())
+    }
 TIEMPO_MAXIMO_GIT_SEGUNDOS = 30
 MARCADORES_OPERACION_GIT: tuple[str, ...] = (
     "MERGE_HEAD",
@@ -788,6 +810,7 @@ def main() -> int:
             "pendientes": pendientes,
             "skills_instaladas": skills_instaladas,
             "politica_skills": politica_skills,
+            "huellas_gestionadas": calcular_huellas_gestionadas(raiz),
         }
         aplicar_transaccion(
             raiz,

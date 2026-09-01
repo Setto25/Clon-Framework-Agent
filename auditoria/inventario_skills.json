@@ -1,10 +1,10 @@
 {
   "version_inventario": 2,
   "raiz": "plantilla/.agents/skills",
-  "huella_conjunto_sha256": "e92c25389472a8507deb4562ac32a4c143327940a38692634fd42b270c3702f1",
+  "huella_conjunto_sha256": "4f4bcf88394f6bcc84c007a25a8ebc2cfeb0f21df53bd3ca52d34ebff60f8aff",
   "resumen": {
-    "archivos": 38,
-    "skills": 21,
+    "archivos": 39,
+    "skills": 22,
     "declaraciones_procedencia": 1
   },
   "skills": [
@@ -43,6 +43,12 @@
       "bytes": 1977,
       "sha256": "6cca7f73863883e450b4f0a1b6e9325cb365bdd0de4e38e872ad2aec85f59fad",
       "nombre": "protocolo-debugging"
+    },
+    {
+      "ruta": "optimizar-contexto/SKILL.md",
+      "bytes": 2238,
+      "sha256": "e1acb88410721057a37c8a5d3211688bbfd8ddc2ae6b35cf41628645dd5708e8",
+      "nombre": "optimizar-contexto"
     },
     {
       "ruta": "probar-e2e/SKILL.md",
@@ -208,8 +214,8 @@
     },
     {
       "ruta": "stacks/frontend-nextjs/LEEME.md",
-      "bytes": 3922,
-      "sha256": "af201bc1b737db5ec94b946f2f327946cdf0124b6e0af23ef3e623d7511bd8fd"
+      "bytes": 4056,
+      "sha256": "7895d0be9cc0112210287a8bd9964e3c7b0855e7172f3eeae17a2f8ccc74b2dd"
     },
     {
       "ruta": "stacks/ia-llm/LEEME.md",
@@ -218,8 +224,8 @@
     },
     {
       "ruta": "stacks/mobile-flutter/LEEME.md",
-      "bytes": 3871,
-      "sha256": "b0ba1bc5e5eea4f7430429fec690ce1555aa94bda2d62dda50bb5ae054489841"
+      "bytes": 4017,
+      "sha256": "cbe817400fe583efb270b46e332674470a8079d52eeee7409de0f5500b72c3f5"
     }
   ],
   "declaraciones_procedencia": [

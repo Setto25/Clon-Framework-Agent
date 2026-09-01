@@ -37,6 +37,16 @@ Registra todos los nombres técnicos no configurables que se conservan como exce
 | `.env` | Raíz | Convención estándar para variables locales | Ninguna |
 | `.env.ejemplo` | Raíz | Convención de proyecto para plantilla de `.env` | Ninguna |
 
+### Next.js y npm
+
+| Nombre | Ubicación | Razón | Alternativa |
+|---|---|---|---|
+| `package.json`, `package-lock.json` | Raiz del paquete | npm exige estos nombres para manifiesto y bloqueo reproducible | Ninguna |
+| `tsconfig.json` | Raiz TypeScript | TypeScript y Next.js descubren este nombre por convencion | Ninguna |
+| `next-env.d.ts` | Raiz Next.js | Next.js lo genera y puede incluir texto tecnico no editable | Mantenerlo generado e ignorado cuando las reglas de idioma impidan versionarlo |
+| `layout.tsx`, `page.tsx` | Directorio `app/` | App Router usa estos nombres reservados para resolver rutas | Ninguna |
+| `eslint.config.mjs` | Raiz del paquete | ESLint descubre este nombre de configuracion | Ninguna |
+
 {{EXCEPCIONES_ADICIONALES}}
 
 ---

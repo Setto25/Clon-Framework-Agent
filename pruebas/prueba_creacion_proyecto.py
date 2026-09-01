@@ -26,7 +26,12 @@ CONFIGURACION_EJEMPLO = RAIZ_FRAMEWORK / "ejemplos" / "configuracion_proyecto.ej
 SKILLS_ORIGEN = RAIZ_FRAMEWORK / "plantilla" / ".agents" / "skills"
 ADAPTADOR_BASH = RAIZ_FRAMEWORK / "plantilla" / "scripts" / "inicializar_proyecto.sh"
 PLANTILLA = RAIZ_FRAMEWORK / "plantilla"
-CORE_AUTOMATICO: set[str] = {"cerrar-modulo", "lecciones-aprendidas", "probar-e2e"}
+CORE_AUTOMATICO: set[str] = {
+    "cerrar-modulo",
+    "lecciones-aprendidas",
+    "optimizar-contexto",
+    "probar-e2e",
+}
 PATRON_NOMBRE_SKILL = re.compile(r"^name:\s*(.+?)\s*$", re.MULTILINE)
 
 
@@ -202,8 +207,13 @@ class PruebasCreacionProyecto(unittest.TestCase):
         self.assertIsInstance(estado, dict)
         instaladas = estado.get("skills_instaladas") if isinstance(estado, dict) else None
         self.assertEqual(set(instaladas) if isinstance(instaladas, list) else set(), CORE_AUTOMATICO)
+        huellas_gestionadas = estado.get("huellas_gestionadas") if isinstance(estado, dict) else None
+        self.assertIsInstance(huellas_gestionadas, dict)
+        if isinstance(huellas_gestionadas, dict):
+            self.assertIn("scripts/verificar_memoria_proyecto.py", huellas_gestionadas)
+            self.assertIn(".agents/skills/optimizar-contexto/SKILL.md", huellas_gestionadas)
         registro = (destino / "documentacion" / "REGISTRO_CAMBIOS.md").read_text(encoding="utf-8")
-        self.assertIn("agent-framework 0.2.0-alpha.10", registro)
+        self.assertIn("agent-framework 0.2.0-alpha.12", registro)
         for nombre in CORE_AUTOMATICO:
             with self.subTest(skill_registrada=nombre):
                 self.assertIn(f"- `{nombre}`", registro)

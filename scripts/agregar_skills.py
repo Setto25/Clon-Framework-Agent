@@ -15,6 +15,7 @@ from typing import TypedDict
 
 from catalogo_skills import RegistroSkill, descubrir_skills
 from crear_proyecto import instalar_skills, normalizar_permisos_arbol, validar_arbol_sin_enlaces
+from estado_proyecto import calcular_huellas_gestionadas
 
 
 class EstadoPlantilla(TypedDict, total=False):
@@ -22,6 +23,7 @@ class EstadoPlantilla(TypedDict, total=False):
 
     skills_instaladas: list[str]
     actualizaciones_skills: list[dict[str, object]]
+    huellas_gestionadas: dict[str, str]
 
 
 def crear_argumentos() -> argparse.Namespace:
@@ -134,7 +136,12 @@ def publicar_skills_preparadas(
     return publicadas
 
 
-def escribir_estado(ruta_estado: Path, estado: EstadoPlantilla, nombres: list[str]) -> None:
+def escribir_estado(
+    ruta_estado: Path,
+    estado: EstadoPlantilla,
+    nombres: list[str],
+    huellas_gestionadas: dict[str, str],
+) -> None:
     """Actualiza el estado mediante reemplazo atomico despues de publicar Skills."""
 
     actualizado = EstadoPlantilla(estado)
@@ -150,6 +157,7 @@ def escribir_estado(ruta_estado: Path, estado: EstadoPlantilla, nombres: list[st
         }
     )
     actualizado["actualizaciones_skills"] = historial
+    actualizado["huellas_gestionadas"] = huellas_gestionadas
     temporal = ruta_estado.with_name(f".{ruta_estado.name}.temporal")
     if temporal.exists() or os.path.lexists(temporal):
         raise ValueError("Existe un estado temporal pendiente; se rechaza sobrescribirlo")
@@ -187,7 +195,7 @@ def agregar_skills(proyecto: Path, solicitadas: list[str]) -> list[str]:
         instalar_skills(raiz_origen, temporal, seleccionadas)
         normalizar_permisos_arbol(temporal)
         publicadas = publicar_skills_preparadas(temporal, raiz_destino, seleccionadas)
-        escribir_estado(ruta_estado, estado, nombres)
+        escribir_estado(ruta_estado, estado, nombres, calcular_huellas_gestionadas(raiz_proyecto))
     except (OSError, ValueError):
         for ruta in reversed(publicadas):
             if ruta.is_dir() and ruta.exists():

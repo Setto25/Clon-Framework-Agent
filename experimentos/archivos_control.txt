@@ -1,0 +1,7 @@
+AGENTS.md
+PROJECT_STATE.md
+README.md
+auditoria/inventario_skills.json
+plantilla/AGENTS.md
+plantilla/.agents/rules/claude.md
+plantilla/.agents/skills/optimizar-contexto/SKILL.md

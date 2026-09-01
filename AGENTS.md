@@ -18,10 +18,10 @@ Un framework agentico reutilizable. Contiene:
 ## Reglas para trabajar en este repo
 
 1. **No instanciar placeholders.** Los `{{PLACEHOLDER}}` en plantilla/ deben permanecer como estan. Son para proyectos que consuman la plantilla, no para este repo.
-2. **Actualizar /PROJECT_STATE.md** tras cambios materiales (nuevo stack, skill agregado o eliminado, decision arquitectonica).
-3. **Mantener coherencia interna.** Si se agrega un skill a un stack, verificar que el LEEME.md del stack lo refleja.
+2. **Actualizar la documentacion en el mismo cambio.** Todo cambio material (stack o Skill agregado, eliminado, renombrado o movido; cambio de core; decision arquitectonica; cambio de contrato o flujo soportado) debe actualizar `/PROJECT_STATE.md` y toda referencia afectada en `README.md`.
+3. **Mantener coherencia interna verificable.** Si cambia una Skill, se debe actualizar el `LEEME.md` del stack cuando corresponda, el inventario, el catalogo narrativo y las pruebas de coherencia documental. El cambio no se considera cerrado mientras la suite detecte referencias o cantidades obsoletas.
 4. **No duplicar entre stacks.** Si un skill aplica a multiples stacks, evaluar si pertenece al core.
-5. **Atribuir fuentes externas.** Si un skill se adapta de un plugin externo, documentar la fuente y licencia en el LEEME.md del stack.
+5. **Atribuir fuentes externas.** Si un skill se adapta de un plugin externo, documentar la fuente y licencia en el LEEME.md del stack y en `ATRIBUCIONES.md`. Si es contenido original, se debe mantener esa procedencia coherente con la documentacion del catalogo.
 
 ## Idioma
 

@@ -4,7 +4,7 @@ Framework agentico reutilizable para crear proyectos con agentes de IA, memoria 
 
 Extraido inicialmente del proyecto entrevoces. El creador y los verificadores tienen pruebas locales reproducibles, dos pilotos privados completados y una matriz de CI aprobada en Windows y Ubuntu con Python 3.9 y 3.12.
 
-> **Estado de Skills:** las 18 Skills permanecen en el catalogo fuente y fueron revisadas estructuralmente. Un proyecto nuevo recibe solo `cerrar-modulo`, `lecciones-aprendidas`, `probar-e2e` y las Skills adicionales confirmadas mediante `--skill`. Su procedencia sigue incompleta, por lo que no se recomienda redistribuirlas.
+> **Estado de Skills:** las 22 Skills permanecen en el catalogo fuente y fueron revisadas estructuralmente. Un proyecto nuevo recibe `cerrar-modulo`, `lecciones-aprendidas`, `optimizar-contexto`, `probar-e2e` y las Skills adicionales confirmadas mediante `--skill`. Su procedencia sigue incompleta, por lo que no se recomienda redistribuirlas.
 
 ---
 
@@ -44,6 +44,7 @@ Un conjunto de archivos que se copian a cualquier proyecto nuevo para darle al a
 - **Estructura de documentacion**: AGENTS.md, PROJECT_STATE.md, REGISTRO_CAMBIOS.md, PLAN_DESARROLLO.md y otros como convencion.
 - **Skills agrupados por stack**: guias para FastAPI, Flutter, Next.js, ESP32/firmware y LLM/RAG. Su procedencia se registra en `ATRIBUCIONES.md`; no toda licencia externa esta verificada.
 - **Memoria de errores**: skill `lecciones-aprendidas` para no repetir ciclos de depuracion ya resueltos.
+- **Economia de contexto**: skill `optimizar-contexto` para reducir lecturas repetidas y salidas irrelevantes sin omitir evidencia ni verificaciones.
 - **Creacion segura**: una CLI copia la plantilla, resuelve su contrato, protege `.env`, registra la version de origen e inicializa Git mediante una operacion atomica.
 - **Verificacion de memoria**: un comando comprueba documentos obligatorios, placeholders y datos iniciales pendientes.
 - **Compatibilidad basada en capacidades**: los deltas de agente verifican herramientas, sandbox y descubrimiento real en vez de prometer comportamientos por marca.
@@ -60,6 +61,7 @@ plantilla/
 │       ├── evaluar-agente/      │ Skills de core disponibles y validadas estructuralmente
 │       ├── iniciar-proyecto/    │ (no hay carpeta "core/" literal)
 │       ├── lecciones-aprendidas/│
+│       ├── optimizar-contexto/  │
 │       ├── seguridad-backend/   ┘
 │       ├── stacks/
 │       │   ├── backend-fastapi/
@@ -68,13 +70,14 @@ plantilla/
 │       │   │   ├── skills/       → desarrollar-firmware, diagnosticar-hardware
 │       │   │   └── domain-packs/ → audio-embebido (stub — sin contenido real todavia)
 │       │   ├── frontend-nextjs/
-│       │   │   └── skills/       → nextjs-fullstack, typescript-react
+│       │   │   └── skills/       → diseno-ui-web, nextjs-fullstack, typescript-react
 │       │   ├── ia-llm/
 │       │   │   └── skills/       → rag-local, fine-tuning-llm, agentes-multiagent
 │       │   └── mobile-flutter/
-│       │       └── skills/       → flutter-state-management, performance, animations
+│       │       └── skills/       → diseno-ui-flutter, flutter-state-management, performance, animations
 │       └── opcional/
-│           └── delegar-entre-agentes/ → Formaliza traspasos entre agentes distintos
+│           ├── delegar-entre-agentes/ → Formaliza traspasos entre agentes distintos
+│           └── protocolo-debugging/   → Exige diagnostico reproducible antes de corregir
 └── documentacion/               → Plan, documentacion tecnica, operacion y prompts
 ```
 
@@ -201,6 +204,15 @@ python scripts\agregar_skills.py D:\PROYECTOS\mi-proyecto --skill seguridad-back
 
 El comando valida el estado, copia la Skill y sus referencias de forma transaccional y registra la actualizacion. Rechaza Skills desconocidas, repetidas o ya instaladas.
 
+Para comprobar y aplicar una version nueva del framework sobre archivos administrados de una instancia:
+
+```powershell
+python scripts\actualizar_proyecto.py D:\PROYECTOS\mi-proyecto --solo-verificar
+python scripts\actualizar_proyecto.py D:\PROYECTOS\mi-proyecto
+```
+
+El actualizador reemplaza solamente Skills, scripts operativos y el contrato cuya huella coincida con la ultima version instalada. Si detecta un cambio local, una eliminacion o un enlace, informa el conflicto y no escribe nada. Los proyectos antiguos sin huellas deben ejecutar primero `--solo-verificar --adoptar-estado-actual`, revisar la base registrada y repetir la actualizacion en una segunda operacion.
+
 Las entradas son estrictas: el JSON, los argumentos posicionales y cada `--valor` no pueden definir la misma clave más de una vez. Los campos con origen `derivado` los calcula exclusivamente el inicializador. También se rechazan claves desconocidas, tipos incompatibles y caracteres de control invisibles; los campos multilínea normales conservan saltos de línea y tabulaciones.
 
 En PowerShell, los valores multilínea deben ir en `--configuracion` como cadenas JSON con `\n` real de JSON o como listas de cadenas. No se debe usar `` `n`` dentro de `--valor`: el inicializador lo rechaza para impedir que esa secuencia quede impresa literalmente en la memoria del proyecto.
@@ -236,6 +248,37 @@ python scripts\validar_frontend_nextjs.py D:\PROYECTOS\mi-proyecto
 
 El comando exige los scripts `test`, `lint` y `build` en `interfaz/package.json`, y los ejecuta con `npm` desde ese directorio. `--solo-verificar` comprueba solamente la estructura, sin instalar ni ejecutar dependencias.
 
+### Evaluacion de eficacia y consumo
+
+`scripts/evaluar_eficacia_skills.py` compara observaciones reales pareadas con y sin una Skill. La entrada registra criterios de aceptacion, pruebas, tokens de entrada y salida, llamadas a herramientas, duracion y reintentos.
+
+```powershell
+Copy-Item ejemplos\evaluacion_optimizar_contexto.ejemplo.json D:\PROYECTOS\evaluacion-real.json
+python scripts\evaluar_eficacia_skills.py D:\PROYECTOS\evaluacion-real.json --salida D:\PROYECTOS\informe-evaluacion.json
+```
+
+Los ceros del ejemplo son marcadores y deben reemplazarse por mediciones del proveedor o agente utilizado. El evaluador devuelve `0` cuando conserva eficacia y alcanza el ahorro, `2` cuando el experimento valido no supera los umbrales y `1` cuando la entrada es invalida. No ejecuta modelos ni presenta datos simulados como evidencia.
+
+Para capturar una medicion controlada con Gemini API, se deben preparar `experimentos/archivos_control.txt` y `experimentos/archivos_skill.txt` con las rutas relativas que cada variante puede leer. Ambos manifiestos deben contener los archivos obligatorios del repositorio, incluido `AGENTS.md`; solo deben diferir en el contexto adicional cuya necesidad se esta evaluando. La tarea exige una respuesta JSON y una rubrica factual local comprueba rutas obligatorias y condiciones de `LEEME.md`, `ATRIBUCIONES.md`, `plantilla/AGENTS.md` y las excepciones nominales. Esta rubrica mide solo la cobertura documental declarada; no sustituye una revision de implementacion o seguridad. Con `GEMINI_API_KEY` definida solo en la terminal local y `google-genai` instalado, se ejecuta:
+
+```powershell
+python scripts\medir_tokens_gemini.py --modelo gemini-3.7-flash
+```
+
+El ejecutor realiza tres repeticiones por variante y guarda `resultados/evaluacion_optimizar_contexto_gemini.json`. Muestra el avance, reintenta hasta tres veces los errores temporales del proveedor con espera gradual y registra los reintentos realizados. Registra por separado tokens de entrada, respuesta y razonamiento; suma respuesta y razonamiento en `tokens_salida`, porque ambos forman parte del consumo total. La rubrica deja `pruebas_aprobadas` en `true` solo cuando la respuesta satisface todos sus hechos verificables y conserva sus fallos en `rubrica_fallos`. Esta captura es un proxy de seleccion de contexto estatico: no ejecuta herramientas ni demuestra por si sola que la Skill cambie el comportamiento de un agente. No se deben enviar secretos ni datos sensibles a proveedores configurados en niveles gratuitos.
+
+`scripts/evaluar_agente_gemini.py` realiza la evaluacion causal: expone solo herramientas de listar, buscar y leer archivos dentro del repositorio, ejecuta un control sin el protocolo y un tratamiento que lo aplica como instruccion activa, y acumula el uso de cada turno del modelo. Ante el limite temporal gratuito de Gemini espera el tiempo informado por el proveedor y reintenta; guarda cada ejecucion terminada para que una interrupcion no descarte el avance. `--reanudar` conserva esas ejecuciones compatibles y completa solo las faltantes. Sus resultados requieren revisar la respuesta final antes de ejecutar el comparador pareado.
+
+```powershell
+python scripts\evaluar_agente_gemini.py --modelo gemini-3.1-flash-lite
+# Solo si una ejecucion previa dejo avance en resultados\evaluacion_agente_gemini.json:
+python scripts\evaluar_agente_gemini.py --modelo gemini-3.1-flash-lite --reanudar
+```
+
+El escenario vigente audita, sin alterar archivos, la migracion de `optimizar-contexto` desde el core hacia las Skills opcionales. Exige evidencia de rutas, cambios y pruebas para comprobar si el protocolo amortiza su coste inicial en una tarea transversal.
+
+La medicion no se aprueba automaticamente: una respuesta que cite rutas, comandos o pruebas inexistentes debe rechazarse aunque tenga menor consumo. Los informes locales bajo `resultados/` son evidencia de una corrida concreta y no se versionan.
+
 ### Flujo exploratorio con datos pendientes
 
 Se puede generar una instancia provisional con:
@@ -254,7 +297,7 @@ Si no puede usarse el creador raiz, se puede copiar **todo** el contenido de `pl
 python scripts\inicializar_proyecto.py "Mi Proyecto" "español" --configuracion D:\PROYECTOS\configuracion-mi-proyecto.json
 ```
 
-Esta contingencia conserva las 18 Skills y no aplica seleccion. No se recomienda copiar carpetas sueltas ni omitir `.agents`, `.gitignore`, `.gitattributes`, `.env.ejemplo`, `.plantilla-framework` o `configuracion_plantilla.json`: todos forman parte del contrato de la instancia.
+Esta contingencia conserva las 22 Skills y no aplica seleccion. No se recomienda copiar carpetas sueltas ni omitir `.agents`, `.gitignore`, `.gitattributes`, `.env.ejemplo`, `.plantilla-framework` o `configuracion_plantilla.json`: todos forman parte del contrato de la instancia.
 
 El inicializador directo valida todos los reemplazos antes de escribir y ejecuta los cambios como una transaccion local. Si falla despues de crear Git, `.env`, estado o directorios auxiliares, restaura la copia y conserva el centinela para permitir un nuevo intento.
 
@@ -279,6 +322,7 @@ El contrato comun consiste en leer `AGENTS.md` y `PROJECT_STATE.md` antes de act
 # Flujo posterior a la creacion por CLI
 > $cerrar-modulo           ← Al terminar un componente
 > $lecciones-aprendidas    ← Antes de depurar algo complejo
+> $optimizar-contexto      ← Al explorar repositorios o sostener tareas largas
 ```
 
 ### Antigravity
@@ -339,6 +383,7 @@ Estos archivos son los del **proyecto instanciado**, no los de `agent-framework/
 | `cerrar-modulo` | Documenta modulo terminado: actualiza PROJECT_STATE, plan, registro de cambios | Cuando las pruebas pasan o el usuario aprueba un componente |
 | `probar-e2e` | Pruebas end-to-end del MVP entre componentes | Al verificar flujos completos (cliente-servidor-dispositivo) |
 | `lecciones-aprendidas` | Memoria de errores resueltos con dificultad (causa raiz no obvia) | Antes de depurar error complejo / tras resolver uno con 2+ intentos |
+| `optimizar-contexto` | Reduce lecturas repetidas y salidas irrelevantes sin perder evidencia ni verificaciones | Al explorar repositorios, usar herramientas verbosas o sostener tareas largas |
 
 ### Core seleccionable explicitamente
 
@@ -356,11 +401,13 @@ Estos archivos son los del **proyecto instanciado**, no los de `agent-framework/
 | firmware-esp32 | `desarrollar-firmware` | Implementacion segura en ESP32/MicroPython: confirmar hardware, maquina de estados, limites de memoria | Al implementar logica nueva en microcontrolador |
 | firmware-esp32 | `diagnosticar-hardware` | Protocolo sistematico desde alimentacion hasta perifericos | Cuando fallo podria ser electrico o de conexion fisica |
 | frontend-nextjs | `nextjs-fullstack` | Patrones App Router: Server Components, Server Actions, caching, layouts, error boundaries | Al implementar paginas, mutaciones o API routes en Next.js |
+| frontend-nextjs | `diseno-ui-web` | Sistema visual, tokens semanticos, temas y micro-interacciones | Al definir o revisar una interfaz Next.js/Tailwind CSS |
 | frontend-nextjs | `typescript-react` | TypeScript estricto en React/Next: props, generics, hooks custom, inferencia | Al definir tipos o resolver errores de tipos |
 | ia-llm | `rag-local` | Pipeline RAG local: chunking, embeddings, vector store, retrieval, augmentation | Cuando el LLM necesita responder con documentos propios |
 | ia-llm | `fine-tuning-llm` | Fine-tuning con LoRA/QLoRA: preparacion de datos, entrenamiento, evaluacion, export | Al especializar un modelo en dominio o tarea especifica |
 | ia-llm | `agentes-multiagent` | Agentes autonomos y multi-agente: ReAct, Plan-and-Execute, tool-use, guardrails | Al implementar agente con herramientas o coordinar multiples agentes |
 | mobile-flutter | `flutter-state-management` | BLoC, Riverpod, Provider: criterio de seleccion, patrones con TDD | Al definir arquitectura de estado de una app Flutter |
+| mobile-flutter | `diseno-ui-flutter` | Sistema visual, temas dinamicos, movimiento y respuesta tactil nativa | Al definir o revisar una interfaz Flutter |
 | mobile-flutter | `flutter-performance` | Optimizacion: rebuilds innecesarios, listas, imagenes, memoria, profiling con DevTools | Cuando hay jank, uso excesivo de memoria, o antes de release |
 | mobile-flutter | `flutter-animations` | Animaciones implicitas, explicitas, hero, staggered, physics-based | Al agregar transiciones o feedback visual |
 
@@ -369,6 +416,7 @@ Estos archivos son los del **proyecto instanciado**, no los de `agent-framework/
 | Skill | Que hace | Cuando considerar |
 |---|---|---|
 | `delegar-entre-agentes` | Formaliza traspasos entre agentes distintos (Claude, Antigravity, Codex) con protocolo de entrega, recepcion y template rapido | Cuando se cambia de herramienta entre sesiones y hay decisiones activas o razonamiento en curso que PROJECT_STATE.md §8 no alcanza a capturar. Cuando basta actualizar §8, no hace falta esta Skill. |
+| `protocolo-debugging` | Exige evidencia, trazabilidad y una prueba que reproduzca el fallo antes de corregir | Cuando un error requiere diagnostico sistematico y se debe evitar corregir por conjetura. |
 
 ---
 
@@ -397,8 +445,8 @@ Estos archivos son los del **proyecto instanciado**, no los de `agent-framework/
 | Tecnologia | Stack | Skills disponibles |
 |---|---|---|
 | FastAPI / SQLAlchemy / Alembic / uv | backend-fastapi | fastapi-setup, seguridad-backend (core complementaria) |
-| Flutter / Dart | mobile-flutter | state-management, performance, animations |
-| Next.js 14+ / TypeScript / React | frontend-nextjs | nextjs-fullstack, typescript-react |
+| Flutter / Dart | mobile-flutter | diseno-ui-flutter, state-management, performance, animations |
+| Next.js 14+ / TypeScript / React | frontend-nextjs | diseno-ui-web, nextjs-fullstack, typescript-react |
 | ESP32 / MicroPython / Arduino IoT | firmware-esp32 | desarrollar-firmware, diagnosticar-hardware |
 | LLM / RAG / Fine-tuning / Multi-agente | ia-llm | rag-local, fine-tuning-llm, agentes-multiagent |
 
@@ -421,6 +469,7 @@ Prisma, pandas/scikit-learn, Go, Rust, Java, Kubernetes, Terraform, Storybook, t
 | Git | Inicializar y controlar la instancia generada | Obligatorio |
 | Agente compatible con AGENTS.md | Usar el framework | Claude Code, Antigravity, Codex CLI, o cualquier agente que lea el archivo |
 | Python 3.9+ | Ejecutar el creador y los verificadores soportados | Funciona desde PowerShell, cmd o la terminal del editor |
+| Node.js 24 + npm | Validar el fixture Next.js de CI | Solo es necesario para la validacion frontend completa |
 | PowerShell / cmd | Ejecutar los comandos en Windows | No realiza la logica de inicializacion |
 
 El flujo soportado requiere Python. Bash es opcional y su adaptador no duplica la logica de inicializacion ni requiere Perl.
@@ -434,13 +483,13 @@ python scripts\validar_contrato_plantilla.py
 python -m unittest discover -s pruebas -p "prueba_*.py" -v
 ```
 
-La suite comprueba creacion completa, seleccion exacta de Skills, rechazo de nombres desconocidos, nombres seguros para dotenv, memoria propia del proyecto, referencias de agentes, limpieza atomica, proteccion de `.env`, estados Git preexistentes, coherencia de limites, gramatica de Python 3.9, vigencia del inventario y ausencia de instrucciones obsoletas o destructivas. El analisis estatico impide APIs de `pathlib` posteriores al piso declarado; la ejecucion real de la matriz ya aprobo en Windows y Ubuntu con Python 3.9 y 3.12.
+La suite comprueba creacion completa, seleccion exacta de Skills, actualizacion con deteccion de conflictos, evaluaciones pareadas, memoria propia del proyecto, limpieza atomica, proteccion de `.env`, coherencia de limites, gramatica de Python 3.9, vigencia del inventario y ausencia de instrucciones obsoletas o destructivas. La CI tambien instala un fixture Next.js bloqueado y ejecuta sus comandos reales de test, lint y build.
 
 ---
 
 ## 10. Estado actual y siguiente uso recomendado
 
-El framework se valido en dos pilotos privados: una API de inventario con FastAPI y PostgreSQL, y un panel web de inventario con Next.js que consume esa API local. Ambos cerraron sus pruebas, y la matriz de CI aprobo en Windows y Ubuntu con Python 3.9 y 3.12.
+El framework se valido en dos pilotos privados: una API de inventario con FastAPI y PostgreSQL, y un panel web de inventario con Next.js que consume esa API local. La base publicada aprobo la matriz Python; la revision local `0.2.0-alpha.12` agrega evaluacion de Skills, actualizacion transaccional y un trabajo de CI Next.js pendiente de ejecucion remota.
 
 Para el siguiente proyecto privado:
 
@@ -476,12 +525,14 @@ plantilla/
 │       ├── lecciones-aprendidas/
 │       │   ├── SKILL.md
 │       │   └── referencias/                    ← Un .md por stack (vacios, se llenan con uso)
+│       ├── optimizar-contexto/SKILL.md
 │       ├── probar-e2e/SKILL.md
 │       ├── seguridad-backend/
 │       │   ├── SKILL.md
 │       │   └── referencias/
 │       ├── opcional/
-│       │   └── delegar-entre-agentes/SKILL.md
+│       │   ├── delegar-entre-agentes/SKILL.md
+│       │   └── protocolo-debugging/SKILL.md
 │       └── stacks/
 │           ├── backend-fastapi/
 │           │   ├── LEEME.md
@@ -493,6 +544,7 @@ plantilla/
 │           │   └── domain-packs/audio-embebido/LEEME.md  ← Stub
 │           ├── frontend-nextjs/
 │           │   ├── LEEME.md
+│           │   ├── skills/diseno-ui-web/SKILL.md
 │           │   ├── skills/nextjs-fullstack/SKILL.md
 │           │   └── skills/typescript-react/SKILL.md
 │           ├── ia-llm/
@@ -502,6 +554,7 @@ plantilla/
 │           │   └── skills/agentes-multiagent/SKILL.md
 │           └── mobile-flutter/
 │               ├── LEEME.md
+│               ├── skills/diseno-ui-flutter/SKILL.md
 │               ├── skills/flutter-state-management/SKILL.md
 │               ├── skills/flutter-performance/SKILL.md
 │               └── skills/flutter-animations/SKILL.md
@@ -522,16 +575,23 @@ Desde la raiz del meta-repositorio tambien existen:
 
 - `scripts/crear_proyecto.py`: creador atomico de una instancia nueva;
 - `scripts/agregar_skills.py`: instalador transaccional de Skills confirmadas en una instancia inicializada;
+- `scripts/actualizar_proyecto.py`: actualizador conservador con huellas, deteccion de conflictos y reversion;
 - `scripts/catalogo_skills.py`: catalogo tipado para recomendaciones y seleccion explicita;
+- `scripts/evaluar_eficacia_skills.py`: comparador pareado de eficacia, tokens, herramientas, tiempo y reintentos;
+- `scripts/medir_tokens_gemini.py`: ejecutor local de una medicion pareada de contexto mediante Gemini API;
+- `scripts/estado_proyecto.py`: calculo comun de huellas para archivos administrados;
 - `scripts/validar_contrato_plantilla.py`: validador del contrato de la plantilla;
 - `scripts/inventariar_skills.py`: inventariador determinista con texto UTF-8/LF canonico para reproducibilidad entre sistemas;
 - `ejemplos/configuracion_proyecto.ejemplo.json`: punto de partida para una configuracion completa;
+- `ejemplos/evaluacion_optimizar_contexto.ejemplo.json`: contrato de captura para un experimento pareado real;
+- `pruebas/prueba_actualizacion_proyecto.py`: reemplazos seguros y bloqueo de cambios locales;
 - `pruebas/prueba_creacion_proyecto.py`: suite integral con biblioteca estandar;
+- `pruebas/prueba_evaluacion_skills.py`: no inferioridad y ahorro medido sin datos inventados;
 - `pruebas/prueba_inventario_skills.py`: control de vigencia del inventario de Skills;
-- `pruebas/prueba_calidad_skills.py`: invariantes estructurales y operativas de las 18 Skills;
-- `pruebas/prueba_catalogo_skills.py`: politica de core automatico y clasificacion del catalogo;
+- `pruebas/prueba_calidad_skills.py`: invariantes estructurales y operativas de las 22 Skills;
+- `pruebas/prueba_catalogo_skills.py`: politica del core y coherencia entre el catalogo, el README y los LEEME de stacks;
 - `pruebas/prueba_compatibilidad_agentes.py`: referencias existentes y capacidades no presupuestas por agente;
 - `pruebas/prueba_compatibilidad_python.py`: gramatica Python 3.9 y coherencia de constantes duplicadas;
-- `.github/workflows/validacion.yml`: matriz de CI para Windows, Ubuntu y dos versiones de Python;
+- `.github/workflows/validacion.yml`: matriz Python para Windows y Ubuntu, mas test, lint y build de Next.js;
 - `auditoria/inventario_skills.json`: rutas, tamaños y huellas del contenido auditado;
 - `ATRIBUCIONES.md`: inventario de procedencia y licencias pendientes.

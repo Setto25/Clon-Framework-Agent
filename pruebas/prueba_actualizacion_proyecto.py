@@ -1,0 +1,111 @@
+#!/usr/bin/env python3
+"""Comprueba la actualizacion conservadora de proyectos generados."""
+
+from __future__ import annotations
+
+import hashlib
+import json
+import os
+import subprocess
+import sys
+import tempfile
+import unittest
+from pathlib import Path
+
+
+RAIZ_FRAMEWORK = Path(__file__).resolve().parent.parent
+CREADOR = RAIZ_FRAMEWORK / "scripts" / "crear_proyecto.py"
+ACTUALIZADOR = RAIZ_FRAMEWORK / "scripts" / "actualizar_proyecto.py"
+CONFIGURACION = RAIZ_FRAMEWORK / "ejemplos" / "configuracion_proyecto.ejemplo.json"
+
+
+def ejecutar(argumentos: list[str]) -> subprocess.CompletedProcess[str]:
+    """Ejecuta una CLI del framework con salida UTF-8."""
+    entorno = dict(os.environ)
+    entorno["PYTHONUTF8"] = "1"
+    return subprocess.run(
+        argumentos,
+        cwd=RAIZ_FRAMEWORK,
+        env=entorno,
+        check=False,
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+    )
+
+
+class PruebasActualizacionProyecto(unittest.TestCase):
+    """Verifica reemplazos seguros, conflictos y ausencia de escrituras parciales."""
+
+    temporal: tempfile.TemporaryDirectory[str]
+    proyecto: Path
+
+    def setUp(self) -> None:
+        """Crea una instancia completa con huellas administradas."""
+        self.temporal = tempfile.TemporaryDirectory(prefix="actualizacion-proyecto-")
+        self.proyecto = Path(self.temporal.name) / "proyecto"
+        resultado = ejecutar(
+            [
+                sys.executable,
+                str(CREADOR),
+                str(self.proyecto),
+                "Proyecto Actualizable",
+                "--configuracion",
+                str(CONFIGURACION),
+            ]
+        )
+        self.assertEqual(resultado.returncode, 0, resultado.stdout + resultado.stderr)
+
+    def tearDown(self) -> None:
+        """Elimina la instancia temporal de la prueba."""
+        self.temporal.cleanup()
+
+    def cargar_estado(self) -> dict[str, object]:
+        """Carga el estado generado como objeto mutable."""
+        datos: object = json.loads(
+            (self.proyecto / ".estado-plantilla.json").read_text(encoding="utf-8")
+        )
+        self.assertIsInstance(datos, dict)
+        return datos if isinstance(datos, dict) else {}
+
+    def guardar_estado(self, estado: dict[str, object]) -> None:
+        """Guarda una variante controlada del estado de prueba."""
+        (self.proyecto / ".estado-plantilla.json").write_text(
+            json.dumps(estado, ensure_ascii=False, indent=2) + "\n",
+            encoding="utf-8",
+        )
+
+    def test_actualiza_archivo_no_modificado_desde_su_huella(self) -> None:
+        """Reemplaza una version anterior cuando coincide con la base registrada."""
+        relativa = ".agents/skills/optimizar-contexto/SKILL.md"
+        archivo = self.proyecto / Path(relativa)
+        contenido_anterior = b"---\nname: optimizar-contexto\ndescription: Version anterior.\n---\n"
+        archivo.write_bytes(contenido_anterior)
+        estado = self.cargar_estado()
+        huellas = estado.get("huellas_gestionadas")
+        self.assertIsInstance(huellas, dict)
+        if isinstance(huellas, dict):
+            huellas[relativa] = hashlib.sha256(contenido_anterior).hexdigest()
+        estado["version_framework"] = "0.2.0-alpha.10"
+        self.guardar_estado(estado)
+
+        resultado = ejecutar([sys.executable, str(ACTUALIZADOR), str(self.proyecto)])
+        self.assertEqual(resultado.returncode, 0, resultado.stdout + resultado.stderr)
+        self.assertIn("Reduce el uso de tokens", archivo.read_text(encoding="utf-8"))
+        actualizado = self.cargar_estado()
+        self.assertEqual(actualizado.get("version_framework"), "0.2.0-alpha.12")
+
+    def test_bloquea_cambio_local_sin_mutar_estado(self) -> None:
+        """Detiene toda la actualizacion cuando un archivo administrado diverge."""
+        archivo = self.proyecto / ".agents" / "skills" / "optimizar-contexto" / "SKILL.md"
+        archivo.write_text("cambio local", encoding="utf-8")
+        estado_antes = (self.proyecto / ".estado-plantilla.json").read_bytes()
+        resultado = ejecutar([sys.executable, str(ACTUALIZADOR), str(self.proyecto)])
+        self.assertEqual(resultado.returncode, 2, resultado.stdout + resultado.stderr)
+        self.assertIn("cambios locales", resultado.stdout)
+        self.assertEqual((self.proyecto / ".estado-plantilla.json").read_bytes(), estado_antes)
+        self.assertEqual(archivo.read_text(encoding="utf-8"), "cambio local")
+
+
+if __name__ == "__main__":
+    unittest.main()

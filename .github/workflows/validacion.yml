@@ -33,3 +33,27 @@ jobs:
         run: python -m unittest discover -s pruebas -p "prueba_*.py" -v
       - name: Confirma que Skills permanece intacto
         run: git diff --exit-code -- plantilla/.agents/skills
+
+  frontend-nextjs:
+    name: Next.js / Node 24
+    runs-on: ubuntu-latest
+    steps:
+      - name: Obtiene el repositorio
+        uses: actions/checkout@v4
+      - name: Configura Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Configura Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: pruebas/fixtures/frontend-nextjs/interfaz/package-lock.json
+      - name: Instala dependencias del fixture
+        run: npm ci
+        working-directory: pruebas/fixtures/frontend-nextjs/interfaz
+      - name: Ejecuta test, lint y build
+        run: python scripts/validar_frontend_nextjs.py pruebas/fixtures/frontend-nextjs
+      - name: Confirma que el fixture permanece reproducible
+        run: git diff --exit-code -- pruebas/fixtures/frontend-nextjs

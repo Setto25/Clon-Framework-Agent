@@ -15,6 +15,7 @@ CategoriaSkill = Literal["core", "opcional", "stack"]
 CORE_AUTOMATICO: tuple[str, ...] = (
     "cerrar-modulo",
     "lecciones-aprendidas",
+    "optimizar-contexto",
     "probar-e2e",
 )
 PATRON_NOMBRE = re.compile(r"^name:\s*(.+?)\s*$", re.MULTILINE)

@@ -6,7 +6,7 @@
 
 ## Que ofrece el catalogo fuente
 
-- Skills: `flutter-state-management`, `flutter-performance`, `flutter-animations`
+- Skills: `diseno-ui-flutter`, `flutter-state-management`, `flutter-performance`, `flutter-animations`
 - Reglas adicionales de implementacion (ver abajo)
 - Terminos tecnicos del stack
 
@@ -18,6 +18,7 @@ Una instancia generada contiene solamente las Skills confirmadas de esta lista.
 stacks/mobile-flutter/
 ├── LEEME.md
 ├── skills/
+│   ├── diseno-ui-flutter/          # Sistema visual, temas, movimiento y respuesta tactil
 │   ├── flutter-state-management/   # BLoC, Riverpod, Provider, criterio de seleccion
 │   ├── flutter-performance/        # Optimizacion de widgets, memoria, rendering
 │   └── flutter-animations/         # Implicitas, explicitas, hero, physics
@@ -77,7 +78,7 @@ class OrdersBloc extends Bloc<OrderEvent, OrderState> { ... }
 Desde la raiz de `agent-framework`, cada Skill se confirma por separado al crear la instancia:
 
 ```powershell
-python scripts\crear_proyecto.py <DESTINO> "<NOMBRE>" --configuracion <CONFIGURACION> --skill flutter-state-management --skill flutter-performance --skill flutter-animations
+python scripts\crear_proyecto.py <DESTINO> "<NOMBRE>" --configuracion <CONFIGURACION> --skill diseno-ui-flutter --skill flutter-state-management --skill flutter-performance --skill flutter-animations
 ```
 
 No se mueven carpetas manualmente. Este `LEEME.md` no implica que todas las Skills Flutter esten instaladas.

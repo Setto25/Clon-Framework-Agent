@@ -1,0 +1,34 @@
+{
+  "version": 1,
+  "skill": "optimizar-contexto",
+  "criterios": {
+    "margen_no_inferioridad": 0.0,
+    "ahorro_minimo_tokens": 0.2
+  },
+  "ejecuciones": [
+    {
+      "escenario": "tarea-real-identificada",
+      "repeticion": 1,
+      "variante": "control",
+      "exito": true,
+      "pruebas_aprobadas": true,
+      "tokens_entrada": 0,
+      "tokens_salida": 0,
+      "llamadas_herramientas": 0,
+      "duracion_segundos": 0,
+      "reintentos": 0
+    },
+    {
+      "escenario": "tarea-real-identificada",
+      "repeticion": 1,
+      "variante": "skill",
+      "exito": true,
+      "pruebas_aprobadas": true,
+      "tokens_entrada": 0,
+      "tokens_salida": 0,
+      "llamadas_herramientas": 0,
+      "duracion_segundos": 0,
+      "reintentos": 0
+    }
+  ]
+}

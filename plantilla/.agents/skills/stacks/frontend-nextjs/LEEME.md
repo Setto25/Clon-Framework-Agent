@@ -5,11 +5,11 @@
 
 ## Que ofrece el catalogo fuente
 
-- Skills: `nextjs-fullstack`, `typescript-react`
+- Skills: `diseno-ui-web`, `nextjs-fullstack`, `typescript-react`
 - Reglas adicionales de implementacion (ver abajo)
 - Terminos tecnicos del stack
 
-Una instancia generada puede contener una o ambas Skills, segun la seleccion confirmada.
+Una instancia generada puede contener una o varias Skills, segun la seleccion confirmada.
 
 ## Estructura en el catalogo fuente
 
@@ -17,6 +17,7 @@ Una instancia generada puede contener una o ambas Skills, segun la seleccion con
 stacks/frontend-nextjs/
 ├── LEEME.md
 ├── skills/
+│   ├── diseno-ui-web/          # Sistema visual, tokens, temas y micro-interacciones
 │   ├── nextjs-fullstack/       # App Router, Server Components, Server Actions, API routes
 │   └── typescript-react/       # TypeScript estricto en React/Next: tipos, generics, hooks
 └── domain-packs/               # Extensiones futuras (ej: auth-nextauth, cms-headless)
@@ -80,7 +81,7 @@ export async function createOrder(data: FormData) { ... }
 Desde la raiz de `agent-framework`, cada Skill se confirma por separado al crear la instancia:
 
 ```powershell
-python scripts\crear_proyecto.py <DESTINO> "<NOMBRE>" --configuracion <CONFIGURACION> --skill nextjs-fullstack --skill typescript-react
+python scripts\crear_proyecto.py <DESTINO> "<NOMBRE>" --configuracion <CONFIGURACION> --skill diseno-ui-web --skill nextjs-fullstack --skill typescript-react
 ```
 
 No se mueven carpetas manualmente. Este `LEEME.md` no implica que todas las Skills del stack esten instaladas.
