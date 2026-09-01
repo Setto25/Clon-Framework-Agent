@@ -508,7 +508,7 @@ El cierre unico valida el contrato, las dependencias citadas por Skills, los arc
 
 ## 10. Estado actual y siguiente uso recomendado
 
-El framework se valido en dos pilotos privados: una API de inventario con FastAPI y PostgreSQL, y un panel web de inventario con Next.js que consume esa API local. La base publicada aprobo la matriz Python; la revision local `0.2.0-alpha.13` agrega evaluacion de Skills, actualizacion transaccional y cierre automatico pendiente de ejecucion remota.
+El framework se valido en dos pilotos privados: una API de inventario con FastAPI y PostgreSQL, y un panel web de inventario con Next.js que consume esa API local. El fixture Next.js conserva un `package-lock.json` generado desde un arbol limpio para que `npm ci` resuelva las mismas dependencias transitivas en Linux y Windows. La base publicada aprobo la matriz Python; la revision `0.2.0-alpha.13` agrega evaluacion de Skills, actualizacion transaccional y cierre automatico en validacion remota.
 
 Para el siguiente proyecto privado:
 

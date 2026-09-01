@@ -1,8 +1,8 @@
 # Estado del proyecto: agent-framework
 
-**Ultima actualizacion:** 2026-09-01 (rev 75)
-**Estado general:** framework reproducible con 22 Skills, evaluacion de eficacia pareada con Gemini o Anthropic, actualizacion transaccional y cierre local verificable en Windows y Linux
-**Fase activa:** Fase 7 — correccion de portabilidad y validacion en CI remota
+**Ultima actualizacion:** 2026-09-01 (rev 76)
+**Estado general:** framework reproducible con 22 Skills, evaluacion de eficacia pareada con Gemini o Anthropic, actualizacion transaccional y cierres Python y Next.js verificables
+**Fase activa:** Fase 7 — estabilizacion final de CI remota
 
 ## 1. Objetivo
 
@@ -111,6 +111,7 @@ Cada stack tiene LEEME.md con reglas adicionales, terminos tecnicos y procedimie
 - **Revision 73 de calibracion Sonnet.** El primer par Anthropic mostro un ahorro aparente de 39,46 % y redujo las solicitudes de herramientas de 24 a 18, pero ambas variantes quedaron rechazadas porque sus dos intentos terminaron con JSON incompleto cerca de 5.500 caracteres. El adaptador eleva el limite de salida de 2.000 a 6.000 tokens, registra `stop_reason`, evita aplicar la rubrica a un corte, permite una reparacion compacta y ejecuta como maximo cuatro lecturas adicionales. El resultado anterior no demuestra ineficacia de la Skill y no se reutiliza al reanudar. Las 22 pruebas focalizadas aprobaron; la suite completa aprobo 75 de 76 y conserva unicamente el bloqueo conocido del inventario contra `HEAD`.
 - **Revision 74 de cierre automatico.** El contrato v3 centraliza los archivos administrados e incorpora `generar_indice_contexto.py`; las pruebas cubren creacion, huella, incorporacion en actualizaciones, conflicto con contenido local y migracion desde contrato v2. El inventario se contrasta con la copia de trabajo para poder validar antes del commit. Se elimina el adaptador OpenAI-compatible descartado y se agrega una puerta unica exigida por AGENTS.md y CI. `validar_cierre_cambio.py` aprobo contrato, referencias, formato y las 82 pruebas locales. La medicion Opus de una repeticion aprobo la rubrica con 27,27 % de ahorro, pero se conserva como evidencia preliminar hasta medir variabilidad y otros tipos de tarea.
 - **Revision 75 de portabilidad de la rubrica.** La primera CI de `0.2.0-alpha.13` detecto que `validar_resultado_agente.py` comparaba en Windows una raiz sin canonizar con archivos ya resueltos, por lo que rechazaba evidencia existente y ocultaba la comprobacion del patron literal. La rubrica ahora confina y lee mediante la misma ruta canonica. Una regresion reproduce el caso con segmentos redundantes; el cierre comprende 83 pruebas.
+- **Revision 76 del fixture Next.js.** La CI posterior detecto un `package-lock.json` que npm aceptaba en Windows por el arbol local, pero rechazaba en Linux porque faltaban entradas transitivas de `@emnapi`. El lockfile se genero otra vez desde un directorio limpio para Linux. `npm ci` instalo 346 paquetes sin vulnerabilidades y el fixture aprobo test, ESLint, TypeScript y build de produccion con Next.js 16.3.3.
 
 ## 5. Que falta
 
