@@ -1,8 +1,8 @@
 # Estado del proyecto: agent-framework
 
-**Ultima actualizacion:** 2026-09-01 (rev 76)
-**Estado general:** framework reproducible con 22 Skills, evaluacion de eficacia pareada con Gemini o Anthropic, actualizacion transaccional y cierres Python y Next.js verificables
-**Fase activa:** Fase 7 — estabilizacion final de CI remota
+**Ultima actualizacion:** 2026-09-01 (rev 77)
+**Estado general:** framework reproducible con 22 Skills; cierre local y CI remota de `0.2.0-alpha.13` aprobados
+**Fase activa:** Fase 7 — publicacion y proteccion efectiva de la rama principal
 
 ## 1. Objetivo
 
@@ -112,6 +112,7 @@ Cada stack tiene LEEME.md con reglas adicionales, terminos tecnicos y procedimie
 - **Revision 74 de cierre automatico.** El contrato v3 centraliza los archivos administrados e incorpora `generar_indice_contexto.py`; las pruebas cubren creacion, huella, incorporacion en actualizaciones, conflicto con contenido local y migracion desde contrato v2. El inventario se contrasta con la copia de trabajo para poder validar antes del commit. Se elimina el adaptador OpenAI-compatible descartado y se agrega una puerta unica exigida por AGENTS.md y CI. `validar_cierre_cambio.py` aprobo contrato, referencias, formato y las 82 pruebas locales. La medicion Opus de una repeticion aprobo la rubrica con 27,27 % de ahorro, pero se conserva como evidencia preliminar hasta medir variabilidad y otros tipos de tarea.
 - **Revision 75 de portabilidad de la rubrica.** La primera CI de `0.2.0-alpha.13` detecto que `validar_resultado_agente.py` comparaba en Windows una raiz sin canonizar con archivos ya resueltos, por lo que rechazaba evidencia existente y ocultaba la comprobacion del patron literal. La rubrica ahora confina y lee mediante la misma ruta canonica. Una regresion reproduce el caso con segmentos redundantes; el cierre comprende 83 pruebas.
 - **Revision 76 del fixture Next.js.** La CI posterior detecto un `package-lock.json` que npm aceptaba en Windows por el arbol local, pero rechazaba en Linux porque faltaban entradas transitivas de `@emnapi`. El lockfile se genero otra vez desde un directorio limpio para Linux. `npm ci` instalo 346 paquetes sin vulnerabilidades y el fixture aprobo test, ESLint, TypeScript y build de produccion con Next.js 16.3.3.
+- **Revision 77 de CI remota.** La ejecucion `Validacion #11` del commit `dd6f9f3` aprobo los cuatro trabajos Python en Ubuntu y Windows con versiones 3.9 y 3.12, junto con el trabajo Next.js en Node 24. GitHub informa que las reglas de rama no se aplican en este repositorio privado de cuenta personal hasta moverlo a una organizacion Team o Enterprise; no se creo una regla meramente nominal.
 
 ## 5. Que falta
 
@@ -126,4 +127,4 @@ Cada stack tiene LEEME.md con reglas adicionales, terminos tecnicos y procedimie
 
 ## 6. Siguiente paso logico
 
-Publicar la correccion de portabilidad y aprobar la CI remota de `0.2.0-alpha.13`. Despues, proteger `main`, realizar al menos tres pares con Opus en el escenario transversal y agregar escenarios simple, de implementacion y arquitectonico antes de confirmar el beneficio general de `optimizar-contexto`; cualquier redistribucion sigue condicionada por la procedencia de `mobile-flutter`.
+Elegir una modalidad que permita proteger efectivamente `main` —organizacion GitHub Team/Enterprise o repositorio publico— y aplicar la regla despues de confirmar ese cambio. Luego, realizar al menos tres pares con Opus en el escenario transversal y agregar escenarios simple, de implementacion y arquitectonico antes de confirmar el beneficio general de `optimizar-contexto`; cualquier redistribucion sigue condicionada por la procedencia de `mobile-flutter`.
