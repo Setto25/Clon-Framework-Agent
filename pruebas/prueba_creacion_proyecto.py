@@ -211,9 +211,11 @@ class PruebasCreacionProyecto(unittest.TestCase):
         self.assertIsInstance(huellas_gestionadas, dict)
         if isinstance(huellas_gestionadas, dict):
             self.assertIn("scripts/verificar_memoria_proyecto.py", huellas_gestionadas)
+            self.assertIn("scripts/generar_indice_contexto.py", huellas_gestionadas)
             self.assertIn(".agents/skills/optimizar-contexto/SKILL.md", huellas_gestionadas)
+        self.assertTrue((destino / "scripts" / "generar_indice_contexto.py").is_file())
         registro = (destino / "documentacion" / "REGISTRO_CAMBIOS.md").read_text(encoding="utf-8")
-        self.assertIn("agent-framework 0.2.0-alpha.12", registro)
+        self.assertIn("agent-framework 0.2.0-alpha.13", registro)
         for nombre in CORE_AUTOMATICO:
             with self.subTest(skill_registrada=nombre):
                 self.assertIn(f"- `{nombre}`", registro)
@@ -716,7 +718,7 @@ class PruebasCreacionProyecto(unittest.TestCase):
                 if not isinstance(contrato, dict):
                     raise AssertionError("El contrato publicado no es un objeto JSON")
                 if caso == "version-futura":
-                    contrato["version_contrato"] = 3
+                    contrato["version_contrato"] = 4
                 elif caso == "version-framework-invalida":
                     contrato["version_framework"] = "version futura"
                 elif caso == "clave-desconocida":

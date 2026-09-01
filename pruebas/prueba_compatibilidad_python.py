@@ -12,7 +12,6 @@ RAIZ_FRAMEWORK = Path(__file__).resolve().parent.parent
 INICIALIZADOR = RAIZ_FRAMEWORK / "plantilla" / "scripts" / "inicializar_proyecto.py"
 CREADOR = RAIZ_FRAMEWORK / "scripts" / "crear_proyecto.py"
 VALIDADOR = RAIZ_FRAMEWORK / "scripts" / "validar_contrato_plantilla.py"
-ESTADO_PROYECTO = RAIZ_FRAMEWORK / "scripts" / "estado_proyecto.py"
 
 
 def evaluar_constante(nodo: ast.AST) -> object:
@@ -132,11 +131,6 @@ class PruebasCompatibilidadPython(unittest.TestCase):
             extraer_constantes(INICIALIZADOR, constantes_arbol),
         )
 
-        constantes_actualizacion = frozenset({"RUTAS_GESTIONADAS_BASE"})
-        self.assertEqual(
-            extraer_constantes(ESTADO_PROYECTO, constantes_actualizacion),
-            extraer_constantes(INICIALIZADOR, constantes_actualizacion),
-        )
 
 
 if __name__ == "__main__":

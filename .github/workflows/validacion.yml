@@ -23,16 +23,16 @@ jobs:
     steps:
       - name: Obtiene el repositorio
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - name: Configura Python
         uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python }}
-      - name: Valida el contrato
-        run: python scripts/validar_contrato_plantilla.py
-      - name: Ejecuta las pruebas
-        run: python -m unittest discover -s pruebas -p "prueba_*.py" -v
-      - name: Confirma que Skills permanece intacto
-        run: git diff --exit-code -- plantilla/.agents/skills
+      - name: Valida el cierre completo
+        env:
+          BASE_CAMBIO: ${{ github.event.pull_request.base.sha || github.event.before }}
+        run: python scripts/validar_cierre_cambio.py
 
   frontend-nextjs:
     name: Next.js / Node 24

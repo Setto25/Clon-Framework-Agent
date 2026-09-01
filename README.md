@@ -44,7 +44,7 @@ Un conjunto de archivos que se copian a cualquier proyecto nuevo para darle al a
 - **Estructura de documentacion**: AGENTS.md, PROJECT_STATE.md, REGISTRO_CAMBIOS.md, PLAN_DESARROLLO.md y otros como convencion.
 - **Skills agrupados por stack**: guias para FastAPI, Flutter, Next.js, ESP32/firmware y LLM/RAG. Su procedencia se registra en `ATRIBUCIONES.md`; no toda licencia externa esta verificada.
 - **Memoria de errores**: skill `lecciones-aprendidas` para no repetir ciclos de depuracion ya resueltos.
-- **Economia de contexto**: skill `optimizar-contexto` para reducir lecturas repetidas y salidas irrelevantes sin omitir evidencia ni verificaciones.
+- **Economia de contexto condicional**: skill `optimizar-contexto` con 4 niveles (Sin analisis, Ligero, Extendido, Arquitectonico) para deduplicar consultas en tareas transversales o prolongadas usando el script auxiliar `generar_indice_contexto.py`; no se activa automaticamente en tareas simples.
 - **Creacion segura**: una CLI copia la plantilla, resuelve su contrato, protege `.env`, registra la version de origen e inicializa Git mediante una operacion atomica.
 - **Verificacion de memoria**: un comando comprueba documentos obligatorios, placeholders y datos iniciales pendientes.
 - **Compatibilidad basada en capacidades**: los deltas de agente verifican herramientas, sandbox y descubrimiento real en vez de prometer comportamientos por marca.
@@ -257,7 +257,7 @@ Copy-Item ejemplos\evaluacion_optimizar_contexto.ejemplo.json D:\PROYECTOS\evalu
 python scripts\evaluar_eficacia_skills.py D:\PROYECTOS\evaluacion-real.json --salida D:\PROYECTOS\informe-evaluacion.json
 ```
 
-Los ceros del ejemplo son marcadores y deben reemplazarse por mediciones del proveedor o agente utilizado. El evaluador devuelve `0` cuando conserva eficacia y alcanza el ahorro, `2` cuando el experimento valido no supera los umbrales y `1` cuando la entrada es invalida. No ejecuta modelos ni presenta datos simulados como evidencia.
+Los ceros del ejemplo son marcadores y deben reemplazarse por mediciones del proveedor o agente utilizado. El evaluador devuelve `0` solo cuando control y tratamiento satisfacen todas sus ejecuciones y ademas se alcanza el ahorro; esto impide aprobar por igualdad cuando ambas tasas son cero. Devuelve `2` cuando el experimento valido no supera los umbrales y `1` cuando la entrada es invalida. No ejecuta modelos ni presenta datos simulados como evidencia.
 
 Para capturar una medicion controlada con Gemini API, se deben preparar `experimentos/archivos_control.txt` y `experimentos/archivos_skill.txt` con las rutas relativas que cada variante puede leer. Ambos manifiestos deben contener los archivos obligatorios del repositorio, incluido `AGENTS.md`; solo deben diferir en el contexto adicional cuya necesidad se esta evaluando. La tarea exige una respuesta JSON y una rubrica factual local comprueba rutas obligatorias y condiciones de `LEEME.md`, `ATRIBUCIONES.md`, `plantilla/AGENTS.md` y las excepciones nominales. Esta rubrica mide solo la cobertura documental declarada; no sustituye una revision de implementacion o seguridad. Con `GEMINI_API_KEY` definida solo en la terminal local y `google-genai` instalado, se ejecuta:
 
@@ -267,17 +267,37 @@ python scripts\medir_tokens_gemini.py --modelo gemini-3.7-flash
 
 El ejecutor realiza tres repeticiones por variante y guarda `resultados/evaluacion_optimizar_contexto_gemini.json`. Muestra el avance, reintenta hasta tres veces los errores temporales del proveedor con espera gradual y registra los reintentos realizados. Registra por separado tokens de entrada, respuesta y razonamiento; suma respuesta y razonamiento en `tokens_salida`, porque ambos forman parte del consumo total. La rubrica deja `pruebas_aprobadas` en `true` solo cuando la respuesta satisface todos sus hechos verificables y conserva sus fallos en `rubrica_fallos`. Esta captura es un proxy de seleccion de contexto estatico: no ejecuta herramientas ni demuestra por si sola que la Skill cambie el comportamiento de un agente. No se deben enviar secretos ni datos sensibles a proveedores configurados en niveles gratuitos.
 
-`scripts/evaluar_agente_gemini.py` realiza la evaluacion causal: expone solo herramientas de listar, buscar y leer archivos dentro del repositorio, ejecuta un control sin el protocolo y un tratamiento que lo aplica como instruccion activa, y acumula el uso de cada turno del modelo. Ante el limite temporal gratuito de Gemini espera el tiempo informado por el proveedor y reintenta; guarda cada ejecucion terminada para que una interrupcion no descarte el avance. `--reanudar` conserva esas ejecuciones compatibles y completa solo las faltantes. Sus resultados requieren revisar la respuesta final antes de ejecutar el comparador pareado.
+`scripts/evaluar_agente_gemini.py` realiza la evaluacion causal: ejecuta un control sin el protocolo y un tratamiento que recibe la Skill en la instruccion inicial, y acumula el uso de cada turno del modelo. Antes de llamar a Gemini, `scripts/analizar_impacto.py` recorre localmente el repositorio, excluye caches, dependencias y resultados, agrupa las coincidencias por archivo y adjunta un unico fragmento corto por ruta. Ese recorrido consume CPU local, no tokens de API; solo el indice compacto serializado forma parte de la entrada del modelo. Ambas variantes reciben el mismo indice y conservan herramientas acotadas de listar, buscar y leer para completar impactos indirectos. El listado exige un prefijo y rechaza la raiz. Una cache evita devolver otra vez resultados de consultas identicas; la traza registra nombres, argumentos, solicitudes, ejecuciones reales, aciertos y violaciones del protocolo. La rubrica local de `scripts/validar_resultado_agente.py` exige JSON completo, todas las rutas esenciales del escenario, rutas existentes y observadas, un patron literal comprobable por evidencia y comandos soportados antes de marcar `pruebas_aprobadas`. El escenario v6 publica esas mismas rutas dentro de `rutas_requeridas_en_rutas_afectadas`, por lo que el agente conoce exactamente la cobertura que se comprobara. Si la primera respuesta falla sin haber violado el protocolo, recibe una sola ronda de correccion que distingue rutas afectadas de evidencias y exige patrones copiados literalmente; todos sus nuevos tokens y herramientas se contabilizan. Ante el limite temporal gratuito de Gemini espera el tiempo informado por el proveedor y reintenta; guarda cada ejecucion terminada para que una interrupcion no descarte el avance. `--reanudar` conserva solo ejecuciones del escenario vigente y completa las faltantes.
+
+El indice puede inspeccionarse sin consumir cuota de Gemini:
+
+```powershell
+python scripts\analizar_impacto.py optimizar-contexto CORE_AUTOMATICO "core automatico" "Skills opcionales"
+```
 
 ```powershell
 python scripts\evaluar_agente_gemini.py --modelo gemini-3.1-flash-lite
 # Solo si una ejecucion previa dejo avance en resultados\evaluacion_agente_gemini.json:
 python scripts\evaluar_agente_gemini.py --modelo gemini-3.1-flash-lite --reanudar
+# Para medir variabilidad de forma explicita:
+python scripts\evaluar_agente_gemini.py --modelo gemini-3.1-flash-lite --repeticiones 3
 ```
 
-El escenario vigente audita, sin alterar archivos, la migracion de `optimizar-contexto` desde el core hacia las Skills opcionales. Exige evidencia de rutas, cambios y pruebas para comprobar si el protocolo amortiza su coste inicial en una tarea transversal.
+El escenario v6 audita, sin alterar archivos, la migracion de `optimizar-contexto` desde el core hacia las Skills opcionales. Exige evidencia de rutas, cambios y pruebas para comprobar si el protocolo amortiza su coste inicial en una tarea transversal. Registra dentro de cada ejecucion el numero de archivos examinados localmente, las coincidencias, las rutas requeridas y los caracteres entregados al modelo. La ejecucion predeterminada usa un par control/tratamiento; las repeticiones adicionales se solicitan explicitamente para no consumir cuota con salidas deterministas identicas.
 
-La medicion no se aprueba automaticamente: una respuesta que cite rutas, comandos o pruebas inexistentes debe rechazarse aunque tenga menor consumo. Los informes locales bajo `resultados/` son evidencia de una corrida concreta y no se versionan.
+La misma prueba puede ejecutarse directamente con la API de Anthropic. `scripts/evaluar_agente_anthropic.py` conserva el indice y la rubrica de v6, y limita a cuatro las lecturas locales adicionales porque las rutas y evidencias del indice ya cuentan como observadas. Admite hasta 6.000 tokens de salida, registra la razon de detencion de cada turno y repara una sola respuesta truncada antes de aplicar la rubrica. Tambien desactiva los reintentos internos del SDK para contabilizar los propios y suma como entrada los tokens normales, creados en cache y leidos desde cache. La comparacion control/Skill debe hacerse dentro del mismo modelo; los conteos brutos entre proveedores no son equivalentes porque usan tokenizadores distintos.
+
+```powershell
+python -m pip install -U anthropic google-genai
+$claveAnthropic = Read-Host "Pega tu clave de Anthropic"
+$env:ANTHROPIC_API_KEY = $claveAnthropic.Trim()
+python scripts\evaluar_agente_anthropic.py --modelo claude-sonnet-4-6 --salida resultados\evaluacion_agente_anthropic_sonnet_v6_corregida.json
+python scripts\evaluar_eficacia_skills.py resultados\evaluacion_agente_anthropic_sonnet_v6_corregida.json --salida resultados\informe_agente_anthropic_sonnet_v6_corregida.json
+```
+
+La clave se conserva solo en el proceso actual de PowerShell y no debe pegarse en chats, archivos o resultados. El identificador predeterminado es `claude-sonnet-4-6`. El resultado registra `tokens_cache_creada`, `tokens_cache_leida`, `razones_detencion`, `truncamientos` y herramientas rechazadas por presupuesto. No se debe reanudar un resultado creado con una version anterior del adaptador.
+
+La rubrica factual se aplica automaticamente, pero no sustituye la revision humana de decisiones arquitectonicas. Una respuesta que cite rutas, comandos o pruebas inexistentes se rechaza aunque tenga menor consumo. Los informes locales bajo `resultados/` son evidencia de una corrida concreta y no se versionan.
 
 ### Flujo exploratorio con datos pendientes
 
@@ -322,7 +342,7 @@ El contrato comun consiste en leer `AGENTS.md` y `PROJECT_STATE.md` antes de act
 # Flujo posterior a la creacion por CLI
 > $cerrar-modulo           ← Al terminar un componente
 > $lecciones-aprendidas    ← Antes de depurar algo complejo
-> $optimizar-contexto      ← Al explorar repositorios o sostener tareas largas
+> $optimizar-contexto      ← En tareas transversales, verbosas o prolongadas
 ```
 
 ### Antigravity
@@ -383,7 +403,7 @@ Estos archivos son los del **proyecto instanciado**, no los de `agent-framework/
 | `cerrar-modulo` | Documenta modulo terminado: actualiza PROJECT_STATE, plan, registro de cambios | Cuando las pruebas pasan o el usuario aprueba un componente |
 | `probar-e2e` | Pruebas end-to-end del MVP entre componentes | Al verificar flujos completos (cliente-servidor-dispositivo) |
 | `lecciones-aprendidas` | Memoria de errores resueltos con dificultad (causa raiz no obvia) | Antes de depurar error complejo / tras resolver uno con 2+ intentos |
-| `optimizar-contexto` | Reduce lecturas repetidas y salidas irrelevantes sin perder evidencia ni verificaciones | Al explorar repositorios, usar herramientas verbosas o sostener tareas largas |
+| `optimizar-contexto` | Deduplica consultas y mantiene evidencia trazable mediante 4 niveles de operacion (incluye uso del script `generar_indice_contexto.py`) | En tareas de varios modulos, herramientas verbosas o sesiones largas; no usar escaneo en tareas simples |
 
 ### Core seleccionable explicitamente
 
@@ -479,17 +499,16 @@ El flujo soportado requiere Python. Bash es opcional y su adaptador no duplica l
 Desde la raiz del meta-repositorio:
 
 ```powershell
-python scripts\validar_contrato_plantilla.py
-python -m unittest discover -s pruebas -p "prueba_*.py" -v
+python scripts\validar_cierre_cambio.py
 ```
 
-La suite comprueba creacion completa, seleccion exacta de Skills, actualizacion con deteccion de conflictos, evaluaciones pareadas, memoria propia del proyecto, limpieza atomica, proteccion de `.env`, coherencia de limites, gramatica de Python 3.9, vigencia del inventario y ausencia de instrucciones obsoletas o destructivas. La CI tambien instala un fixture Next.js bloqueado y ejecuta sus comandos reales de test, lint y build.
+El cierre unico valida el contrato, las dependencias citadas por Skills, los archivos administrados, las referencias documentales, la actualizacion simultanea de README y estado, el formato Git y toda la suite Python. La suite comprueba creacion completa, seleccion exacta de Skills, actualizacion con deteccion de conflictos, evaluaciones pareadas, memoria propia del proyecto, limpieza atomica, proteccion de `.env`, coherencia de limites, gramatica de Python 3.9, vigencia del inventario y ausencia de instrucciones obsoletas o destructivas. La CI ejecuta la misma puerta y tambien instala un fixture Next.js bloqueado para ejecutar test, lint y build.
 
 ---
 
 ## 10. Estado actual y siguiente uso recomendado
 
-El framework se valido en dos pilotos privados: una API de inventario con FastAPI y PostgreSQL, y un panel web de inventario con Next.js que consume esa API local. La base publicada aprobo la matriz Python; la revision local `0.2.0-alpha.12` agrega evaluacion de Skills, actualizacion transaccional y un trabajo de CI Next.js pendiente de ejecucion remota.
+El framework se valido en dos pilotos privados: una API de inventario con FastAPI y PostgreSQL, y un panel web de inventario con Next.js que consume esa API local. La base publicada aprobo la matriz Python; la revision local `0.2.0-alpha.13` agrega evaluacion de Skills, actualizacion transaccional y cierre automatico pendiente de ejecucion remota.
 
 Para el siguiente proyecto privado:
 
@@ -513,6 +532,7 @@ plantilla/
 ├── scripts/
 │   ├── inicializar_proyecto.py                 ← Inicializador interno soportado
 │   ├── verificar_memoria_proyecto.py           ← Valida memoria y pendientes
+│   ├── generar_indice_contexto.py              ← Rastreador local determinista para optimizar-contexto
 │   └── inicializar_proyecto.sh                 ← Adaptador opcional hacia Python
 ├── .agents/
 │   ├── rules/
@@ -579,7 +599,11 @@ Desde la raiz del meta-repositorio tambien existen:
 - `scripts/catalogo_skills.py`: catalogo tipado para recomendaciones y seleccion explicita;
 - `scripts/evaluar_eficacia_skills.py`: comparador pareado de eficacia, tokens, herramientas, tiempo y reintentos;
 - `scripts/medir_tokens_gemini.py`: ejecutor local de una medicion pareada de contexto mediante Gemini API;
+- `scripts/analizar_impacto.py`: indice local compacto de referencias para evitar exploraciones agenticas exhaustivas;
+- `scripts/evaluar_agente_anthropic.py`: evaluador agentico equivalente mediante Claude Sonnet y Anthropic API;
+- `scripts/validar_resultado_agente.py`: rubrica factual local para rutas, evidencia y comandos de auditorias agenticas;
 - `scripts/estado_proyecto.py`: calculo comun de huellas para archivos administrados;
+- `scripts/validar_cierre_cambio.py`: puerta unica de contrato, registros, referencias, formato y pruebas;
 - `scripts/validar_contrato_plantilla.py`: validador del contrato de la plantilla;
 - `scripts/inventariar_skills.py`: inventariador determinista con texto UTF-8/LF canonico para reproducibilidad entre sistemas;
 - `ejemplos/configuracion_proyecto.ejemplo.json`: punto de partida para una configuracion completa;
@@ -587,6 +611,9 @@ Desde la raiz del meta-repositorio tambien existen:
 - `pruebas/prueba_actualizacion_proyecto.py`: reemplazos seguros y bloqueo de cambios locales;
 - `pruebas/prueba_creacion_proyecto.py`: suite integral con biblioteca estandar;
 - `pruebas/prueba_evaluacion_skills.py`: no inferioridad y ahorro medido sin datos inventados;
+- `pruebas/prueba_analisis_impacto.py`: cobertura, limites y exclusion de artefactos del indice local;
+- `pruebas/prueba_evaluacion_anthropic.py`: adaptador Sonnet simulado, sin solicitudes externas;
+- `pruebas/prueba_validacion_resultado_agente.py`: rechazo determinista de rutas inventadas y comandos no comprobables;
 - `pruebas/prueba_inventario_skills.py`: control de vigencia del inventario de Skills;
 - `pruebas/prueba_calidad_skills.py`: invariantes estructurales y operativas de las 22 Skills;
 - `pruebas/prueba_catalogo_skills.py`: politica del core y coherencia entre el catalogo, el README y los LEEME de stacks;

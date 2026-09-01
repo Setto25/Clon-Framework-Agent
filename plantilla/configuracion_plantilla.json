@@ -1,6 +1,6 @@
 {
-  "version_contrato": 2,
-  "version_framework": "0.2.0-alpha.12",
+  "version_contrato": 3,
+  "version_framework": "0.2.0-alpha.13",
   "sintaxis_placeholder": "{{CLAVE}}",
   "rutas_excluidas": [
     ".agents/skills"
@@ -17,6 +17,13 @@
     "documentacion/GUIA_OPERACION.md",
     "documentacion/REGISTRO_CAMBIOS.md",
     "documentacion/prompts/*.md"
+  ],
+  "archivos_gestionados": [
+    "configuracion_plantilla.json",
+    "scripts/generar_indice_contexto.py",
+    "scripts/inicializar_proyecto.py",
+    "scripts/inicializar_proyecto.sh",
+    "scripts/verificar_memoria_proyecto.py"
   ],
   "placeholders": {
     "NOMBRE_PROYECTO": {

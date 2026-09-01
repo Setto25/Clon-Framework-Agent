@@ -22,6 +22,20 @@ Un framework agentico reutilizable. Contiene:
 3. **Mantener coherencia interna verificable.** Si cambia una Skill, se debe actualizar el `LEEME.md` del stack cuando corresponda, el inventario, el catalogo narrativo y las pruebas de coherencia documental. El cambio no se considera cerrado mientras la suite detecte referencias o cantidades obsoletas.
 4. **No duplicar entre stacks.** Si un skill aplica a multiples stacks, evaluar si pertenece al core.
 5. **Atribuir fuentes externas.** Si un skill se adapta de un plugin externo, documentar la fuente y licencia en el LEEME.md del stack y en `ATRIBUCIONES.md`. Si es contenido original, se debe mantener esa procedencia coherente con la documentacion del catalogo.
+6. **Ejecutar el cierre automatico.** Antes de declarar terminado cualquier cambio, se debe ejecutar `python scripts/validar_cierre_cambio.py`. Si falla, el cambio permanece incompleto. No se sustituye esta puerta por una revision visual ni por pruebas parciales.
+7. **Registrar dependencias mediante el contrato.** Todo archivo de `plantilla/scripts/` consumido por una Skill debe existir y figurar en `archivos_gestionados` de `plantilla/configuracion_plantilla.json`. No se deben crear listas paralelas de rutas administradas.
+
+## Matriz obligatoria de impacto
+
+| Si cambia | Tambien se debe revisar |
+|---|---|
+| Una Skill | Inventario, catalogo narrativo, README, estado, dependencias citadas y pruebas |
+| Un script de plantilla | Contrato, archivos administrados, creacion, actualizacion y huellas |
+| Una CLI | README, ayuda, pruebas, compatibilidad Python y estado |
+| Un adaptador de modelo | Dependencia, documentacion, simulacion sin API y medicion real separada |
+| Arquitectura, nombre o ruta | Estado, README, historial afectado y todas las referencias mediante busqueda global |
+
+La documentacion no basta como registro operativo. El cierre debe demostrar que los proyectos nuevos reciben los archivos y que los proyectos existentes pueden actualizarlos sin sobrescribir cambios locales.
 
 ## Idioma
 

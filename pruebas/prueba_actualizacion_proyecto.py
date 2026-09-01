@@ -12,6 +12,8 @@ import tempfile
 import unittest
 from pathlib import Path
 
+from scripts.estado_proyecto import cargar_rutas_gestionadas
+
 
 RAIZ_FRAMEWORK = Path(__file__).resolve().parent.parent
 CREADOR = RAIZ_FRAMEWORK / "scripts" / "crear_proyecto.py"
@@ -91,9 +93,17 @@ class PruebasActualizacionProyecto(unittest.TestCase):
 
         resultado = ejecutar([sys.executable, str(ACTUALIZADOR), str(self.proyecto)])
         self.assertEqual(resultado.returncode, 0, resultado.stdout + resultado.stderr)
-        self.assertIn("Reduce el uso de tokens", archivo.read_text(encoding="utf-8"))
+        fuente = (
+            RAIZ_FRAMEWORK
+            / "plantilla"
+            / ".agents"
+            / "skills"
+            / "optimizar-contexto"
+            / "SKILL.md"
+        )
+        self.assertEqual(archivo.read_bytes(), fuente.read_bytes())
         actualizado = self.cargar_estado()
-        self.assertEqual(actualizado.get("version_framework"), "0.2.0-alpha.12")
+        self.assertEqual(actualizado.get("version_framework"), "0.2.0-alpha.13")
 
     def test_bloquea_cambio_local_sin_mutar_estado(self) -> None:
         """Detiene toda la actualizacion cuando un archivo administrado diverge."""
@@ -105,6 +115,69 @@ class PruebasActualizacionProyecto(unittest.TestCase):
         self.assertIn("cambios locales", resultado.stdout)
         self.assertEqual((self.proyecto / ".estado-plantilla.json").read_bytes(), estado_antes)
         self.assertEqual(archivo.read_text(encoding="utf-8"), "cambio local")
+
+    def test_agrega_script_nuevo_y_registra_su_huella(self) -> None:
+        """Incorpora una dependencia nueva declarada por el contrato."""
+        relativa = "scripts/generar_indice_contexto.py"
+        archivo = self.proyecto / Path(relativa)
+        archivo.unlink()
+        estado = self.cargar_estado()
+        huellas = estado.get("huellas_gestionadas")
+        self.assertIsInstance(huellas, dict)
+        if isinstance(huellas, dict):
+            huellas.pop(relativa, None)
+        estado["version_framework"] = "0.2.0-alpha.10"
+        self.guardar_estado(estado)
+
+        resultado = ejecutar([sys.executable, str(ACTUALIZADOR), str(self.proyecto)])
+        self.assertEqual(resultado.returncode, 0, resultado.stdout + resultado.stderr)
+        self.assertTrue(archivo.is_file())
+        actualizado = self.cargar_estado()
+        huellas_actualizadas = actualizado.get("huellas_gestionadas")
+        self.assertIsInstance(huellas_actualizadas, dict)
+        if isinstance(huellas_actualizadas, dict):
+            self.assertIn(relativa, huellas_actualizadas)
+
+    def test_bloquea_script_preexistente_sin_huella(self) -> None:
+        """Protege un archivo local que coincide con una nueva ruta administrada."""
+        relativa = "scripts/generar_indice_contexto.py"
+        archivo = self.proyecto / Path(relativa)
+        archivo.write_text("contenido local", encoding="utf-8")
+        estado = self.cargar_estado()
+        huellas = estado.get("huellas_gestionadas")
+        self.assertIsInstance(huellas, dict)
+        if isinstance(huellas, dict):
+            huellas.pop(relativa, None)
+        self.guardar_estado(estado)
+
+        resultado = ejecutar([sys.executable, str(ACTUALIZADOR), str(self.proyecto)])
+        self.assertEqual(resultado.returncode, 2, resultado.stdout + resultado.stderr)
+        self.assertIn("existe sin huella administrada", resultado.stdout)
+        self.assertEqual(archivo.read_text(encoding="utf-8"), "contenido local")
+
+    def test_contrato_v2_conserva_rutas_historicas_para_adopcion(self) -> None:
+        """Permite migrar una instancia anterior a la fuente unica del contrato v3."""
+        contrato = self.proyecto / "configuracion_plantilla.json"
+        datos: object = json.loads(contrato.read_text(encoding="utf-8"))
+        self.assertIsInstance(datos, dict)
+        if not isinstance(datos, dict):
+            raise AssertionError("El contrato de prueba no es un objeto")
+        datos["version_contrato"] = 2
+        datos.pop("archivos_gestionados", None)
+        contrato.write_text(
+            json.dumps(datos, ensure_ascii=False, indent=2) + "\n",
+            encoding="utf-8",
+        )
+        rutas = cargar_rutas_gestionadas(self.proyecto)
+        self.assertEqual(
+            rutas,
+            [
+                "configuracion_plantilla.json",
+                "scripts/inicializar_proyecto.py",
+                "scripts/inicializar_proyecto.sh",
+                "scripts/verificar_memoria_proyecto.py",
+            ],
+        )
 
 
 if __name__ == "__main__":

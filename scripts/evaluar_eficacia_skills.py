@@ -193,6 +193,10 @@ def evaluar(skill: str, criterios: Criterios, ejecuciones: list[Ejecucion]) -> I
     ahorro = 1 - (con_skill["tokens_totales"] / control["tokens_totales"])
     diferencia = con_skill["tasa_eficacia"] - control["tasa_eficacia"]
     razones: list[str] = []
+    if control["tasa_eficacia"] < 1.0:
+        razones.append("El control no satisface el criterio de eficacia en todas sus ejecuciones")
+    if con_skill["tasa_eficacia"] < 1.0:
+        razones.append("La Skill no satisface el criterio de eficacia en todas sus ejecuciones")
     if diferencia < -criterios["margen_no_inferioridad"]:
         razones.append("La eficacia de la Skill es inferior al margen permitido")
     if ahorro < criterios["ahorro_minimo_tokens"]:

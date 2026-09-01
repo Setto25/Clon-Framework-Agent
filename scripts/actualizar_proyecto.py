@@ -21,7 +21,11 @@ from crear_proyecto import (
     normalizar_permisos_arbol,
     validar_arbol_sin_enlaces,
 )
-from estado_proyecto import RUTAS_GESTIONADAS_BASE, calcular_huellas_gestionadas, calcular_sha256
+from estado_proyecto import (
+    calcular_huellas_gestionadas,
+    calcular_sha256,
+    cargar_rutas_gestionadas,
+)
 
 
 PATRON_HUELLA = re.compile(r"^[0-9a-f]{64}$")
@@ -121,7 +125,7 @@ def preparar_fuente(raiz_framework: Path, instaladas: list[str], temporal: Path)
     seleccionadas = [cast(RegistroSkill, por_nombre[nombre]) for nombre in nombres]
     destino_skills = temporal / ".agents" / "skills"
     instalar_skills(raiz_skills, destino_skills, seleccionadas)
-    for relativa in RUTAS_GESTIONADAS_BASE:
+    for relativa in cargar_rutas_gestionadas(raiz_plantilla):
         origen = raiz_plantilla / Path(relativa)
         destino = temporal / Path(relativa)
         destino.parent.mkdir(parents=True, exist_ok=True)

@@ -3,12 +3,10 @@
 
 from __future__ import annotations
 
-import io
 import importlib.util
 import os
 import subprocess
 import sys
-import tarfile
 import tempfile
 import unittest
 from pathlib import Path
@@ -49,44 +47,9 @@ class PruebasInventarioSkills(unittest.TestCase):
             encoding="utf-8",
         )
 
-    def extraer_skills_versionadas(self, destino: Path) -> None:
-        """Extrae las Skills registradas en Git sin depender de la copia de trabajo."""
-        resultado = subprocess.run(
-            [
-                "git",
-                "-c",
-                f"safe.directory={RAIZ_FRAMEWORK.as_posix()}",
-                "archive",
-                "--format=tar",
-                "HEAD:plantilla/.agents/skills",
-            ],
-            cwd=RAIZ_FRAMEWORK,
-            check=False,
-            capture_output=True,
-        )
-        self.assertEqual(resultado.returncode, 0, resultado.stdout.decode("utf-8", errors="replace"))
-        with tarfile.open(fileobj=io.BytesIO(resultado.stdout), mode="r:") as archivo_tar:
-            for miembro in archivo_tar.getmembers():
-                ruta_destino = (destino / miembro.name).resolve()
-                self.assertTrue(
-                    ruta_destino.is_relative_to(destino.resolve()),
-                    f"Git archive contiene una ruta fuera del temporal: {miembro.name}",
-                )
-                if miembro.isdir():
-                    ruta_destino.mkdir(parents=True, exist_ok=True)
-                    continue
-                self.assertTrue(miembro.isfile(), f"Git archive contiene un tipo no admitido: {miembro.name}")
-                contenido = archivo_tar.extractfile(miembro)
-                self.assertIsNotNone(contenido, f"Git archive no entrego contenido: {miembro.name}")
-                ruta_destino.parent.mkdir(parents=True, exist_ok=True)
-                ruta_destino.write_bytes(contenido.read() if contenido is not None else b"")
-
     def test_inventario_registrado_esta_actualizado(self) -> None:
-        """Confirma que el contenido versionado coincida byte por byte con el registro."""
-        with tempfile.TemporaryDirectory(prefix="inventario-versionado-") as temporal:
-            raiz_temporal = Path(temporal)
-            self.extraer_skills_versionadas(raiz_temporal)
-            resultado = self.ejecutar_inventariador(raiz_temporal)
+        """Confirma que el contenido de trabajo coincida byte por byte con el registro."""
+        resultado = self.ejecutar_inventariador()
         self.assertEqual(resultado.returncode, 0, resultado.stdout + resultado.stderr)
         self.assertEqual(resultado.stdout, INVENTARIO_REGISTRADO.read_text(encoding="utf-8"))
 

@@ -90,6 +90,31 @@ class PruebasEvaluacionSkills(unittest.TestCase):
         self.assertEqual(resultado.returncode, 1)
         self.assertIn("mismos escenarios", resultado.stderr)
 
+    def test_rechaza_ahorro_si_ambas_variantes_fallan(self) -> None:
+        """Impide aprobar por igualdad cuando ambas tasas de eficacia son cero."""
+        experimento = self.crear_experimento()
+        experimento["ejecuciones"] = [
+            crear_ejecucion("control", 900, exito=False),
+            crear_ejecucion("skill", 300, exito=False),
+        ]
+        resultado = self.ejecutar(experimento)
+        self.assertEqual(resultado.returncode, 2, resultado.stdout + resultado.stderr)
+        informe = json.loads(resultado.stdout)
+        self.assertFalse(informe["aprobada"])
+        self.assertIn("El control no satisface", resultado.stdout)
+        self.assertIn("La Skill no satisface", resultado.stdout)
+
+    def test_rechaza_si_control_falla_aunque_skill_apruebe(self) -> None:
+        """Exige una linea base valida antes de atribuir una mejora al tratamiento."""
+        experimento = self.crear_experimento()
+        experimento["ejecuciones"] = [
+            crear_ejecucion("control", 900, exito=False),
+            crear_ejecucion("skill", 300),
+        ]
+        resultado = self.ejecutar(experimento)
+        self.assertEqual(resultado.returncode, 2, resultado.stdout + resultado.stderr)
+        self.assertIn("El control no satisface", resultado.stdout)
+
 
 if __name__ == "__main__":
     unittest.main()

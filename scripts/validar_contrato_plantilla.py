@@ -27,12 +27,13 @@ class ConfiguracionPlantilla(TypedDict):
     sintaxis_placeholder: str
     rutas_excluidas: list[str]
     archivos_incluidos: list[str]
+    archivos_gestionados: list[str]
     placeholders: dict[str, CampoPlaceholder]
 
 
 PATRON_PLACEHOLDER = re.compile(r"\{\{([A-Z0-9_]+)\}\}")
 PATRON_VERSION_FRAMEWORK = re.compile(r"^[0-9]+\.[0-9]+\.[0-9]+(?:-[0-9A-Za-z.-]+)?$")
-VERSION_CONTRATO_SOPORTADA = 2
+VERSION_CONTRATO_SOPORTADA = 3
 SINTAXIS_PLACEHOLDER_SOPORTADA = "{{CLAVE}}"
 ORIGENES_PERMITIDOS: frozenset[str] = frozenset({"usuario", "derivado", "predeterminado"})
 CLAVES_CONTRATO: frozenset[str] = frozenset(
@@ -42,6 +43,7 @@ CLAVES_CONTRATO: frozenset[str] = frozenset(
         "sintaxis_placeholder",
         "rutas_excluidas",
         "archivos_incluidos",
+        "archivos_gestionados",
         "placeholders",
     }
 )
@@ -171,12 +173,22 @@ def cargar_configuracion(ruta: Path) -> ConfiguracionPlantilla:
         exigir_lista_cadenas(datos.get("archivos_incluidos"), "archivos_incluidos"),
         "archivos_incluidos",
     )
+    archivos_gestionados = validar_rutas_contrato(
+        exigir_lista_cadenas(datos.get("archivos_gestionados"), "archivos_gestionados"),
+        "archivos_gestionados",
+    )
+    if any(
+        any(caracter in ruta for caracter in "*?[]")
+        for ruta in archivos_gestionados
+    ):
+        raise ValueError("archivos_gestionados solo admite rutas exactas")
     return ConfiguracionPlantilla(
         version_contrato=version,
         version_framework=version_framework,
         sintaxis_placeholder=sintaxis,
         rutas_excluidas=rutas_excluidas,
         archivos_incluidos=archivos_incluidos,
+        archivos_gestionados=archivos_gestionados,
         placeholders=campos,
     )
 
@@ -217,6 +229,14 @@ def validar(raiz_repositorio: Path) -> list[str]:
     encontrados = set(usos)
 
     errores: list[str] = []
+    gestionados, gestionados_faltantes = resolver_archivos(
+        raiz_plantilla,
+        configuracion["archivos_gestionados"],
+    )
+    errores.extend(
+        f"El archivo gestionado no existe: {patron}"
+        for patron in gestionados_faltantes
+    )
     errores.extend(f"El patron no encontro archivos: {patron}" for patron in patrones_faltantes)
     errores.extend(
         f"Placeholder no declarado: {clave} ({', '.join(str(ruta.relative_to(raiz_repositorio)) for ruta in usos[clave])})"

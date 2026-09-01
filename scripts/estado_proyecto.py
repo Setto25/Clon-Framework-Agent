@@ -4,15 +4,45 @@
 from __future__ import annotations
 
 import hashlib
-from pathlib import Path
+import json
+from pathlib import Path, PurePosixPath
+from typing import cast
 
 
-RUTAS_GESTIONADAS_BASE: tuple[str, ...] = (
+RUTAS_GESTIONADAS_CONTRATO_V2: tuple[str, ...] = (
     "configuracion_plantilla.json",
     "scripts/inicializar_proyecto.py",
     "scripts/inicializar_proyecto.sh",
     "scripts/verificar_memoria_proyecto.py",
 )
+
+
+def cargar_rutas_gestionadas(raiz: Path) -> list[str]:
+    """Carga las rutas administradas desde el contrato unico del proyecto."""
+    ruta_contrato = raiz / "configuracion_plantilla.json"
+    datos: object = json.loads(ruta_contrato.read_text(encoding="utf-8"))
+    if not isinstance(datos, dict):
+        raise ValueError("configuracion_plantilla.json debe contener un objeto")
+    contrato = cast(dict[str, object], datos)
+    rutas = contrato.get("archivos_gestionados")
+    if rutas is None and contrato.get("version_contrato") == 2:
+        return list(RUTAS_GESTIONADAS_CONTRATO_V2)
+    if not isinstance(rutas, list) or not all(isinstance(ruta, str) for ruta in rutas):
+        raise ValueError("archivos_gestionados debe ser una lista de cadenas")
+    rutas_tipeadas = cast(list[str], rutas)
+    if not rutas_tipeadas or len(rutas_tipeadas) != len(set(rutas_tipeadas)):
+        raise ValueError("archivos_gestionados debe contener rutas unicas")
+    for relativa in rutas_tipeadas:
+        ruta_pura = PurePosixPath(relativa)
+        if (
+            not relativa
+            or "\\" in relativa
+            or ruta_pura.is_absolute()
+            or ".." in ruta_pura.parts
+            or any(caracter in relativa for caracter in "*?[]")
+        ):
+            raise ValueError(f"Ruta administrada no portable o insegura: {relativa}")
+    return rutas_tipeadas
 
 
 def calcular_sha256(ruta: Path) -> str:
@@ -26,7 +56,7 @@ def descubrir_archivos_gestionados(raiz: Path) -> list[Path]:
     raiz_skills = raiz / ".agents" / "skills"
     if raiz_skills.is_dir():
         archivos.update(archivo for archivo in raiz_skills.rglob("*") if archivo.is_file())
-    for relativa in RUTAS_GESTIONADAS_BASE:
+    for relativa in cargar_rutas_gestionadas(raiz):
         ruta = raiz / Path(relativa)
         if ruta.is_file():
             archivos.add(ruta)

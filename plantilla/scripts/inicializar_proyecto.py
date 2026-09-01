@@ -35,13 +35,14 @@ class ContratoPlantilla(TypedDict):
     sintaxis_placeholder: str
     rutas_excluidas: list[str]
     archivos_incluidos: list[str]
+    archivos_gestionados: list[str]
     placeholders: dict[str, CampoPlaceholder]
 
 
 PATRON_PLACEHOLDER = re.compile(r"\{\{([A-Z0-9_]+)\}\}")
 PATRON_NOMBRE_SKILL = re.compile(r"^name:\s*(.+?)\s*$", re.MULTILINE)
 PATRON_VERSION_FRAMEWORK = re.compile(r"^[0-9]+\.[0-9]+\.[0-9]+(?:-[0-9A-Za-z.-]+)?$")
-VERSION_CONTRATO_SOPORTADA = 2
+VERSION_CONTRATO_SOPORTADA = 3
 SINTAXIS_PLACEHOLDER_SOPORTADA = "{{CLAVE}}"
 ORIGENES_PERMITIDOS: frozenset[str] = frozenset({"usuario", "derivado", "predeterminado"})
 CLAVES_CONTRATO: frozenset[str] = frozenset(
@@ -51,6 +52,7 @@ CLAVES_CONTRATO: frozenset[str] = frozenset(
         "sintaxis_placeholder",
         "rutas_excluidas",
         "archivos_incluidos",
+        "archivos_gestionados",
         "placeholders",
     }
 )
@@ -79,20 +81,15 @@ NOMBRES_ARTEFACTOS_GENERADOS: frozenset[str] = frozenset(
 SUFIJOS_ARTEFACTOS_GENERADOS: tuple[str, ...] = (".pyc", ".pyo")
 MAXIMO_BYTES_JSON = 1024 * 1024
 MAXIMO_CARACTERES_VALOR = 100_000
-RUTAS_GESTIONADAS_BASE: tuple[str, ...] = (
-    "configuracion_plantilla.json",
-    "scripts/inicializar_proyecto.py",
-    "scripts/inicializar_proyecto.sh",
-    "scripts/verificar_memoria_proyecto.py",
-)
-
-
-def calcular_huellas_gestionadas(raiz: Path) -> dict[str, str]:
+def calcular_huellas_gestionadas(
+    raiz: Path,
+    rutas_gestionadas: list[str],
+) -> dict[str, str]:
     """Registra Skills y scripts que futuras actualizaciones pueden reemplazar."""
     archivos: set[Path] = set()
     raiz_skills = raiz / ".agents" / "skills"
     archivos.update(archivo for archivo in raiz_skills.rglob("*") if archivo.is_file())
-    for relativa in RUTAS_GESTIONADAS_BASE:
+    for relativa in rutas_gestionadas:
         ruta = raiz / Path(relativa)
         if ruta.is_file():
             archivos.add(ruta)
@@ -336,12 +333,32 @@ def cargar_contrato(ruta: Path) -> ContratoPlantilla:
         exigir_lista_cadenas(datos.get("archivos_incluidos"), "archivos_incluidos"),
         "archivos_incluidos",
     )
+    archivos_gestionados = validar_rutas_contrato(
+        exigir_lista_cadenas(datos.get("archivos_gestionados"), "archivos_gestionados"),
+        "archivos_gestionados",
+    )
+    if any(
+        any(caracter in relativa for caracter in "*?[]")
+        for relativa in archivos_gestionados
+    ):
+        raise ValueError("archivos_gestionados solo admite rutas exactas")
+    faltantes_gestionados = [
+        relativa
+        for relativa in archivos_gestionados
+        if not (ruta.parent / Path(relativa)).is_file()
+    ]
+    if faltantes_gestionados:
+        raise ValueError(
+            "archivos_gestionados contiene rutas inexistentes: "
+            + ", ".join(faltantes_gestionados)
+        )
     return ContratoPlantilla(
         version_contrato=version_contrato,
         version_framework=version_framework,
         sintaxis_placeholder=sintaxis,
         rutas_excluidas=rutas_excluidas,
         archivos_incluidos=archivos_incluidos,
+        archivos_gestionados=archivos_gestionados,
         placeholders=campos,
     )
 
@@ -810,7 +827,10 @@ def main() -> int:
             "pendientes": pendientes,
             "skills_instaladas": skills_instaladas,
             "politica_skills": politica_skills,
-            "huellas_gestionadas": calcular_huellas_gestionadas(raiz),
+            "huellas_gestionadas": calcular_huellas_gestionadas(
+                raiz,
+                contrato["archivos_gestionados"],
+            ),
         }
         aplicar_transaccion(
             raiz,

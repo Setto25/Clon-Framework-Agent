@@ -1,7 +1,7 @@
 {
   "version_inventario": 2,
   "raiz": "plantilla/.agents/skills",
-  "huella_conjunto_sha256": "4f4bcf88394f6bcc84c007a25a8ebc2cfeb0f21df53bd3ca52d34ebff60f8aff",
+  "huella_conjunto_sha256": "01e69f635b46e6174e4af2e416ac060417a1f3903d69376bf2aee37a3879c792",
   "resumen": {
     "archivos": 39,
     "skills": 22,
@@ -46,8 +46,8 @@
     },
     {
       "ruta": "optimizar-contexto/SKILL.md",
-      "bytes": 2238,
-      "sha256": "e1acb88410721057a37c8a5d3211688bbfd8ddc2ae6b35cf41628645dd5708e8",
+      "bytes": 3560,
+      "sha256": "3eb2ea1367be6f2b0199a1cc8aad611b190aa8b7961d965cbca0e2e9c55f3694",
       "nombre": "optimizar-contexto"
     },
     {
