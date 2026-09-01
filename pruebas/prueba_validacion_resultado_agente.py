@@ -68,6 +68,17 @@ class PruebasValidacionResultadoAgente(unittest.TestCase):
         self.assertIsNotNone(objeto)
         self.assertEqual(fallos, [])
 
+    def test_aprueba_una_raiz_sin_canonizar(self) -> None:
+        """Mantiene la comprobacion cuando la raiz contiene segmentos redundantes."""
+        subdirectorio = self.raiz / "subdirectorio"
+        subdirectorio.mkdir()
+        raiz_sin_canonizar = subdirectorio / ".."
+        objeto, fallos = evaluar_auditoria(
+            self.crear_respuesta(), raiz_sin_canonizar, self.rutas
+        )
+        self.assertIsNotNone(objeto)
+        self.assertEqual(fallos, [])
+
     def test_rechaza_ruta_inventada(self) -> None:
         """Rechaza una ruta aunque la respuesta conserve un JSON valido."""
         datos = json.loads(self.crear_respuesta())

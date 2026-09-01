@@ -6,6 +6,7 @@ from __future__ import annotations
 import json
 import re
 from pathlib import Path
+from typing import Optional
 
 
 PATRON_RUTA_COMANDO = re.compile(
@@ -70,13 +71,21 @@ def normalizar_ruta(valor: str) -> str:
     return valor.strip().strip("`'\"").replace("\\", "/").removeprefix("./")
 
 
-def ruta_regular_existe(raiz: Path, ruta_relativa: str) -> bool:
-    """Comprueba una ruta regular confinada a la raiz del repositorio."""
+def resolver_ruta_regular(raiz: Path, ruta_relativa: str) -> Optional[Path]:
+    """Resuelve una ruta regular confinada a la raiz canonica del repositorio."""
     ruta = Path(ruta_relativa)
     if ruta.is_absolute() or ".." in ruta.parts:
-        return False
-    resuelta = (raiz / ruta).resolve()
-    return (raiz == resuelta or raiz in resuelta.parents) and resuelta.is_file()
+        return None
+    raiz_resuelta = raiz.resolve()
+    resuelta = (raiz_resuelta / ruta).resolve()
+    if raiz_resuelta != resuelta and raiz_resuelta not in resuelta.parents:
+        return None
+    return resuelta if resuelta.is_file() else None
+
+
+def ruta_regular_existe(raiz: Path, ruta_relativa: str) -> bool:
+    """Comprueba una ruta regular confinada a la raiz del repositorio."""
+    return resolver_ruta_regular(raiz, ruta_relativa) is not None
 
 
 def validar_coleccion_rutas(
@@ -112,9 +121,12 @@ def validar_coleccion_rutas(
             patron = elemento.get("patron")
             if not isinstance(patron, str) or not patron.strip() or len(patron) > 160:
                 fallos.append(f"{nombre}[{indice}] no declara un patron literal valido")
-            elif ruta_regular_existe(raiz, ruta):
+            else:
+                archivo = resolver_ruta_regular(raiz, ruta)
+                if archivo is None:
+                    continue
                 try:
-                    contenido = (raiz / ruta).read_text(encoding="utf-8")
+                    contenido = archivo.read_text(encoding="utf-8")
                 except (OSError, UnicodeError):
                     fallos.append(f"No se pudo comprobar el patron en: {ruta}")
                 else:

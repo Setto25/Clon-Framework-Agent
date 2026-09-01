@@ -1,8 +1,8 @@
 # Estado del proyecto: agent-framework
 
-**Ultima actualizacion:** 2026-09-01 (rev 74)
-**Estado general:** framework reproducible con 22 Skills, evaluacion de eficacia pareada con Gemini o Anthropic, actualizacion transaccional y CI frontend localmente verificadas
-**Fase activa:** Fase 7 — cierre de validacion local y preparacion de CI
+**Ultima actualizacion:** 2026-09-01 (rev 75)
+**Estado general:** framework reproducible con 22 Skills, evaluacion de eficacia pareada con Gemini o Anthropic, actualizacion transaccional y cierre local verificable en Windows y Linux
+**Fase activa:** Fase 7 — correccion de portabilidad y validacion en CI remota
 
 ## 1. Objetivo
 
@@ -110,6 +110,7 @@ Cada stack tiene LEEME.md con reglas adicionales, terminos tecnicos y procedimie
 - **Revision 72 de compatibilidad Anthropic.** El SDK `anthropic` 1.2.0 retiro `temperature` de `Messages.create`. El adaptador dejo de enviarlo y una prueba simulada comprueba que la solicitud conserve solo parametros admitidos. La CLI, la compilacion y las dos pruebas del adaptador aprobaron sin consumir API.
 - **Revision 73 de calibracion Sonnet.** El primer par Anthropic mostro un ahorro aparente de 39,46 % y redujo las solicitudes de herramientas de 24 a 18, pero ambas variantes quedaron rechazadas porque sus dos intentos terminaron con JSON incompleto cerca de 5.500 caracteres. El adaptador eleva el limite de salida de 2.000 a 6.000 tokens, registra `stop_reason`, evita aplicar la rubrica a un corte, permite una reparacion compacta y ejecuta como maximo cuatro lecturas adicionales. El resultado anterior no demuestra ineficacia de la Skill y no se reutiliza al reanudar. Las 22 pruebas focalizadas aprobaron; la suite completa aprobo 75 de 76 y conserva unicamente el bloqueo conocido del inventario contra `HEAD`.
 - **Revision 74 de cierre automatico.** El contrato v3 centraliza los archivos administrados e incorpora `generar_indice_contexto.py`; las pruebas cubren creacion, huella, incorporacion en actualizaciones, conflicto con contenido local y migracion desde contrato v2. El inventario se contrasta con la copia de trabajo para poder validar antes del commit. Se elimina el adaptador OpenAI-compatible descartado y se agrega una puerta unica exigida por AGENTS.md y CI. `validar_cierre_cambio.py` aprobo contrato, referencias, formato y las 82 pruebas locales. La medicion Opus de una repeticion aprobo la rubrica con 27,27 % de ahorro, pero se conserva como evidencia preliminar hasta medir variabilidad y otros tipos de tarea.
+- **Revision 75 de portabilidad de la rubrica.** La primera CI de `0.2.0-alpha.13` detecto que `validar_resultado_agente.py` comparaba en Windows una raiz sin canonizar con archivos ya resueltos, por lo que rechazaba evidencia existente y ocultaba la comprobacion del patron literal. La rubrica ahora confina y lee mediante la misma ruta canonica. Una regresion reproduce el caso con segmentos redundantes; el cierre comprende 83 pruebas.
 
 ## 5. Que falta
 
@@ -124,4 +125,4 @@ Cada stack tiene LEEME.md con reglas adicionales, terminos tecnicos y procedimie
 
 ## 6. Siguiente paso logico
 
-Ejecutar `validar_cierre_cambio.py`, incluir los cambios en Git y aprobar la CI remota de `0.2.0-alpha.13`. Despues, realizar al menos tres pares con Opus en el escenario transversal y agregar escenarios simple, de implementacion y arquitectonico antes de confirmar el beneficio general de `optimizar-contexto`; cualquier redistribucion sigue condicionada por la procedencia de `mobile-flutter`.
+Publicar la correccion de portabilidad y aprobar la CI remota de `0.2.0-alpha.13`. Despues, proteger `main`, realizar al menos tres pares con Opus en el escenario transversal y agregar escenarios simple, de implementacion y arquitectonico antes de confirmar el beneficio general de `optimizar-contexto`; cualquier redistribucion sigue condicionada por la procedencia de `mobile-flutter`.
