@@ -6,6 +6,8 @@ Extraido inicialmente del proyecto entrevoces. El creador y los verificadores ti
 
 > **Estado de Skills:** las 23 Skills permanecen en el catalogo fuente y fueron revisadas estructuralmente. Un proyecto nuevo recibe `cerrar-modulo`, `lecciones-aprendidas`, `optimizar-contexto`, `probar-e2e` y las Skills adicionales confirmadas mediante `--skill`. Su procedencia sigue incompleta, por lo que no se recomienda redistribuirlas.
 
+> **Plan activo:** [`PLAN_DESARROLLO_SERVIDORES_MCP.md`](PLAN_DESARROLLO_SERVIDORES_MCP.md) define la incorporacion futura de `desarrollar-servidores-mcp`: una Skill agnostica del agente, remota desde el inicio, portable entre proveedores y preparada para autenticacion reemplazable. La Skill aun no forma parte de las 23 disponibles.
+
 ---
 
 ## Guia rapida
