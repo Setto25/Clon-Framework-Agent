@@ -276,6 +276,7 @@ class PruebasCreacionProyecto(unittest.TestCase):
             "seguridad-backend",
             "evaluar-agente",
             "delegar-entre-agentes",
+            "desarrollar-servidores-mcp",
         }
         resultado = ejecutar(
             [
@@ -293,6 +294,8 @@ class PruebasCreacionProyecto(unittest.TestCase):
                 "evaluar-agente",
                 "--skill",
                 "delegar-entre-agentes",
+                "--skill",
+                "desarrollar-servidores-mcp",
             ]
         )
         self.assertEqual(resultado.returncode, 0, resultado.stdout + resultado.stderr)
@@ -313,9 +316,21 @@ class PruebasCreacionProyecto(unittest.TestCase):
         self.assertFalse(
             (destino / ".agents" / "skills" / "stacks" / "frontend-nextjs").exists()
         )
+        referencia_mcp = (
+            destino
+            / ".agents"
+            / "skills"
+            / "stacks"
+            / "ia-llm"
+            / "skills"
+            / "desarrollar-servidores-mcp"
+            / "referencias"
+            / "arquitectura_servidor.md"
+        )
+        self.assertTrue(referencia_mcp.is_file())
 
     def test_agrega_skill_confirmada_a_proyecto_inicializado(self) -> None:
-        """Confirma la instalacion posterior sin reinicializar la instancia."""
+        """Confirma la instalacion posterior de una Skill con referencias."""
         destino = self.crear_completo("proyecto-con-skill-agregada")
         resultado = ejecutar(
             [
@@ -323,21 +338,21 @@ class PruebasCreacionProyecto(unittest.TestCase):
                 str(AGREGADOR_SKILLS),
                 str(destino),
                 "--skill",
-                "seguridad-backend",
+                "desarrollar-servidores-mcp",
             ]
         )
         self.assertEqual(resultado.returncode, 0, resultado.stdout + resultado.stderr)
         skills_origen = descubrir_skills(SKILLS_ORIGEN)
         skills_destino = descubrir_skills(destino / ".agents" / "skills")
-        self.assertEqual(set(skills_destino), CORE_AUTOMATICO | {"seguridad-backend"})
+        self.assertEqual(set(skills_destino), CORE_AUTOMATICO | {"desarrollar-servidores-mcp"})
         self.assertEqual(
-            calcular_huellas(skills_origen["seguridad-backend"]),
-            calcular_huellas(skills_destino["seguridad-backend"]),
+            calcular_huellas(skills_origen["desarrollar-servidores-mcp"]),
+            calcular_huellas(skills_destino["desarrollar-servidores-mcp"]),
         )
-        adaptador = destino / ".claude" / "skills" / "seguridad-backend" / "SKILL.md"
+        adaptador = destino / ".claude" / "skills" / "desarrollar-servidores-mcp" / "SKILL.md"
         self.assertTrue(adaptador.is_file())
         self.assertIn(
-            "../../../.agents/skills/seguridad-backend/SKILL.md",
+            "../../../.agents/skills/stacks/ia-llm/skills/desarrollar-servidores-mcp/SKILL.md",
             adaptador.read_text(encoding="utf-8"),
         )
         estado: object = json.loads((destino / ".estado-plantilla.json").read_text(encoding="utf-8"))

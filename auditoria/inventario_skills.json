@@ -1,11 +1,11 @@
 {
   "version_inventario": 2,
   "raiz": "plantilla/.agents/skills",
-  "huella_conjunto_sha256": "6bfb040f58c0ba6297304676d68775f72925f27015139cb06b986762b5051a82",
+  "huella_conjunto_sha256": "3fbb0c0df50e1fd49ff3e0cda46d582fedb55153164b483970ec492684ce568c",
   "resumen": {
-    "archivos": 42,
-    "skills": 23,
-    "declaraciones_procedencia": 1
+    "archivos": 48,
+    "skills": 24,
+    "declaraciones_procedencia": 2
   },
   "skills": [
     {
@@ -109,6 +109,12 @@
       "bytes": 4889,
       "sha256": "a419171df5724ef8c7a5a1b59e4b9c695f5b5d2e7401b062e0d9b8f3d44eb2d0",
       "nombre": "agentes-multiagent"
+    },
+    {
+      "ruta": "stacks/ia-llm/skills/desarrollar-servidores-mcp/SKILL.md",
+      "bytes": 5318,
+      "sha256": "e995ab8ddb47687b02bb9bda9632864bca1706c4440127025da11b7c66c2538a",
+      "nombre": "desarrollar-servidores-mcp"
     },
     {
       "ruta": "stacks/ia-llm/skills/fine-tuning-llm/SKILL.md",
@@ -235,8 +241,33 @@
     },
     {
       "ruta": "stacks/ia-llm/LEEME.md",
-      "bytes": 4010,
-      "sha256": "ed4d0ac9607b61706ba7131965e3f1d0ec51f21ed3d17f9fce61550c6568be05"
+      "bytes": 4904,
+      "sha256": "61936dd095a5c90e21e5e09f0b6224c9a6c4ea02aa5e027fbfc3620e90bc6811"
+    },
+    {
+      "ruta": "stacks/ia-llm/skills/desarrollar-servidores-mcp/referencias/arquitectura_servidor.md",
+      "bytes": 3024,
+      "sha256": "947ba57919061417789d1e4135230f00e6e52ad82c5aac64a7fd0cda9502d0c4"
+    },
+    {
+      "ruta": "stacks/ia-llm/skills/desarrollar-servidores-mcp/referencias/despliegue_portable.md",
+      "bytes": 2688,
+      "sha256": "01e5e66aa09726ac4893de8728583fdb6c08a2478f3faa71bea5ff00625cb082"
+    },
+    {
+      "ruta": "stacks/ia-llm/skills/desarrollar-servidores-mcp/referencias/diseno_herramientas.md",
+      "bytes": 2814,
+      "sha256": "8629b142c583e65d26e79bfca9fd04f5e95eacd7afac1cc1ce25b7fb91c630a4"
+    },
+    {
+      "ruta": "stacks/ia-llm/skills/desarrollar-servidores-mcp/referencias/pruebas_interoperabilidad.md",
+      "bytes": 2661,
+      "sha256": "ce40cfd1f85aede9e2a5f21d27119b59d673cf0582429a1841266f1047150f7f"
+    },
+    {
+      "ruta": "stacks/ia-llm/skills/desarrollar-servidores-mcp/referencias/seguridad_autenticacion.md",
+      "bytes": 2984,
+      "sha256": "cdf51b6d1cff7ca88f2e4377328016ac733f697d4b1981af845ba4106cf985a4"
     },
     {
       "ruta": "stacks/mobile-flutter/LEEME.md",
@@ -245,6 +276,11 @@
     }
   ],
   "declaraciones_procedencia": [
+    {
+      "ruta": "stacks/ia-llm/LEEME.md",
+      "linea": 96,
+      "texto": "No se mueven carpetas manualmente. Este `LEEME.md` no implica que `fine-tuning-llm` u otra Skill hermana este instalada. `desarrollar-servidores-mcp` es contenido original del framework basado en fuentes primarias del protocolo y plataformas; su procedencia se registra en `ATRIBUCIONES.md`."
+    },
     {
       "ruta": "stacks/mobile-flutter/LEEME.md",
       "linea": 5,

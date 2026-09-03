@@ -1,6 +1,6 @@
 # Plan de desarrollo: Skill para servidores MCP remotos
 
-**Estado:** aprobado para implementacion
+**Estado:** en implementacion; Hitos 0 a 3 completados localmente, piloto pendiente
 
 **Linea base:** `3a58064`
 
@@ -9,6 +9,8 @@
 **Skill objetivo:** `desarrollar-servidores-mcp`
 
 **Ubicacion prevista:** `plantilla/.agents/skills/stacks/ia-llm/skills/desarrollar-servidores-mcp/`
+
+**Progreso al 2026-09-03:** la revision vigente del protocolo se fijo en MCP 2026-07-28; la Skill canonica, sus cinco referencias, catalogo, atribuciones, inventario y regresiones deterministas ya fueron incorporados. El SDK se fijara junto con el fixture del Hito 4 para no introducir una dependencia sin un piloto ejecutable. No se ha creado ni desplegado ningun recurso cloud.
 
 ## 1. Proposito
 
@@ -168,7 +170,7 @@ Estructura prevista:
 ```text
 desarrollar-servidores-mcp/
 ├── SKILL.md
-└── references/
+└── referencias/
     ├── arquitectura_servidor.md
     ├── diseno_herramientas.md
     ├── seguridad_autenticacion.md
@@ -578,9 +580,10 @@ Los commits 4 y 5 podran dividirse si la validacion externa requiere aprobacion 
 
 ## 18. Fuentes primarias de referencia
 
-- Especificacion MCP: <https://modelcontextprotocol.io/specification/>
-- Arquitectura MCP: <https://modelcontextprotocol.io/specification/2025-06-18/architecture>
-- Transportes MCP: <https://modelcontextprotocol.io/specification/2025-11-25/basic/transports>
+- Especificacion MCP vigente al ejecutar el Hito 0: <https://modelcontextprotocol.io/specification/2026-07-28>
+- Anuncio y cambios de MCP 2026-07-28: <https://blog.modelcontextprotocol.io/posts/2026-07-28/>
+- SDK oficial de Python: <https://py.sdk.modelcontextprotocol.io/get-started/>
+- Despliegue y escalamiento con el SDK oficial de Python: <https://py.sdk.modelcontextprotocol.io/run/deploy/>
 - Servidores MCP en Cloud Run: <https://docs.cloud.google.com/run/docs/host-mcp-servers>
 - Tutorial remoto de Cloud Run: <https://docs.cloud.google.com/run/docs/tutorials/deploy-remote-mcp-server>
 - Precios de Cloud Run: <https://cloud.google.com/run/pricing>

@@ -34,9 +34,9 @@ class PruebasCalidadSkills(unittest.TestCase):
         """Localiza los manifiestos distribuidos."""
         self.manifiestos = sorted(RAIZ_SKILLS.rglob("SKILL.md"))
 
-    def test_conserva_las_veintitres_skills(self) -> None:
+    def test_conserva_las_veinticuatro_skills(self) -> None:
         """Confirma que la mejora no elimine ninguna Skill inventariada."""
-        self.assertEqual(len(self.manifiestos), 23)
+        self.assertEqual(len(self.manifiestos), 24)
 
     def test_frontmatter_identifica_cada_carpeta(self) -> None:
         """Confirma nombre, descripcion y correspondencia con la carpeta."""
@@ -75,6 +75,29 @@ class PruebasCalidadSkills(unittest.TestCase):
         self.assertIn("indice autoritativo", manifiesto)
         self.assertIn("no listes ni reconfirmes", manifiesto)
         self.assertLess(len(manifiesto.encode("utf-8")), 3200)
+
+    def test_servidores_mcp_conservan_portabilidad_y_carga_progresiva(self) -> None:
+        """Comprueba recursos, fronteras reemplazables y limites de autoridad."""
+        raiz = RAIZ_SKILLS / "stacks" / "ia-llm" / "skills" / "desarrollar-servidores-mcp"
+        manifiesto = (raiz / "SKILL.md").read_text(encoding="utf-8")
+        referencias = {
+            "arquitectura_servidor.md",
+            "diseno_herramientas.md",
+            "seguridad_autenticacion.md",
+            "despliegue_portable.md",
+            "pruebas_interoperabilidad.md",
+        }
+        rutas = {ruta.name for ruta in (raiz / "referencias").glob("*.md")}
+        self.assertEqual(rutas, referencias)
+        for nombre in referencias:
+            with self.subTest(referencia=nombre):
+                self.assertIn(f"referencias/{nombre}", manifiesto)
+        self.assertIn("valores predeterminados reemplazables", manifiesto)
+        self.assertIn("Negociar la version MCP", manifiesto)
+        self.assertIn("autorizacion fuera del modelo", manifiesto)
+        self.assertIn("autorizacion explicita", manifiesto)
+        self.assertNotIn("Codex", manifiesto)
+        self.assertLess(len(manifiesto.encode("utf-8")), 6500)
 
 
 if __name__ == "__main__":

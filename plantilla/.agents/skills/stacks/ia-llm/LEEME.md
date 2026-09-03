@@ -5,7 +5,7 @@
 
 ## Que ofrece el catalogo fuente
 
-- Skills: `rag-local`, `fine-tuning-llm`, `agentes-multiagent`
+- Skills: `rag-local`, `fine-tuning-llm`, `agentes-multiagent`, `desarrollar-servidores-mcp`
 - Reglas adicionales de implementacion (ver abajo)
 - Terminos tecnicos del stack
 
@@ -19,7 +19,8 @@ stacks/ia-llm/
 ├── skills/
 │   ├── rag-local/              # Pipeline RAG: chunk, embed, store, retrieve, augment
 │   ├── fine-tuning-llm/        # Fine-tuning con LoRA/QLoRA: datos, config, entrenamiento, export
-│   └── agentes-multiagent/     # Agentes autonomos: ReAct, Plan-and-Execute, multi-agente
+│   ├── agentes-multiagent/     # Agentes autonomos: ReAct, Plan-and-Execute, multi-agente
+│   └── desarrollar-servidores-mcp/ # Servidores MCP interoperables, remotos y portables
 └── domain-packs/               # Extensiones futuras (ej: eval-llm, deployment-llm)
 ```
 
@@ -35,6 +36,7 @@ Estas reglas complementan la seccion "Forma de implementacion" del prompt base:
 - No enviar datos sensibles del usuario al LLM sin consentimiento explicito.
 - Usar embeddings locales (sentence-transformers, Ollama) para desarrollo. Embeddings remotos (OpenAI, Cohere) solo si el caso de uso lo justifica.
 - Mantener el vector store como dependencia inyectable — no acoplar la logica de retrieval a un proveedor especifico.
+- Mantener el dominio de un servidor MCP separado del SDK, transporte, autenticacion y proveedor cloud. Las opciones predeterminadas de despliegue deben poder sustituirse sin cambiar sus capacidades.
 
 ## Terminos tecnicos del stack
 
@@ -59,6 +61,9 @@ Estos terminos se conservan en ingles dentro de proyectos que activen este stack
 | `context window` | `ventana_de_contexto` | Limite de tokens |
 | `temperature` | — | Parametro de generacion |
 | `top-k` / `top-p` | — | Parametros de sampling |
+| `MCP` | — | Model Context Protocol |
+| `Streamable HTTP` | — | Transporte remoto de MCP |
+| `tool` / `resource` / `prompt` | — | Primitivas publicadas por un servidor MCP |
 
 ## Adaptacion al idioma del proyecto
 
@@ -82,4 +87,10 @@ Desde la raiz de `agent-framework`, cada Skill se confirma por separado al crear
 python scripts\crear_proyecto.py <DESTINO> "<NOMBRE>" --configuracion <CONFIGURACION> --skill rag-local --skill agentes-multiagent
 ```
 
-No se mueven carpetas manualmente. Este `LEEME.md` no implica que `fine-tuning-llm` u otra Skill hermana este instalada.
+Para desarrollar un servidor MCP sin instalar las otras Skills del stack:
+
+```powershell
+python scripts\crear_proyecto.py <DESTINO> "<NOMBRE>" --configuracion <CONFIGURACION> --skill desarrollar-servidores-mcp
+```
+
+No se mueven carpetas manualmente. Este `LEEME.md` no implica que `fine-tuning-llm` u otra Skill hermana este instalada. `desarrollar-servidores-mcp` es contenido original del framework basado en fuentes primarias del protocolo y plataformas; su procedencia se registra en `ATRIBUCIONES.md`.

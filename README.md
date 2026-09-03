@@ -4,9 +4,9 @@ Framework agentico reutilizable para crear proyectos con agentes de IA, memoria 
 
 Extraido inicialmente del proyecto entrevoces. El creador y los verificadores tienen pruebas locales reproducibles, dos pilotos privados completados y una matriz de CI aprobada en Windows y Ubuntu con Python 3.9 y 3.12.
 
-> **Estado de Skills:** las 23 Skills permanecen en el catalogo fuente y fueron revisadas estructuralmente. Un proyecto nuevo recibe `cerrar-modulo`, `lecciones-aprendidas`, `optimizar-contexto`, `probar-e2e` y las Skills adicionales confirmadas mediante `--skill`. Su procedencia sigue incompleta, por lo que no se recomienda redistribuirlas.
+> **Estado de Skills:** las 24 Skills permanecen en el catalogo fuente y fueron revisadas estructuralmente. Un proyecto nuevo recibe `cerrar-modulo`, `lecciones-aprendidas`, `optimizar-contexto`, `probar-e2e` y las Skills adicionales confirmadas mediante `--skill`. Su procedencia sigue incompleta, por lo que no se recomienda redistribuirlas.
 
-> **Plan activo:** [`PLAN_DESARROLLO_SERVIDORES_MCP.md`](PLAN_DESARROLLO_SERVIDORES_MCP.md) define la incorporacion futura de `desarrollar-servidores-mcp`: una Skill agnostica del agente, remota desde el inicio, portable entre proveedores y preparada para autenticacion reemplazable. La Skill aun no forma parte de las 23 disponibles.
+> **Plan activo:** [`PLAN_DESARROLLO_SERVIDORES_MCP.md`](PLAN_DESARROLLO_SERVIDORES_MCP.md) dirige la incorporacion de `desarrollar-servidores-mcp`: una Skill agnostica del agente, remota desde el inicio, portable entre proveedores y preparada para autenticacion reemplazable. La Skill ya forma parte de las 24 disponibles; su piloto y despliegue remoto permanecen pendientes.
 
 ---
 
@@ -86,7 +86,7 @@ plantilla/
 │       │   ├── frontend-nextjs/
 │       │   │   └── skills/       → diseno-ui-web, nextjs-fullstack, typescript-react
 │       │   ├── ia-llm/
-│       │   │   └── skills/       → rag-local, fine-tuning-llm, agentes-multiagent
+│       │   │   └── skills/       → rag-local, fine-tuning-llm, agentes-multiagent, desarrollar-servidores-mcp
 │       │   └── mobile-flutter/
 │       │       └── skills/       → diseno-ui-flutter, flutter-state-management, performance, animations
 │       └── opcional/
@@ -409,7 +409,7 @@ Si no puede usarse el creador raiz, se puede copiar **todo** el contenido de `pl
 python scripts\inicializar_proyecto.py "Mi Proyecto" "español" --configuracion D:\PROYECTOS\configuracion-mi-proyecto.json
 ```
 
-Esta contingencia conserva las 23 Skills y no aplica seleccion. No se recomienda copiar carpetas sueltas ni omitir `AGENTS.md`, `CLAUDE.md`, `.agents`, `.gitignore`, `.gitattributes`, `.env.ejemplo`, `.plantilla-framework` o `configuracion_plantilla.json`: todos forman parte del contrato de la instancia.
+Esta contingencia conserva las 24 Skills y no aplica seleccion. No se recomienda copiar carpetas sueltas ni omitir `AGENTS.md`, `CLAUDE.md`, `.agents`, `.gitignore`, `.gitattributes`, `.env.ejemplo`, `.plantilla-framework` o `configuracion_plantilla.json`: todos forman parte del contrato de la instancia.
 
 El inicializador directo valida todos los reemplazos antes de escribir y ejecuta los cambios como una transaccion local. Si falla despues de crear Git, `.env`, estado o directorios auxiliares, restaura la copia y conserva el centinela para permitir un nuevo intento.
 
@@ -533,6 +533,7 @@ Estos archivos son los del **proyecto instanciado**, no los de `agent-framework/
 | ia-llm | `rag-local` | Pipeline RAG local: chunking, embeddings, vector store, retrieval, augmentation | Cuando el LLM necesita responder con documentos propios |
 | ia-llm | `fine-tuning-llm` | Fine-tuning con LoRA/QLoRA: preparacion de datos, entrenamiento, evaluacion, export | Al especializar un modelo en dominio o tarea especifica |
 | ia-llm | `agentes-multiagent` | Agentes autonomos y multi-agente: ReAct, Plan-and-Execute, tool-use, guardrails | Al implementar agente con herramientas o coordinar multiples agentes |
+| ia-llm | `desarrollar-servidores-mcp` | Servidores MCP interoperables: contratos tipados, Streamable HTTP, seguridad, pruebas y despliegue portable | Al exponer capacidades propias para agentes o clientes MCP locales y remotos |
 | mobile-flutter | `flutter-state-management` | BLoC, Riverpod, Provider: criterio de seleccion, patrones con TDD | Al definir arquitectura de estado de una app Flutter |
 | mobile-flutter | `diseno-ui-flutter` | Sistema visual, temas dinamicos, movimiento y respuesta tactil nativa | Al definir o revisar una interfaz Flutter |
 | mobile-flutter | `flutter-performance` | Optimizacion: rebuilds innecesarios, listas, imagenes, memoria, profiling con DevTools | Cuando hay jank, uso excesivo de memoria, o antes de release |
@@ -576,7 +577,7 @@ Estos archivos son los del **proyecto instanciado**, no los de `agent-framework/
 | Flutter / Dart | mobile-flutter | diseno-ui-flutter, state-management, performance, animations |
 | Next.js 14+ / TypeScript / React | frontend-nextjs | diseno-ui-web, nextjs-fullstack, typescript-react |
 | ESP32 / MicroPython / Arduino IoT | firmware-esp32 | desarrollar-firmware, diagnosticar-hardware |
-| LLM / RAG / Fine-tuning / Multi-agente | ia-llm | rag-local, fine-tuning-llm, agentes-multiagent |
+| LLM / RAG / Fine-tuning / Multi-agente / MCP | ia-llm | rag-local, fine-tuning-llm, agentes-multiagent, desarrollar-servidores-mcp |
 
 ### Con reglas generales pero SIN skill dedicado
 
@@ -687,7 +688,10 @@ plantilla/
 │           │   ├── LEEME.md
 │           │   ├── skills/rag-local/SKILL.md
 │           │   ├── skills/fine-tuning-llm/SKILL.md
-│           │   └── skills/agentes-multiagent/SKILL.md
+│           │   ├── skills/agentes-multiagent/SKILL.md
+│           │   └── skills/desarrollar-servidores-mcp/
+│           │       ├── SKILL.md
+│           │       └── referencias/              ← arquitectura, herramientas, seguridad, despliegue y pruebas
 │           └── mobile-flutter/
 │               ├── LEEME.md
 │               ├── skills/diseno-ui-flutter/SKILL.md
@@ -740,7 +744,7 @@ Desde la raiz del meta-repositorio tambien existen:
 - `pruebas/prueba_evaluacion_desarrollo_web_anthropic.py`: contrato Sonnet simulado e indice autoritativo sin API;
 - `pruebas/prueba_validacion_resultado_agente.py`: rechazo determinista de rutas inventadas y comandos no comprobables;
 - `pruebas/prueba_inventario_skills.py`: control de vigencia del inventario de Skills;
-- `pruebas/prueba_calidad_skills.py`: invariantes estructurales y operativas de las 23 Skills;
+- `pruebas/prueba_calidad_skills.py`: invariantes estructurales y operativas de las 24 Skills;
 - `pruebas/prueba_catalogo_skills.py`: politica del core y coherencia entre el catalogo, el README y los LEEME de stacks;
 - `pruebas/prueba_compatibilidad_agentes.py`: referencias existentes y capacidades no presupuestas por agente;
 - `pruebas/prueba_compatibilidad_python.py`: gramatica Python 3.9 y coherencia de constantes duplicadas;

@@ -31,13 +31,13 @@ def cargar_modulo() -> ModuleType:
 class PruebasCatalogoSkills(unittest.TestCase):
     """Verifica descubrimiento, categorias y core automatico."""
 
-    def test_descubre_veintitres_nombres_unicos(self) -> None:
+    def test_descubre_veinticuatro_nombres_unicos(self) -> None:
         """Confirma que todo el almacen fuente permanezca disponible."""
         modulo = cargar_modulo()
         registros = cast(list[dict[str, object]], modulo.descubrir_skills(RAIZ_SKILLS))
         nombres = [cast(str, registro["nombre"]) for registro in registros]
-        self.assertEqual(len(nombres), 23)
-        self.assertEqual(len(set(nombres)), 23)
+        self.assertEqual(len(nombres), 24)
+        self.assertEqual(len(set(nombres)), 24)
 
     def test_define_el_core_automatico_exacto(self) -> None:
         """Impide ampliar silenciosamente las Skills instaladas por defecto."""
@@ -58,6 +58,8 @@ class PruebasCatalogoSkills(unittest.TestCase):
         self.assertFalse(por_nombre["seguridad-backend"]["automatica"])
         self.assertEqual(por_nombre["delegar-entre-agentes"]["categoria"], "opcional")
         self.assertIsNone(por_nombre["delegar-entre-agentes"]["stack"])
+        self.assertEqual(por_nombre["desarrollar-servidores-mcp"]["categoria"], "stack")
+        self.assertEqual(por_nombre["desarrollar-servidores-mcp"]["stack"], "ia-llm")
 
     def test_documentacion_refleja_el_catalogo_completo(self) -> None:
         """Impide que README y LEEME conserven cantidades o Skills obsoletas."""

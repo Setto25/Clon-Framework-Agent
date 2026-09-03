@@ -17,6 +17,7 @@ from scripts.estado_proyecto import cargar_rutas_gestionadas
 
 RAIZ_FRAMEWORK = Path(__file__).resolve().parent.parent
 CREADOR = RAIZ_FRAMEWORK / "scripts" / "crear_proyecto.py"
+AGREGADOR_SKILLS = RAIZ_FRAMEWORK / "scripts" / "agregar_skills.py"
 ACTUALIZADOR = RAIZ_FRAMEWORK / "scripts" / "actualizar_proyecto.py"
 CONFIGURACION = RAIZ_FRAMEWORK / "ejemplos" / "configuracion_proyecto.ejemplo.json"
 
@@ -111,6 +112,39 @@ class PruebasActualizacionProyecto(unittest.TestCase):
         archivo.write_text("cambio local", encoding="utf-8")
         estado_antes = (self.proyecto / ".estado-plantilla.json").read_bytes()
         resultado = ejecutar([sys.executable, str(ACTUALIZADOR), str(self.proyecto)])
+        self.assertEqual(resultado.returncode, 2, resultado.stdout + resultado.stderr)
+        self.assertIn("cambios locales", resultado.stdout)
+        self.assertEqual((self.proyecto / ".estado-plantilla.json").read_bytes(), estado_antes)
+        self.assertEqual(archivo.read_text(encoding="utf-8"), "cambio local")
+
+    def test_bloquea_referencia_mcp_modificada_localmente(self) -> None:
+        """Protege una referencia instalada antes de actualizar el framework."""
+        agregado = ejecutar(
+            [
+                sys.executable,
+                str(AGREGADOR_SKILLS),
+                str(self.proyecto),
+                "--skill",
+                "desarrollar-servidores-mcp",
+            ]
+        )
+        self.assertEqual(agregado.returncode, 0, agregado.stdout + agregado.stderr)
+        archivo = (
+            self.proyecto
+            / ".agents"
+            / "skills"
+            / "stacks"
+            / "ia-llm"
+            / "skills"
+            / "desarrollar-servidores-mcp"
+            / "referencias"
+            / "arquitectura_servidor.md"
+        )
+        archivo.write_text("cambio local", encoding="utf-8")
+        estado_antes = (self.proyecto / ".estado-plantilla.json").read_bytes()
+
+        resultado = ejecutar([sys.executable, str(ACTUALIZADOR), str(self.proyecto)])
+
         self.assertEqual(resultado.returncode, 2, resultado.stdout + resultado.stderr)
         self.assertIn("cambios locales", resultado.stdout)
         self.assertEqual((self.proyecto / ".estado-plantilla.json").read_bytes(), estado_antes)

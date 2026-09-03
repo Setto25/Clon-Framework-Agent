@@ -90,6 +90,10 @@ Un termino entra aqui si cumple AL MENOS DOS de estos:
 | `router` | `enrutador` | Backend, redes |
 | `fallback` | `respaldo` | Logica de error |
 | `log` / `logging` | `registro` (si es ambiguo) | Observabilidad |
+| `MCP`, `tool`, `resource`, `prompt` | Traducciones que alteren el contrato | Model Context Protocol |
+| `Streamable HTTP`, `JSON-RPC` | Traducciones del nombre protocolar | Transporte y mensajes MCP |
+| `OAuth`, `bearer` | Traducciones del esquema | Autenticacion y autorizacion |
+| `OCI`, `ASGI` | Traducciones de las siglas | Empaquetado y runtime de servidores |
 
 ### Regla de uso
 

@@ -1,6 +1,6 @@
 # Atribuciones y procedencia
 
-**Ultima revision:** 2026-08-31
+**Ultima revision:** 2026-09-03
 **Estado:** Auditoria focalizada completada; uso personal permitido y redistribucion bloqueada
 
 ## 1. Proposito
@@ -20,7 +20,7 @@ Este registro no reemplaza los avisos de licencia exigidos por cada fuente. Cuan
 
 ## 3. Inventario conocido
 
-El inventario mecanico reproducible vive en `auditoria/inventario_skills.json`. Registra los archivos auditados, los 22 manifiestos `SKILL.md`, sus tamaños, sus huellas SHA-256 y las declaraciones locales de procedencia detectadas. `scripts/inventariar_skills.py` lo regenera sin escribir dentro de `.agents/skills`, y la suite automatica exige coincidencia byte por byte.
+El inventario mecanico reproducible vive en `auditoria/inventario_skills.json`. Registra los archivos auditados, los 24 manifiestos `SKILL.md`, sus tamaños, sus huellas SHA-256 y las declaraciones locales de procedencia detectadas. `scripts/inventariar_skills.py` lo regenera sin escribir dentro de `.agents/skills`, y la suite automatica exige coincidencia byte por byte.
 
 | Grupo | Procedencia declarada | Estado de licencia | Tratamiento |
 |---|---|---|---|
@@ -32,6 +32,7 @@ El inventario mecanico reproducible vive en `auditoria/inventario_skills.json`. 
 | `delegar-entre-agentes` | Extraido del proyecto personal `entrevoces` | Pendiente de confirmar autoria exclusiva | Uso personal; no redistribuir hasta completar inventario |
 | `seguridad-backend` | Redaccion original para este framework; consulta OWASP ASVS 5.0.0, OWASP API Security Top 10 2023, OWASP REST Security Cheat Sheet y documentacion oficial de FastAPI | Contenido local original; fuentes usadas como criterio y enlazadas sin copiar texto normativo | Conservar enlaces, versiones y fecha de consulta; reevaluar cuando cambien los estandares |
 | `optimizar-contexto` | Redaccion original para este framework | Contenido local original, basado en lectura progresiva, salidas acotadas y conservacion de evidencia | Distribuible cuando la licencia raiz delimite el contenido original del framework |
+| `desarrollar-servidores-mcp` | Redaccion original para este framework; consulta la especificacion MCP 2026-07-28, el SDK oficial de Python y la documentacion oficial de Cloud Run | Contenido local original; las fuentes se usan como criterios tecnicos y se enlazan sin copiar sus manuales | Conservar revision y enlaces; reevaluar protocolo, SDK, autenticacion y plataforma antes de fijar versiones o desplegar |
 
 ## 4. Fuente externa identificada
 

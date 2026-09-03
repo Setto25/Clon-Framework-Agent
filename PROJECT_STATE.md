@@ -1,8 +1,8 @@
 # Estado del proyecto: agent-framework
 
-**Ultima actualizacion:** 2026-09-03 (rev 100)
-**Estado general:** framework reproducible con 23 Skills; plan aprobado para incorporar desarrollo de servidores MCP remotos
-**Fase activa:** Fase 8 — planificacion de la Skill para servidores MCP
+**Ultima actualizacion:** 2026-09-03 (rev 101)
+**Estado general:** framework reproducible con 24 Skills; desarrollo de servidores MCP integrado y piloto pendiente
+**Fase activa:** Fase 8 — implementacion y validacion de la Skill para servidores MCP
 
 ## 1. Objetivo
 
@@ -47,7 +47,7 @@ agent-framework/
 | `backend-fastapi` | fastapi-setup; seguridad-backend como core complementaria | Creado para el framework (uv, SQLAlchemy, Alembic, pytest, OWASP) |
 | `firmware-esp32` | desarrollar-firmware, diagnosticar-hardware | Extraido de entrevoces |
 | `frontend-nextjs` | diseno-ui-web, nextjs-fullstack, typescript-react | Creado para el framework |
-| `ia-llm` | rag-local, fine-tuning-llm, agentes-multiagent | Creado para el framework |
+| `ia-llm` | rag-local, fine-tuning-llm, agentes-multiagent, desarrollar-servidores-mcp | Creado para el framework |
 | `mobile-flutter` | diseno-ui-flutter, flutter-state-management, flutter-performance, flutter-animations | Base Flutter adaptada de spjoshis/claude-code-plugins (licencia pendiente de verificacion) |
 
 Cada stack tiene LEEME.md con reglas adicionales, terminos tecnicos y procedimiento de instalacion.
@@ -64,7 +64,7 @@ Cada stack tiene LEEME.md con reglas adicionales, terminos tecnicos y procedimie
 - **Higiene condicional sin promesa de ahorro.** `optimizar-contexto` no se activa por defecto en implementaciones acotadas, incluso si cruzan frontend y backend. Se reserva para auditoria, exploracion repetida, mas de diez rutas, dos ciclos fallidos, arquitectura o presion real de contexto. Conserva un estado compacto verificable y descarta evidencia obsoleta; un indice fresco solo se usa si la exploracion ya es necesaria y entonces sustituye el listado inicial. No permite omitir requisitos, seguridad, documentacion obligatoria ni pruebas necesarias.
 - **`delegar-entre-agentes` en opcional.** Formaliza traspasos entre agentes (Claude, Antigravity, Codex). Se instala con `--skill delegar-entre-agentes`.
 - **`protocolo-debugging` en opcional.** Exige evidencia reproducible y trazabilidad antes de corregir errores. Se instala con `--skill protocolo-debugging`.
-- **Desarrollo MCP cloud-first planificado.** `PLAN_DESARROLLO_SERVIDORES_MCP.md` define una futura Skill `desarrollar-servidores-mcp` dentro de `ia-llm`. El protocolo MCP sera la frontera estable; Streamable HTTP, contenedor OCI, Cloud Run, bearer y estado stateless seran valores predeterminados reemplazables. El nucleo no dependera de Codex ni de otro agente, y cualquier despliegue real exigira autorizacion explicita.
+- **Desarrollo MCP cloud-first integrado.** `desarrollar-servidores-mcp` pertenece a `ia-llm` y se instala individualmente. El protocolo MCP es la frontera estable; Streamable HTTP, contenedor OCI, Cloud Run, bearer y operacion sin sesion son valores predeterminados reemplazables. El nucleo no depende de Codex ni de otro agente, negocia la version MCP soportada y cualquier despliegue real exige autorizacion explicita.
 - **Coherencia documental obligatoria.** Todo cambio material debe actualizar `PROJECT_STATE.md`, `README.md`, los `LEEME.md` afectados, el inventario y las pruebas correspondientes en el mismo cambio.
 - **Recomendacion sin autorizacion implicita.** El agente puede proponer Skills, pero debe obtener confirmacion de nombres exactos antes de instalarlas.
 
@@ -141,6 +141,7 @@ Cada stack tiene LEEME.md con reglas adicionales, terminos tecnicos y procedimie
 - **Revision 98 de inventario para CI.** La ejecucion remota `Validacion #13` aprobo el fixture Next.js, pero las cuatro combinaciones Python rechazaron el inventario congelado de Skills porque no se habia regenerado despues de los cambios de alpha.15. Se ejecuto `inventariar_skills.py --salida auditoria/inventario_skills.json`; su prueba determinista aprobo localmente. Falta publicar la correccion y comprobar la nueva matriz remota.
 - **Revision 99 de CI remota alpha.15.** La correccion del inventario se publico en `cd00bf5` y `Validacion #14` aprobo en GitHub Actions: las cuatro combinaciones Python (Ubuntu y Windows, 3.9 y 3.12) y el fixture Next.js con Node 24 finalizaron correctamente. Alpha.15 queda validada por las pruebas de humo multiagente y la matriz remota; la siguiente medicion Gemini mantiene un alcance independiente.
 - **Revision 100 de planificacion MCP.** La linea base `3a58064` estaba sincronizada con su rama remota antes de iniciar el diseño. `PLAN_DESARROLLO_SERVIDORES_MCP.md` registra alcance, arquitectura desacoplada, divulgacion progresiva, perfiles de autenticacion, despliegue cloud-first, control de costos, hitos, matriz de impacto, pruebas y criterios de aceptacion para que cualquier agente pueda implementar la nueva Skill. El catalogo permanece en 23 Skills hasta que la implementacion y su piloto aprueben el cierre.
+- **Revision 101 de integracion MCP.** Se incorpora `desarrollar-servidores-mcp` al stack `ia-llm` con cinco referencias progresivas sobre arquitectura, capacidades, seguridad, despliegue portable e interoperabilidad. La Skill usa MCP 2026-07-28 como referencia vigente, conserva compatibilidad negociada, separa autenticacion de autorizacion y trata Streamable HTTP, Cloud Run, bearer y OCI como opciones reemplazables. El catalogo avanza a 24 Skills; creacion, adicion, wrappers Claude, referencias y proteccion de cambios locales quedan cubiertos por regresiones. `quick_validate.py` y 47 pruebas focalizadas aprobaron; el piloto ejecutable y cualquier despliegue cloud permanecen pendientes.
 
 ## 5. Que falta
 
@@ -155,4 +156,4 @@ Cada stack tiene LEEME.md con reglas adicionales, terminos tecnicos y procedimie
 
 ## 6. Siguiente paso logico
 
-El siguiente paso es ejecutar el Hito 0 de `PLAN_DESARROLLO_SERVIDORES_MCP.md` y luego incorporar la Skill canonica sin desplegar recursos cloud hasta recibir autorizacion explicita. La repeticion de la medicion Gemini 3.8 permanece como linea independiente pendiente. Alpha.15 ya aprobo la CI remota y las pruebas de humo reales en Codex, Cursor, Antigravity y Claude Code; la proteccion efectiva de `main` sigue condicionada por GitHub Team/Enterprise o por hacer publico el repositorio, y cualquier redistribucion continua condicionada por la procedencia de `mobile-flutter`.
+El siguiente paso es ejecutar el Hito 4 de `PLAN_DESARROLLO_SERVIDORES_MCP.md`: construir un piloto aislado con el SDK oficial de Python fijado, una Tool de lectura y otra mutable idempotente, y probar el mismo Streamable HTTP local que se empaquetara. No se desplegara ningun recurso cloud hasta recibir autorizacion explicita. La repeticion de la medicion Gemini 3.8 permanece como linea independiente pendiente; cualquier redistribucion continua condicionada por la procedencia de `mobile-flutter`.
