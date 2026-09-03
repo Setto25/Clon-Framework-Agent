@@ -1,6 +1,6 @@
 # Estado del proyecto: agent-framework
 
-**Ultima actualizacion:** 2026-09-03 (rev 97)
+**Ultima actualizacion:** 2026-09-03 (rev 98)
 **Estado general:** framework reproducible con 23 Skills; evaluacion de contexto disponible para Gemini, Anthropic y Qwen Model Studio
 **Fase activa:** Fase 7 — medicion del ahorro total de contexto
 
@@ -137,6 +137,7 @@ Cada stack tiene LEEME.md con reglas adicionales, terminos tecnicos y procedimie
 - **Revision 95 de puerta distribuible.** La plantilla incorpora `scripts/validar_cierre_tarea.py` como archivo administrado. Ejecuta pruebas declaradas, verifica la memoria, exige archivos modificados, `PROJECT_STATE.md`, plan y registro de cambios, y obliga a declarar la revision de la guia operativa. `cerrar-modulo`, `AGENTS.md` y el delta de Antigravity prohíben declarar una tarea material como terminada si esta puerta falla. La regla es comun a Codex, Cursor, Claude y Antigravity; no puede impedir cambios parciales en el directorio, pero evita certificarlos como cierre valido. El siguiente paso es aplicar la misma puerta al ciclo de la medicion Gemini y repetir la prueba cuando el agente no pueda abandonar con pruebas fallidas.
 - **Revision 96 de evidencia Gemini estable.** La corrida `resultados/evaluacion_indice_eficiente_gemini_v5.json` usa adaptador v4, escenario v2 y `gemini-3.8-flash`. Las cinco repeticiones de control y de indice con herramientas eficientes completaron las pruebas. El informe aprobado registra 900.941 tokens del control frente a 606.283 del tratamiento: ahorro pareado y por exito de 32,71 %, tres llamadas de herramientas menos y 21,6 % menos duracion media. La evidencia se limita al paquete de indice, busqueda y lectura eficiente sobre el fixture web; no se atribuye a la Skill textual aislada ni se generaliza a otros modelos o tareas sin otra medicion.
 - **Revision 97 de humo interactivo multiagente.** Se generaron instancias `0.2.0-alpha.15` y se ejecutaron pruebas de humo en Codex, Cursor, Antigravity y Claude Code. En cada ejecucion el agente reporto las tres reglas locales, las cuatro Skills core (`cerrar-modulo`, `lecciones-aprendidas`, `optimizar-contexto`, `probar-e2e`), una tarea documental minima y un cierre exitoso mediante `validar_cierre_tarea.py` con `verificar_memoria_proyecto.py`. Antigravity y Codex se repitieron sobre instancias nuevas despues de detectar reutilizacion accidental de evidencia; la observacion confirma que la fuente canonica y los adaptadores se descubren en la practica, pero no mide calidad, costo ni rendimiento de los modelos. La CI remota de alpha.15 sigue pendiente.
+- **Revision 98 de inventario para CI.** La ejecucion remota `Validacion #13` aprobo el fixture Next.js, pero las cuatro combinaciones Python rechazaron el inventario congelado de Skills porque no se habia regenerado despues de los cambios de alpha.15. Se ejecuto `inventariar_skills.py --salida auditoria/inventario_skills.json`; su prueba determinista aprobo localmente. Falta publicar la correccion y comprobar la nueva matriz remota.
 
 ## 5. Que falta
 

@@ -1,7 +1,7 @@
 {
   "version_inventario": 2,
   "raiz": "plantilla/.agents/skills",
-  "huella_conjunto_sha256": "2cdaee77bcf2845d7e14c89f3f9f772d0b3059629b315836f91f3c2504adbbf0",
+  "huella_conjunto_sha256": "6bfb040f58c0ba6297304676d68775f72925f27015139cb06b986762b5051a82",
   "resumen": {
     "archivos": 42,
     "skills": 23,
@@ -10,8 +10,8 @@
   "skills": [
     {
       "ruta": "cerrar-modulo/SKILL.md",
-      "bytes": 1763,
-      "sha256": "ba892b0b23f9df69d077d6c6259f9b1bc616f895c6437ffe0cbc88878e7d8f2e",
+      "bytes": 2424,
+      "sha256": "ec08aab7347b846d48c96e61d32262db19a3c4e2fa5fcb0197190db3e361cc57",
       "nombre": "cerrar-modulo"
     },
     {
