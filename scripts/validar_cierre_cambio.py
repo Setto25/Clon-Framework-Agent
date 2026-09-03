@@ -29,6 +29,9 @@ PREFIJOS_CAMBIO_MATERIAL: tuple[str, ...] = (
 RUTAS_CAMBIO_MATERIAL: frozenset[str] = frozenset(
     {"plantilla/configuracion_plantilla.json"}
 )
+SKILLS_CON_SCRIPTS_DEL_FRAMEWORK: frozenset[str] = frozenset(
+    {"plantilla/.agents/skills/iniciar-proyecto/SKILL.md"}
+)
 
 
 def ejecutar_git(argumentos: list[str]) -> subprocess.CompletedProcess[str]:
@@ -95,17 +98,23 @@ def validar_dependencias_skills(rutas_gestionadas: set[str]) -> list[str]:
     errores: list[str] = []
     raiz_skills = RAIZ / "plantilla" / ".agents" / "skills"
     for skill in sorted(raiz_skills.rglob("SKILL.md")):
+        ruta_skill = skill.relative_to(RAIZ).as_posix()
         for referencia in sorted(extraer_referencias_scripts(skill)):
             ruta_plantilla = RAIZ / "plantilla" / Path(referencia)
             ruta_framework = RAIZ / Path(referencia)
-            if not ruta_plantilla.is_file() and not ruta_framework.is_file():
+            si_solo_framework = (
+                ruta_skill in SKILLS_CON_SCRIPTS_DEL_FRAMEWORK
+                and ruta_framework.is_file()
+            )
+            if not ruta_plantilla.is_file() and not si_solo_framework:
                 errores.append(
-                    f"{skill.relative_to(RAIZ).as_posix()} cita una ruta inexistente: {referencia}"
+                    f"{ruta_skill} cita una dependencia ausente de plantilla: {referencia}"
                 )
-            if ruta_plantilla.is_file() and referencia not in rutas_gestionadas:
-                errores.append(
-                    f"La dependencia de Skill no esta administrada: {referencia}"
-                )
+            elif referencia not in rutas_gestionadas:
+                if not si_solo_framework:
+                    errores.append(
+                        f"La dependencia de Skill no esta administrada: {referencia}"
+                    )
     return errores
 
 

@@ -34,7 +34,9 @@
 ## 5. Artefactos de documentación
 
 - `AGENTS.md`: reglas permanentes reconocibles por los agentes de desarrollo.
+- `CLAUDE.md`: puente de Claude Code hacia las reglas y el estado canonicos.
 - `.agents/skills/`: Skills reutilizables y locales del repositorio.
+- `.claude/skills/`: wrappers generados para descubrir las mismas Skills en Claude Code.
 - `documentacion/INDICE_LECTURA_AGENTES.md`: puerta de entrada a la documentación.
 - `documentacion/PLAN_DESARROLLO.md`: hitos, tareas, prioridades y criterios de aceptación.
 - `documentacion/DOCUMENTACION_TECNICA.md`: arquitectura, flujos, ubicación y contratos.

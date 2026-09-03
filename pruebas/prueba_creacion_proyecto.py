@@ -203,6 +203,16 @@ class PruebasCreacionProyecto(unittest.TestCase):
         for nombre, ruta_destino in skills_destino.items():
             with self.subTest(skill=nombre):
                 self.assertEqual(calcular_huellas(skills_origen[nombre]), calcular_huellas(ruta_destino))
+        adaptadores_claude = {
+            ruta.parent.name: ruta
+            for ruta in (destino / ".claude" / "skills").glob("*/SKILL.md")
+        }
+        self.assertEqual(set(adaptadores_claude), CORE_AUTOMATICO)
+        for nombre, ruta_adaptador in adaptadores_claude.items():
+            with self.subTest(adaptador_claude=nombre):
+                contenido_adaptador = ruta_adaptador.read_text(encoding="utf-8")
+                self.assertIn("adaptador-generado-por-agent-framework", contenido_adaptador)
+                self.assertIn("../../../.agents/skills/", contenido_adaptador)
         estado: object = json.loads((destino / ".estado-plantilla.json").read_text(encoding="utf-8"))
         self.assertIsInstance(estado, dict)
         instaladas = estado.get("skills_instaladas") if isinstance(estado, dict) else None
@@ -210,12 +220,30 @@ class PruebasCreacionProyecto(unittest.TestCase):
         huellas_gestionadas = estado.get("huellas_gestionadas") if isinstance(estado, dict) else None
         self.assertIsInstance(huellas_gestionadas, dict)
         if isinstance(huellas_gestionadas, dict):
+            self.assertIn("scripts/diagnosticar_tarea.py", huellas_gestionadas)
             self.assertIn("scripts/verificar_memoria_proyecto.py", huellas_gestionadas)
+            self.assertIn("scripts/validar_cierre_tarea.py", huellas_gestionadas)
             self.assertIn("scripts/generar_indice_contexto.py", huellas_gestionadas)
+            self.assertIn("scripts/sincronizar_adaptadores_agentes.py", huellas_gestionadas)
+            self.assertIn(".claude/skills/optimizar-contexto/SKILL.md", huellas_gestionadas)
             self.assertIn(".agents/skills/optimizar-contexto/SKILL.md", huellas_gestionadas)
+            self.assertIn(
+                ".agents/skills/optimizar-contexto/referencias/modo_extendido.md",
+                huellas_gestionadas,
+            )
+            self.assertIn(
+                ".agents/skills/optimizar-contexto/referencias/modo_arquitectonico.md",
+                huellas_gestionadas,
+            )
         self.assertTrue((destino / "scripts" / "generar_indice_contexto.py").is_file())
+        self.assertTrue((destino / "scripts" / "diagnosticar_tarea.py").is_file())
+        self.assertTrue((destino / "scripts" / "validar_cierre_tarea.py").is_file())
+        self.assertTrue((destino / "CLAUDE.md").is_file())
+        self.assertTrue(
+            (destino / ".agents" / "rules" / "00-contexto-framework.md").is_file()
+        )
         registro = (destino / "documentacion" / "REGISTRO_CAMBIOS.md").read_text(encoding="utf-8")
-        self.assertIn("agent-framework 0.2.0-alpha.13", registro)
+        self.assertIn("agent-framework 0.2.0-alpha.15", registro)
         for nombre in CORE_AUTOMATICO:
             with self.subTest(skill_registrada=nombre):
                 self.assertIn(f"- `{nombre}`", registro)
@@ -277,6 +305,11 @@ class PruebasCreacionProyecto(unittest.TestCase):
         self.assertTrue(
             (destino / ".agents" / "skills" / "stacks" / "backend-fastapi" / "LEEME.md").is_file()
         )
+        adaptadores = {
+            ruta.parent.name
+            for ruta in (destino / ".claude" / "skills").glob("*/SKILL.md")
+        }
+        self.assertEqual(adaptadores, CORE_AUTOMATICO | adicionales)
         self.assertFalse(
             (destino / ".agents" / "skills" / "stacks" / "frontend-nextjs").exists()
         )
@@ -300,6 +333,12 @@ class PruebasCreacionProyecto(unittest.TestCase):
         self.assertEqual(
             calcular_huellas(skills_origen["seguridad-backend"]),
             calcular_huellas(skills_destino["seguridad-backend"]),
+        )
+        adaptador = destino / ".claude" / "skills" / "seguridad-backend" / "SKILL.md"
+        self.assertTrue(adaptador.is_file())
+        self.assertIn(
+            "../../../.agents/skills/seguridad-backend/SKILL.md",
+            adaptador.read_text(encoding="utf-8"),
         )
         estado: object = json.loads((destino / ".estado-plantilla.json").read_text(encoding="utf-8"))
         self.assertIsInstance(estado, dict)

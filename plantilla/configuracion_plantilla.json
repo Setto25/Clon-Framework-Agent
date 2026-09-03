@@ -1,6 +1,6 @@
 {
   "version_contrato": 3,
-  "version_framework": "0.2.0-alpha.13",
+  "version_framework": "0.2.0-alpha.15",
   "sintaxis_placeholder": "{{CLAVE}}",
   "rutas_excluidas": [
     ".agents/skills"
@@ -8,7 +8,9 @@
   "archivos_incluidos": [
     ".env.ejemplo",
     "AGENTS.md",
+    "CLAUDE.md",
     "PROJECT_STATE.md",
+    ".agents/rules/00-contexto-framework.md",
     ".agents/rules/claude.md",
     ".agents/rules/excepciones_nominales.md",
     "documentacion/INDICE_LECTURA_AGENTES.md",
@@ -20,9 +22,14 @@
   ],
   "archivos_gestionados": [
     "configuracion_plantilla.json",
+    "CLAUDE.md",
+    ".agents/rules/00-contexto-framework.md",
+    "scripts/diagnosticar_tarea.py",
     "scripts/generar_indice_contexto.py",
     "scripts/inicializar_proyecto.py",
     "scripts/inicializar_proyecto.sh",
+    "scripts/sincronizar_adaptadores_agentes.py",
+    "scripts/validar_cierre_tarea.py",
     "scripts/verificar_memoria_proyecto.py"
   ],
   "placeholders": {

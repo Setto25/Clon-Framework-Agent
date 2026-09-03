@@ -35,6 +35,7 @@ almacenes_vectores/
 # Excluye configuraciones locales de editores y sistema operativo.
 .idea/
 .vscode/
+.claude/settings.local.json
 .DS_Store
 Thumbs.db
 

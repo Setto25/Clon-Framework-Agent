@@ -18,6 +18,9 @@ from datetime import datetime
 from pathlib import Path, PurePosixPath
 from typing import TypedDict, cast
 
+sys.dont_write_bytecode = True
+from sincronizar_adaptadores_agentes import sincronizar_adaptadores
+
 
 class CampoPlaceholder(TypedDict):
     """Representa la configuracion de un placeholder."""
@@ -89,6 +92,15 @@ def calcular_huellas_gestionadas(
     archivos: set[Path] = set()
     raiz_skills = raiz / ".agents" / "skills"
     archivos.update(archivo for archivo in raiz_skills.rglob("*") if archivo.is_file())
+    raiz_adaptadores = raiz / ".claude" / "skills"
+    if raiz_adaptadores.is_dir():
+        archivos.update(
+            archivo
+            for archivo in raiz_adaptadores.rglob("SKILL.md")
+            if archivo.is_file()
+            and "<!-- adaptador-generado-por-agent-framework -->"
+            in archivo.read_text(encoding="utf-8")
+        )
     for relativa in rutas_gestionadas:
         ruta = raiz / Path(relativa)
         if ruta.is_file():
@@ -784,12 +796,27 @@ def crear_argumentos() -> argparse.Namespace:
     return analizador.parse_args()
 
 
+def eliminar_adaptadores_nuevos(raiz: Path, adaptadores: list[Path]) -> None:
+    """Revierte exclusivamente wrappers creados durante una inicializacion fallida."""
+    limite = raiz / ".claude"
+    for adaptador in reversed(adaptadores):
+        if adaptador.exists():
+            adaptador.unlink()
+        directorio = adaptador.parent
+        while directorio != limite and directorio.exists() and not any(directorio.iterdir()):
+            directorio.rmdir()
+            directorio = directorio.parent
+    if limite.exists() and not any(limite.iterdir()):
+        limite.rmdir()
+
+
 def main() -> int:
     """Ejecuta una inicializacion validada y reproducible."""
     configurar_salida_utf8()
     argumentos = crear_argumentos()
     raiz = Path(__file__).resolve().parent.parent
     centinela = raiz / ".plantilla-framework"
+    adaptadores_nuevos: list[Path] = []
 
     try:
         if not centinela.exists():
@@ -812,6 +839,9 @@ def main() -> int:
         archivos = resolver_archivos(raiz, contrato["archivos_incluidos"])
         validar_permisos_inicializacion(raiz, centinela, archivos)
         cambios = preparar_cambios(archivos, valores_completos)
+        existentes_antes = set((raiz / ".claude" / "skills").glob("*/SKILL.md"))
+        adaptadores = sincronizar_adaptadores(raiz)
+        adaptadores_nuevos = [ruta for ruta in adaptadores if ruta not in existentes_antes]
 
         politica_skills = (
             "core_automatico_mas_seleccion_explicita"
@@ -848,6 +878,7 @@ def main() -> int:
         ValueError,
         subprocess.SubprocessError,
     ) as error:
+        eliminar_adaptadores_nuevos(raiz, adaptadores_nuevos)
         print(f"ERROR: {error}", file=sys.stderr)
         return 1
 

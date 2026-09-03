@@ -20,10 +20,16 @@ if DEPENDENCIAS_DISPONIBLES:
     from scripts.evaluar_agente_anthropic import (
         MAXIMO_EJECUCIONES_HERRAMIENTAS,
         MAXIMO_TOKENS_SALIDA,
+        MAXIMO_TURNOS,
+        construir_instruccion,
         ejecutar_agente,
         uso,
     )
-    from scripts.evaluar_agente_gemini import RAIZ, TERMINOS_IMPACTO
+    from scripts.evaluar_agente_gemini import (
+        RAIZ,
+        TERMINOS_IMPACTO,
+        construir_solicitud,
+    )
     from scripts.validar_resultado_agente import (
         RUTAS_ESENCIALES_MIGRACION,
         crear_indice_con_requisitos,
@@ -142,13 +148,14 @@ class PruebasEvaluacionAnthropic(unittest.TestCase):
         indice = crear_indice_con_requisitos(
             analizar_impacto(RAIZ, TERMINOS_IMPACTO),
             RUTAS_ESENCIALES_MIGRACION,
+            RAIZ,
         )
         cliente_falso = ClienteFalso([respuesta])
         cliente: Any = cliente_falso
         resultado = ejecutar_agente(
             cliente,
             "sonnet-simulado",
-            "control",
+            "indice",
             indice,
         )
         self.assertTrue(resultado["pruebas_aprobadas"])
@@ -157,6 +164,7 @@ class PruebasEvaluacionAnthropic(unittest.TestCase):
         self.assertEqual(resultado["llamadas_herramientas"], 0)
         self.assertEqual(resultado["razones_detencion"], ["end_turn"])
         self.assertNotIn("temperature", cliente_falso.ultima_solicitud)
+        self.assertNotIn("tools", cliente_falso.ultima_solicitud)
         self.assertEqual(
             cliente_falso.ultima_solicitud["max_tokens"],
             MAXIMO_TOKENS_SALIDA,
@@ -183,11 +191,12 @@ class PruebasEvaluacionAnthropic(unittest.TestCase):
         indice = crear_indice_con_requisitos(
             analizar_impacto(RAIZ, TERMINOS_IMPACTO),
             RUTAS_ESENCIALES_MIGRACION,
+            RAIZ,
         )
         resultado = ejecutar_agente(
             ClienteFalso([truncada, completa]),
             "sonnet-simulado",
-            "control",
+            "indice",
             indice,
         )
         self.assertTrue(resultado["pruebas_aprobadas"])
@@ -220,6 +229,7 @@ class PruebasEvaluacionAnthropic(unittest.TestCase):
         indice = crear_indice_con_requisitos(
             analizar_impacto(RAIZ, TERMINOS_IMPACTO),
             RUTAS_ESENCIALES_MIGRACION,
+            RAIZ,
         )
         cliente = ClienteFalso([respuesta_herramientas, respuesta_final])
         resultado = ejecutar_agente(
@@ -235,6 +245,58 @@ class PruebasEvaluacionAnthropic(unittest.TestCase):
         )
         self.assertEqual(resultado["herramientas_rechazadas"], 1)
         self.assertNotIn("tools", cliente.ultima_solicitud)
+
+    def test_control_puro_no_recibe_indice_ni_protocolo(self) -> None:
+        """Separa el descubrimiento normal del preanalisis y de la Skill."""
+        solicitud, indice_serializado = construir_solicitud("control_puro", None)
+        instruccion = construir_instruccion("control_puro")
+        self.assertEqual(indice_serializado, "")
+        self.assertNotIn("INDICE_LOCAL_DE_IMPACTO", solicitud)
+        self.assertNotIn("rutas_requeridas_en_rutas_afectadas", solicitud)
+        self.assertIn("No recibes un indice previo", instruccion)
+        self.assertIn("ni debes aplicar el protocolo", instruccion.casefold())
+
+    def test_registra_fallo_si_no_emite_respuesta_final(self) -> None:
+        """Conserva una ejecucion invalida sin abortar el experimento completo."""
+        uso_falso = SimpleNamespace(
+            input_tokens=100,
+            output_tokens=20,
+            cache_creation_input_tokens=0,
+            cache_read_input_tokens=0,
+        )
+        respuestas = [
+            SimpleNamespace(
+                content=[BloqueHerramientaFalso(f"lectura-{indice}", indice + 1)],
+                stop_reason="tool_use",
+                usage=uso_falso,
+            )
+            for indice in range(MAXIMO_TURNOS)
+        ]
+        resultado = ejecutar_agente(
+            ClienteFalso(respuestas),
+            "sonnet-simulado",
+            "control_puro",
+            None,
+        )
+        self.assertFalse(resultado["exito"])
+        self.assertFalse(resultado["pruebas_aprobadas"])
+        self.assertIn("excedio el limite de turnos", resultado["rubrica_fallos"][0])
+
+    def test_indice_excluye_skill_y_conserva_evidencia_local(self) -> None:
+        """Aisla el valor del indice sin cargar instrucciones de la Skill."""
+        indice = crear_indice_con_requisitos(
+            analizar_impacto(RAIZ, TERMINOS_IMPACTO),
+            RUTAS_ESENCIALES_MIGRACION,
+            RAIZ,
+        )
+        solicitud, indice_serializado = construir_solicitud("indice", indice)
+        instruccion = construir_instruccion("indice")
+        self.assertTrue(indice_serializado)
+        self.assertIn("INDICE_LOCAL_DE_IMPACTO", solicitud)
+        self.assertIn("evidencias_disponibles", solicitud)
+        self.assertIn("No apliques el protocolo", instruccion)
+        self.assertIn("primer turno no tendras herramientas", instruccion)
+        self.assertNotIn("# Optimizar contexto", instruccion)
 
 
 if __name__ == "__main__":

@@ -1,10 +1,10 @@
 {
   "version_inventario": 2,
   "raiz": "plantilla/.agents/skills",
-  "huella_conjunto_sha256": "01e69f635b46e6174e4af2e416ac060417a1f3903d69376bf2aee37a3879c792",
+  "huella_conjunto_sha256": "2cdaee77bcf2845d7e14c89f3f9f772d0b3059629b315836f91f3c2504adbbf0",
   "resumen": {
-    "archivos": 39,
-    "skills": 22,
+    "archivos": 42,
+    "skills": 23,
     "declaraciones_procedencia": 1
   },
   "skills": [
@@ -39,6 +39,12 @@
       "nombre": "delegar-entre-agentes"
     },
     {
+      "ruta": "opcional/diagnosticar-tarea/SKILL.md",
+      "bytes": 2985,
+      "sha256": "7316fb12e9f36651221bef6f2e1e9c15d8d26f5b077abcba4960ab3b176fcff0",
+      "nombre": "diagnosticar-tarea"
+    },
+    {
       "ruta": "opcional/protocolo-debugging/SKILL.md",
       "bytes": 1977,
       "sha256": "6cca7f73863883e450b4f0a1b6e9325cb365bdd0de4e38e872ad2aec85f59fad",
@@ -46,8 +52,8 @@
     },
     {
       "ruta": "optimizar-contexto/SKILL.md",
-      "bytes": 3560,
-      "sha256": "3eb2ea1367be6f2b0199a1cc8aad611b190aa8b7961d965cbca0e2e9c55f3694",
+      "bytes": 2858,
+      "sha256": "4305d32efc2747c9c0344add06e9c7ae0a5977903b8dbcb2e4455d6371a1ba9a",
       "nombre": "optimizar-contexto"
     },
     {
@@ -181,6 +187,16 @@
       "ruta": "opcional/LEEME.md",
       "bytes": 622,
       "sha256": "77c9b77e95d94aee7c1fec16d8868350ac52595d60cb1039cc270120a31acf48"
+    },
+    {
+      "ruta": "optimizar-contexto/referencias/modo_arquitectonico.md",
+      "bytes": 1003,
+      "sha256": "24aa74c7dbabce7844869a0a2d1866122b023b228f7c1f20d9cfd181045851db"
+    },
+    {
+      "ruta": "optimizar-contexto/referencias/modo_extendido.md",
+      "bytes": 1697,
+      "sha256": "f027486921a7606d60528fee611302118153924f3c4de3388a8cebf91fc483f1"
     },
     {
       "ruta": "probar-e2e/referencias/guion_e2e.md",

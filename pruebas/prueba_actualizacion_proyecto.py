@@ -103,7 +103,7 @@ class PruebasActualizacionProyecto(unittest.TestCase):
         )
         self.assertEqual(archivo.read_bytes(), fuente.read_bytes())
         actualizado = self.cargar_estado()
-        self.assertEqual(actualizado.get("version_framework"), "0.2.0-alpha.13")
+        self.assertEqual(actualizado.get("version_framework"), "0.2.0-alpha.15")
 
     def test_bloquea_cambio_local_sin_mutar_estado(self) -> None:
         """Detiene toda la actualizacion cuando un archivo administrado diverge."""
@@ -134,6 +134,61 @@ class PruebasActualizacionProyecto(unittest.TestCase):
         self.assertTrue(archivo.is_file())
         actualizado = self.cargar_estado()
         huellas_actualizadas = actualizado.get("huellas_gestionadas")
+        self.assertIsInstance(huellas_actualizadas, dict)
+        if isinstance(huellas_actualizadas, dict):
+            self.assertIn(relativa, huellas_actualizadas)
+
+    def test_agrega_puente_claude_ausente_y_sus_adaptadores(self) -> None:
+        """Migra una instancia anterior hacia el descubrimiento nativo de Claude."""
+        relativa = "CLAUDE.md"
+        (self.proyecto / relativa).unlink()
+        for adaptador in (self.proyecto / ".claude" / "skills").glob("*/SKILL.md"):
+            adaptador.unlink()
+            adaptador.parent.rmdir()
+        raiz_adaptadores = self.proyecto / ".claude" / "skills"
+        raiz_adaptadores.rmdir()
+        (self.proyecto / ".claude").rmdir()
+        estado = self.cargar_estado()
+        huellas = estado.get("huellas_gestionadas")
+        self.assertIsInstance(huellas, dict)
+        if isinstance(huellas, dict):
+            huellas.pop(relativa, None)
+            for ruta in list(huellas):
+                if ruta.startswith(".claude/skills/"):
+                    huellas.pop(ruta)
+        estado["version_framework"] = "0.2.0-alpha.13"
+        self.guardar_estado(estado)
+
+        resultado = ejecutar([sys.executable, str(ACTUALIZADOR), str(self.proyecto)])
+        self.assertEqual(resultado.returncode, 0, resultado.stdout + resultado.stderr)
+        self.assertTrue((self.proyecto / relativa).is_file())
+        adaptadores = list((self.proyecto / ".claude" / "skills").glob("*/SKILL.md"))
+        self.assertEqual(len(adaptadores), 4)
+        huellas_actualizadas = self.cargar_estado().get("huellas_gestionadas")
+        self.assertIsInstance(huellas_actualizadas, dict)
+        if isinstance(huellas_actualizadas, dict):
+            self.assertIn(relativa, huellas_actualizadas)
+            self.assertIn(
+                ".claude/skills/optimizar-contexto/SKILL.md",
+                huellas_actualizadas,
+            )
+
+    def test_agrega_referencia_nueva_de_skill_y_registra_su_huella(self) -> None:
+        """Incorpora archivos progresivos sin sobrescribir contenido local."""
+        relativa = ".agents/skills/optimizar-contexto/referencias/modo_extendido.md"
+        archivo = self.proyecto / Path(relativa)
+        archivo.unlink()
+        estado = self.cargar_estado()
+        huellas = estado.get("huellas_gestionadas")
+        self.assertIsInstance(huellas, dict)
+        if isinstance(huellas, dict):
+            huellas.pop(relativa, None)
+        self.guardar_estado(estado)
+
+        resultado = ejecutar([sys.executable, str(ACTUALIZADOR), str(self.proyecto)])
+        self.assertEqual(resultado.returncode, 0, resultado.stdout + resultado.stderr)
+        self.assertTrue(archivo.is_file())
+        huellas_actualizadas = self.cargar_estado().get("huellas_gestionadas")
         self.assertIsInstance(huellas_actualizadas, dict)
         if isinstance(huellas_actualizadas, dict):
             self.assertIn(relativa, huellas_actualizadas)

@@ -25,9 +25,11 @@ Registra todos los nombres técnicos no configurables que se conservan como exce
 | Nombre | Ubicación | Razón | Alternativa |
 |---|---|---|---|
 | `AGENTS.md` | Raíz | Es la interfaz estable de instrucciones del repositorio y algunas herramientas la reconocen | Adjuntarlo como contexto cuando no exista descubrimiento verificable |
+| `CLAUDE.md` | Raíz | Claude Code usa este nombre para cargar el contexto persistente del proyecto | Importar desde el los documentos canonicos en vez de duplicarlos |
 | `PROJECT_STATE.md` | Raíz | Es la memoria persistente definida por el framework | Leerlo o adjuntarlo explicitamente al iniciar la sesion |
 | `.agents/skills` | Directorio | Es el catalogo local neutral elegido por el framework | Instalar o adjuntar la Skill si la herramienta no descubre la ruta |
 | `.agents/rules` | Directorio | Agrupa reglas compartidas sin ligarlas a un proveedor | Cargar manualmente las reglas relevantes |
+| `.claude/skills` | Directorio | Claude Code descubre Skills de proyecto en esta ubicacion | Alojar wrappers generados que remiten a `.agents/skills` |
 | `SKILL.md` | Cada Skill | Es el manifiesto estable usado para describir una Skill | Adaptar la integracion, sin renombrar la copia canonica |
 
 ### Gestión de entorno
@@ -111,8 +113,8 @@ Si se necesita agregar una nueva excepción:
 ## Referencia rápida
 
 **Nombres reservados (NO traducir):**
-- `AGENTS.md`, `PROJECT_STATE.md`
-- `.agents/skills`, `.agents/rules`, `SKILL.md`
+- `AGENTS.md`, `CLAUDE.md`, `PROJECT_STATE.md`
+- `.agents/skills`, `.agents/rules`, `.claude/skills`, `SKILL.md`
 - `.env`, `.env.ejemplo`
 
 **TODO LO DEMÁS:** Debe estar en {{IDIOMA_NOMBRES}}.

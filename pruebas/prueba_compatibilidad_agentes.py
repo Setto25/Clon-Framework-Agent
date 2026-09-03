@@ -14,9 +14,12 @@ DELTAS: tuple[Path, ...] = (
     RAIZ_PROMPTS / "SYSTEM_PROMPT_DELTA_ANTIGRAVITY.md",
     RAIZ_PROMPTS / "SYSTEM_PROMPT_DELTA_CLAUDE.md",
     RAIZ_PROMPTS / "SYSTEM_PROMPT_DELTA_CODEX.md",
+    RAIZ_PROMPTS / "SYSTEM_PROMPT_DELTA_CURSOR.md",
 )
 DOCUMENTOS_INTEROPERABLES: tuple[Path, ...] = (
     RAIZ_PLANTILLA / "AGENTS.md",
+    RAIZ_PLANTILLA / "CLAUDE.md",
+    RAIZ_PLANTILLA / ".agents" / "rules" / "00-contexto-framework.md",
     RAIZ_PLANTILLA / ".agents" / "rules" / "claude.md",
     RAIZ_PLANTILLA / ".agents" / "rules" / "excepciones_nominales.md",
     RAIZ_PLANTILLA / "documentacion" / "INDICE_LECTURA_AGENTES.md",
@@ -32,7 +35,9 @@ class PruebasCompatibilidadAgentes(unittest.TestCase):
         """Confirma que los archivos base citados formen parte de la plantilla."""
         esperados = (
             RAIZ_PLANTILLA / "AGENTS.md",
+            RAIZ_PLANTILLA / "CLAUDE.md",
             RAIZ_PLANTILLA / "PROJECT_STATE.md",
+            RAIZ_PLANTILLA / ".agents" / "rules" / "00-contexto-framework.md",
             RAIZ_PLANTILLA / ".agents" / "rules" / "claude.md",
             RAIZ_PROMPTS / "SYSTEM_PROMPT_BASE.md",
             *DELTAS,
@@ -82,6 +87,17 @@ class PruebasCompatibilidadAgentes(unittest.TestCase):
                 self.assertTrue((stack / "LEEME.md").is_file())
                 self.assertTrue((raiz_lecciones / f"{stack.name}.md").is_file())
 
+    def test_los_puentes_conservan_una_fuente_canonica(self) -> None:
+        """Comprueba imports de Claude y reglas base sin duplicar las Skills."""
+        claude = (RAIZ_PLANTILLA / "CLAUDE.md").read_text(encoding="utf-8")
+        self.assertIn("@AGENTS.md", claude)
+        self.assertIn("@PROJECT_STATE.md", claude)
+        self.assertIn("@.agents/rules/claude.md", claude)
+        regla = (
+            RAIZ_PLANTILLA / ".agents" / "rules" / "00-contexto-framework.md"
+        ).read_text(encoding="utf-8")
+        self.assertIn("`AGENTS.md`", regla)
+        self.assertIn("`PROJECT_STATE.md`", regla)
 
 if __name__ == "__main__":
     unittest.main()

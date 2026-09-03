@@ -3,6 +3,10 @@
 **Aplica sobre:** `SYSTEM_PROMPT_BASE.md`
 **Agente:** Claude (Anthropic)
 
+`CLAUDE.md` importa las reglas y el estado canonicos. Las entradas de
+`.claude/skills/` son wrappers generados que cargan las Skills reales desde
+`.agents/skills/`; no constituyen una segunda fuente editable.
+
 ---
 
 ## Verificacion de capacidades

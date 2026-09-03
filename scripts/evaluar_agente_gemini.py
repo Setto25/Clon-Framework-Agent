@@ -41,6 +41,9 @@ MAXIMO_CARACTERES = 16000
 MAXIMO_REINTENTOS_CUOTA = 4
 MAXIMO_CORRECCIONES = 1
 MAXIMO_RUTAS_LISTADO = 40
+MAXIMO_EJECUCIONES_HERRAMIENTAS = 12
+VERSION_ADAPTADOR = 5
+VARIANTES_EXPERIMENTO: tuple[str, ...] = ("control_puro", "indice", "skill")
 DIRECTORIOS_EXCLUIDOS: set[str] = {
     ".git",
     ".mypy_cache",
@@ -55,7 +58,7 @@ DIRECTORIOS_EXCLUIDOS: set[str] = {
     "resultados",
     "venv",
 }
-ESCENARIO = "migracion-core-a-opcional-v6"
+ESCENARIO = "migracion-core-a-opcional-v8"
 TERMINOS_IMPACTO: list[str] = [
     "optimizar-contexto",
     "CORE_AUTOMATICO",
@@ -65,18 +68,16 @@ TERMINOS_IMPACTO: list[str] = [
 TAREA = (
     "Audita, sin modificar archivos, que cambios exactos requeriria mover la Skill "
     "optimizar-contexto desde el core automatico hacia las Skills opcionales. Debe "
-    "usar primero el indice local determinista adjunto y reservar las herramientas "
-    "para lecturas puntuales que completen impactos indirectos. Responda solo "
-    "con un objeto JSON que contenga: rutas_afectadas como objetos ruta/cambio, al "
+    "responder solo con un objeto JSON que contenga: rutas_afectadas como objetos "
+    "ruta/cambio, al "
     "menos seis evidencias como objetos ruta/patron/motivo, pruebas como objetos "
     "comando/motivo y riesgos como cadenas. Las rutas declaradas deben existir y "
-    "haber sido observadas en el indice o mediante herramientas; patron debe ser un "
-    "fragmento literal exacto de hasta 160 caracteres copiado del indice o del archivo. "
-    "rutas_afectadas debe contener un objeto para cada ruta enumerada en el campo "
-    "rutas_requeridas_en_rutas_afectadas del indice, aunque la ruta tambien aparezca "
-    "en evidencias; puede agregar otras rutas justificadas. No repita con buscar_texto "
-    "los terminos ya cubiertos por el indice, no solicite un listado de la raiz, no "
-    "invente archivos ni suponga que una lista se actualiza automaticamente."
+    "haber sido observadas mediante la fuente de evidencia asignada; patron debe ser "
+    "un fragmento literal exacto de hasta 160 caracteres copiado de esa evidencia. "
+    "rutas_afectadas debe cubrir todas las referencias necesarias para cerrar el "
+    "cambio, aunque una ruta tambien aparezca en evidencias. No solicite un listado "
+    "de la raiz, no invente archivos ni suponga que una lista se actualiza "
+    "automaticamente."
 )
 
 
@@ -215,6 +216,11 @@ def registrar_rutas(resultado: dict[str, object], observadas: set[str]) -> None:
         for archivo in archivos:
             if isinstance(archivo, dict) and isinstance(archivo.get("ruta"), str):
                 observadas.add(str(archivo["ruta"]).replace("\\", "/"))
+    evidencias = resultado.get("evidencias_disponibles")
+    if isinstance(evidencias, list):
+        for evidencia in evidencias:
+            if isinstance(evidencia, dict) and isinstance(evidencia.get("ruta"), str):
+                observadas.add(str(evidencia["ruta"]).replace("\\", "/"))
 
 
 def segundos_espera_cuota(error: errors.ClientError) -> int | None:
@@ -227,46 +233,96 @@ def segundos_espera_cuota(error: errors.ClientError) -> int | None:
     return max(1, int(float(coincidencia.group(1))) + 1)
 
 
-def ejecutar_agente(
-    cliente: genai.Client,
-    modelo: str,
-    variante: str,
-    indice_impacto: dict[str, object],
-) -> dict[str, object]:
-    """Ejecuta un ciclo de herramientas y agrega cada uso real del modelo."""
-    instruccion = "Lee AGENTS.md antes de actuar y usa evidencia verificable."
+def construir_instruccion(variante: str) -> str:
+    """Construye instrucciones que separan descubrimiento, indice y Skill."""
+    instruccion = (
+        "Lee AGENTS.md antes de actuar, usa evidencia verificable y limita las "
+        f"herramientas a {MAXIMO_EJECUCIONES_HERRAMIENTAS} ejecuciones."
+    )
+    if variante == "control_puro":
+        return (
+            f"{instruccion} No recibes un indice previo ni debes aplicar el protocolo "
+            "optimizar-contexto; descubre la evidencia necesaria mediante herramientas."
+        )
+    instruccion += (
+        " El indice local adjunto ya cuenta como observacion de sus rutas y fragmentos; "
+        "en el primer turno no tendras herramientas y debes emitir el JSON completo "
+        "usando el indice, incluidas sus evidencias_disponibles. No repitas con "
+        "buscar_texto los terminos que ya cubre. Si la rubrica rechaza ese JSON, "
+        "las lecturas posteriores deben limitarse a los patrones rechazados."
+    )
     if variante == "skill":
         protocolo = RUTA_SKILL.read_text(encoding="utf-8")
-        instruccion += (
-            " La Skill optimizar-contexto ya esta cargada a continuacion; aplicala "
-            "sin volver a leer su archivo solo para descubrir sus instrucciones.\n\n"
+        return (
+            f"{instruccion} La Skill optimizar-contexto ya esta cargada a continuacion; "
+            "aplicala sin volver a leer su archivo solo para descubrir sus instrucciones.\n\n"
             f"{protocolo}"
         )
-    else:
-        instruccion += " No apliques el protocolo optimizar-contexto durante esta evaluacion de control."
-    configuracion = types.GenerateContentConfig(tools=[HERRAMIENTAS], system_instruction=instruccion, temperature=0, max_output_tokens=2000)
+    if variante == "indice":
+        return f"{instruccion} No apliques el protocolo optimizar-contexto."
+    raise ValueError(f"Variante no soportada: {variante}")
+
+
+def construir_solicitud(
+    variante: str,
+    indice_impacto: dict[str, object] | None,
+) -> tuple[str, str]:
+    """Construye una solicitud con igual rubrica y evidencia diferenciada."""
+    if variante == "control_puro":
+        if indice_impacto is not None:
+            raise ValueError("El control puro no debe recibir un indice local")
+        return TAREA, ""
+    if indice_impacto is None:
+        raise ValueError(f"La variante {variante} requiere un indice local")
     indice_serializado = json.dumps(
         indice_impacto,
         ensure_ascii=False,
         separators=(",", ":"),
     )
-    contenidos: list[Any] = [
-        f"{TAREA}\n\nINDICE_LOCAL_DE_IMPACTO:\n{indice_serializado}"
-    ]
+    return (
+        f"{TAREA}\n\nINDICE_LOCAL_DE_IMPACTO:\n{indice_serializado}",
+        indice_serializado,
+    )
+
+
+def ejecutar_agente(
+    cliente: genai.Client,
+    modelo: str,
+    variante: str,
+    indice_impacto: dict[str, object] | None,
+) -> dict[str, object]:
+    """Ejecuta un ciclo de herramientas y agrega cada uso real del modelo."""
+    instruccion = construir_instruccion(variante)
+    solicitud, indice_serializado = construir_solicitud(variante, indice_impacto)
+    contenidos: list[Any] = [solicitud]
     entrada_total = salida_total = razonamiento_total = llamadas = reintentos = 0
     ejecuciones_herramientas = aciertos_cache = 0
     cache: dict[str, dict[str, object]] = {}
     rutas_observadas: set[str] = set()
-    registrar_rutas(indice_impacto, rutas_observadas)
+    if indice_impacto is not None:
+        registrar_rutas(indice_impacto, rutas_observadas)
     traza_herramientas: list[dict[str, object]] = []
     violaciones_protocolo: list[str] = []
     historial_rubrica: list[dict[str, object]] = []
     correcciones = 0
+    herramientas_rechazadas = 0
     inicio = time.perf_counter()
     texto_final = ""
     respuesta_estructurada: dict[str, object] | None = None
     fallos_finales: list[str] = []
     for _ in range(MAXIMO_TURNOS):
+        permitir_herramientas = (
+            (variante == "control_puro" or correcciones > 0)
+            and ejecuciones_herramientas < MAXIMO_EJECUCIONES_HERRAMIENTAS
+        )
+        parametros_configuracion: dict[str, Any] = {
+            "system_instruction": instruccion,
+            "temperature": 0,
+            "max_output_tokens": 2000,
+        }
+        if permitir_herramientas:
+            parametros_configuracion["tools"] = [HERRAMIENTAS]
+        configuracion = types.GenerateContentConfig(**parametros_configuracion)
         for intento in range(MAXIMO_REINTENTOS_CUOTA + 1):
             try:
                 respuesta = cliente.models.generate_content(model=modelo, contents=contenidos, config=configuracion)
@@ -331,6 +387,11 @@ def ejecutar_agente(
                     "mensaje": "El resultado completo ya esta disponible en el historial.",
                 }
                 aciertos_cache += 1
+            elif ejecuciones_herramientas >= MAXIMO_EJECUCIONES_HERRAMIENTAS:
+                resultado = {
+                    "error": "Se alcanzo el limite de herramientas de la evaluacion",
+                }
+                herramientas_rechazadas += 1
             else:
                 resultado = ejecutar_herramienta(llamada.name, argumentos)
                 cache[firma] = resultado
@@ -358,15 +419,21 @@ def ejecutar_agente(
         "llamadas_herramientas": llamadas,
         "ejecuciones_herramientas": ejecuciones_herramientas,
         "aciertos_cache": aciertos_cache,
+        "herramientas_rechazadas": herramientas_rechazadas,
         "duracion_segundos": round(time.perf_counter() - inicio, 3),
         "reintentos": reintentos,
         "analisis_local": {
-            "terminos": indice_impacto.get("terminos", []),
-            "archivos_examinados": indice_impacto.get("archivos_examinados", 0),
+            "indice_incluido": indice_impacto is not None,
+            "terminos": indice_impacto.get("terminos", []) if indice_impacto else [],
+            "archivos_examinados": indice_impacto.get("archivos_examinados", 0)
+            if indice_impacto
+            else 0,
             "archivos_con_coincidencias": indice_impacto.get(
                 "archivos_con_coincidencias", 0
-            ),
-            "coincidencias": indice_impacto.get("coincidencias", 0),
+            ) if indice_impacto else 0,
+            "coincidencias": indice_impacto.get("coincidencias", 0)
+            if indice_impacto
+            else 0,
             "caracteres_serializados": len(indice_serializado),
             "rutas_requeridas": len(RUTAS_ESENCIALES_MIGRACION),
         },
@@ -397,7 +464,11 @@ def cargar_reanudacion(salida: Path, modelo: str, repeticiones: int) -> list[dic
         datos = json.loads(salida.read_text(encoding="utf-8"))
     except (OSError, UnicodeError, json.JSONDecodeError) as error:
         raise ValueError(f"No se pudo reanudar desde {salida}: {error}") from error
-    if datos.get("skill") != "optimizar-contexto" or datos.get("modelo") != modelo:
+    if (
+        datos.get("skill") != "optimizar-contexto"
+        or datos.get("modelo") != modelo
+        or datos.get("version_adaptador") != VERSION_ADAPTADOR
+    ):
         raise ValueError("El resultado existente no corresponde a esta Skill o modelo")
     ejecuciones = datos.get("ejecuciones")
     if not isinstance(ejecuciones, list):
@@ -409,7 +480,7 @@ def cargar_reanudacion(salida: Path, modelo: str, repeticiones: int) -> list[dic
         and ejecucion.get("escenario") == ESCENARIO
         and isinstance(ejecucion.get("repeticion"), int)
         and 1 <= ejecucion["repeticion"] <= repeticiones
-        and ejecucion.get("variante") in {"control", "skill"}
+        and ejecucion.get("variante") in set(VARIANTES_EXPERIMENTO)
     ]
 
 
@@ -418,7 +489,11 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--modelo", default="gemini-3.1-flash-lite")
     parser.add_argument("--repeticiones", type=int, default=1)
-    parser.add_argument("--salida", type=Path, default=Path("resultados/evaluacion_agente_gemini.json"))
+    parser.add_argument(
+        "--salida",
+        type=Path,
+        default=Path("resultados/evaluacion_sistema_gemini_v8.json"),
+    )
     parser.add_argument("--reanudar", action="store_true", help="Reanuda las ejecuciones ya guardadas en --salida.")
     argumentos = parser.parse_args()
     if argumentos.repeticiones < 1 or not os.environ.get("GEMINI_API_KEY"):
@@ -427,10 +502,12 @@ def main() -> int:
     indice_impacto = crear_indice_con_requisitos(
         analizar_impacto(RAIZ, TERMINOS_IMPACTO),
         RUTAS_ESENCIALES_MIGRACION,
+        RAIZ,
     )
     ejecuciones = cargar_reanudacion(argumentos.salida, argumentos.modelo, argumentos.repeticiones) if argumentos.reanudar else []
     resultado: dict[str, object] = {
         "version": 1,
+        "version_adaptador": VERSION_ADAPTADOR,
         "skill": "optimizar-contexto",
         "proveedor": "gemini-api",
         "modelo": argumentos.modelo,
@@ -439,7 +516,7 @@ def main() -> int:
     }
     completadas = {(ejecucion["repeticion"], ejecucion["variante"]) for ejecucion in ejecuciones}
     for repeticion in range(1, argumentos.repeticiones + 1):
-        for variante in ("control", "skill"):
+        for variante in VARIANTES_EXPERIMENTO:
             if (repeticion, variante) in completadas:
                 print(f"Conservando {variante} {repeticion}/{argumentos.repeticiones} ya guardado.")
                 continue
@@ -448,7 +525,7 @@ def main() -> int:
                 cliente,
                 argumentos.modelo,
                 variante,
-                indice_impacto,
+                None if variante == "control_puro" else indice_impacto,
             )
             ejecucion.update({"escenario": ESCENARIO, "repeticion": repeticion, "variante": variante})
             ejecuciones.append(ejecucion)

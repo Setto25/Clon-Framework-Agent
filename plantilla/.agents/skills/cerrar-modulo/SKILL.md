@@ -19,13 +19,21 @@ description: Cierra y documenta un módulo terminado después de implementar cua
 3. Actualizar `documentacion/DOCUMENTACION_TECNICA.md` si cambió el funcionamiento o la ubicación.
 4. Agregar una entrada nueva y acumulativa a `documentacion/REGISTRO_CAMBIOS.md`.
 5. Revisar `documentacion/GUIA_OPERACION.md`; actualizarla cuando el cambio altere operación, arquitectura, datos, secretos, API, dispositivo, diagnóstico o escalamiento. Si no aplica, registrar explícitamente esa evaluación en la entrega.
-6. Ejecutar `scripts/verificar_memoria_proyecto.py` desde esta Skill.
+6. Ejecutar `scripts/validar_cierre_tarea.py` con los comandos de prueba, archivos modificados y documentos actualizados reales. No declarar terminado si devuelve un código distinto de cero.
 
 ## Comando
 
 ```powershell
-python scripts/verificar_memoria_proyecto.py . --json
+python scripts/validar_cierre_tarea.py . `
+  --comando-prueba "<comando de prueba pertinente>" `
+  --archivo-modificado "<ruta modificada>" `
+  --documento-actualizado "PROJECT_STATE.md" `
+  --documento-actualizado "documentacion/PLAN_DESARROLLO.md" `
+  --documento-actualizado "documentacion/REGISTRO_CAMBIOS.md" `
+  --guia-operacion-revisada
 ```
+
+Agregar `--documentacion-tecnica-aplica` y declarar `documentacion/DOCUMENTACION_TECNICA.md` cuando el cambio altere funcionamiento, ubicacion o contrato tecnico. El script ejecuta las pruebas declaradas y tambien verifica la memoria del proyecto.
 
 ## Salida
 

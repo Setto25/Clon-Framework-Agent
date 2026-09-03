@@ -34,9 +34,9 @@ class PruebasCalidadSkills(unittest.TestCase):
         """Localiza los manifiestos distribuidos."""
         self.manifiestos = sorted(RAIZ_SKILLS.rglob("SKILL.md"))
 
-    def test_conserva_las_veintidos_skills(self) -> None:
+    def test_conserva_las_veintitres_skills(self) -> None:
         """Confirma que la mejora no elimine ninguna Skill inventariada."""
-        self.assertEqual(len(self.manifiestos), 22)
+        self.assertEqual(len(self.manifiestos), 23)
 
     def test_frontmatter_identifica_cada_carpeta(self) -> None:
         """Confirma nombre, descripcion y correspondencia con la carpeta."""
@@ -58,6 +58,23 @@ class PruebasCalidadSkills(unittest.TestCase):
                 self.assertEqual(PATRON_PLACEHOLDER.findall(contenido), [])
                 for fragmento in FRAGMENTOS_PROHIBIDOS:
                     self.assertNotIn(fragmento, contenido)
+
+    def test_optimizacion_usa_carga_progresiva_y_escalamiento_observable(self) -> None:
+        """Impide volver a cargar el protocolo costoso por una tarea comun."""
+        raiz = RAIZ_SKILLS / "optimizar-contexto"
+        manifiesto = (raiz / "SKILL.md").read_text(encoding="utf-8")
+        modo_extendido = raiz / "referencias" / "modo_extendido.md"
+        modo_arquitectonico = raiz / "referencias" / "modo_arquitectonico.md"
+        self.assertTrue(modo_extendido.is_file())
+        self.assertTrue(modo_arquitectonico.is_file())
+        self.assertIn("referencias/modo_extendido.md", manifiesto)
+        self.assertIn("referencias/modo_arquitectonico.md", manifiesto)
+        self.assertIn("mas de 10 rutas o dos ciclos fallidos", manifiesto)
+        self.assertIn("dos ciclos fallidos", manifiesto)
+        self.assertIn("prever cuatro lecturas", manifiesto)
+        self.assertIn("indice autoritativo", manifiesto)
+        self.assertIn("no listes ni reconfirmes", manifiesto)
+        self.assertLess(len(manifiesto.encode("utf-8")), 3200)
 
 
 if __name__ == "__main__":

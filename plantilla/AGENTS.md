@@ -3,7 +3,7 @@
 ## 1. Estilo de código y documentación
 
 - Todos los nombres creados para archivos, carpetas, módulos, clases, esquemas, modelos y routers deben escribirse en {{IDIOMA_NOMBRES}}, con dos excepciones:
-  - **Nombres reservados por herramientas o por la convencion interoperable del framework** (no configurables dentro de la plantilla): `AGENTS.md`, `PROJECT_STATE.md`, `.agents/skills`, `.agents/rules`, `SKILL.md` y los demas enumerados en `.agents/rules/excepciones_nominales.md`.
+  - **Nombres reservados por herramientas o por la convencion interoperable del framework** (no configurables dentro de la plantilla): `AGENTS.md`, `CLAUDE.md`, `PROJECT_STATE.md`, `.agents/skills`, `.agents/rules`, `.claude/skills`, `SKILL.md` y los demas enumerados en `.agents/rules/excepciones_nominales.md`.
   - **Terminos tecnicos universales** reconocidos por la comunidad (ej: `endpoint`, `middleware`, `system_prompt`, `callback`): se conservan en ingles porque traducirlos dificulta busqueda y comunicacion. La lista completa y el criterio de inclusion estan en `.agents/rules/excepciones_nominales.md`.
 - Se permite composicion mixta: termino universal + palabra en {{IDIOMA_NOMBRES}} (ej: `middleware_autenticacion`, `handler_pedidos`).
 - Si una herramienta impone otro nombre tecnico no configurable, se debe documentar la excepcion antes de crearlo.
@@ -40,7 +40,7 @@
 
 ## 5. Definición de terminado
 
-Un módulo solo se considera terminado cuando el código está implementado, las pruebas pertinentes pasan, existe una forma reproducible de ejecutarlo y la documentación de estado, funcionamiento y cambios se encuentra actualizada.
+Un módulo solo se considera terminado cuando el código está implementado, las pruebas pertinentes pasan, existe una forma reproducible de ejecutarlo y la documentación de estado, funcionamiento y cambios se encuentra actualizada. Antes de declararlo terminado se debe ejecutar `scripts/validar_cierre_tarea.py` con las pruebas y archivos reales de la tarea; un código distinto de cero significa que el trabajo permanece incompleto.
 
 ## 6. Skills del proyecto
 
@@ -49,25 +49,32 @@ Un módulo solo se considera terminado cuando el código está implementado, las
 - Se deben resolver scripts y referencias desde el directorio de la Skill correspondiente.
 - Se debe usar `$cerrar-modulo` después de completar y verificar un módulo.
 - Se debe usar `$lecciones-aprendidas` antes de repetir una depuración difícil ya registrada.
-- Se debe considerar `$optimizar-contexto` cuando la tarea afecte varios módulos, requiera al menos cuatro lecturas, use herramientas verbosas o sostenga una sesión larga. No se activa automáticamente para tareas simples.
+- Se debe considerar `$optimizar-contexto` solo ante auditoría solicitada, exploración repetida, más de diez rutas relevantes, dos ciclos fallidos o presión observable de contexto. No se activa por defecto en una implementación acotada, aunque cruce frontend y backend. El índice local se usa solo cuando la exploración ya es necesaria; si es fresco, reemplaza el listado inicial y se actualiza solo ante ausencia, contradicción o cambio externo.
 - Se debe usar `$probar-e2e` cuando corresponda comprobar un flujo completo entre componentes.
+- Se debe considerar `$diagnosticar-tarea` antes de invocar al agente en tareas con pruebas fallidas o errores reproducibles. Ejecutar `python scripts/diagnosticar_tarea.py <directorio>` y entregar el diagnostico como contexto inicial si la confianza es alta o media.
 - Solo se pueden invocar Skills cuyo `SKILL.md` exista en esta instancia. Las recomendaciones de otras Skills requieren confirmación antes de incorporarlas desde el framework fuente.
 
 ## 7. Operación con diferentes agentes
 
 ### Con Antigravity
 
-- Se debe comprobar si la version utilizada descubre `AGENTS.md`, `.agents/rules/` y `.agents/skills/`.
-- Si no existe evidencia de descubrimiento, se deben adjuntar o leer explicitamente los archivos necesarios.
+- Se deben usar `.agents/rules/` y `.agents/skills/` como mecanismos nativos del proyecto.
+- La regla `00-contexto-framework.md` exige leer `AGENTS.md` y `PROJECT_STATE.md`.
 - Solo se deben invocar Skills instaladas en la instancia.
 
 ### Con Claude
 
 - Se deben comprobar las herramientas y permisos de la sesion antes de asumir acceso a archivos o terminal.
-- Se debe leer completamente `AGENTS.md` como contexto inicial.
-- Se deben consultar las Skills instaladas mediante el mecanismo disponible o como documentacion local.
+- `CLAUDE.md` importa `AGENTS.md`, `PROJECT_STATE.md` y las reglas especificas.
+- `.claude/skills/` contiene adaptadores generados que remiten a la unica copia canonica en `.agents/skills/`.
 - Se debe usar `documentacion/prompts/SYSTEM_PROMPT_BASE.md` junto con el delta correspondiente cuando la configuracion lo requiera.
 - Se debe consultar `.agents/rules/claude.md` para reglas especificas.
+
+### Con Cursor
+
+- Se deben usar `AGENTS.md` y `.agents/skills/` mediante su descubrimiento nativo.
+- Se debe leer `PROJECT_STATE.md` antes de modificar codigo.
+- Se deben comprobar las Skills visibles y los permisos de la sesion antes de actuar.
 
 ### Con Codex
 

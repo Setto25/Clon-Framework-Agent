@@ -56,6 +56,15 @@ def descubrir_archivos_gestionados(raiz: Path) -> list[Path]:
     raiz_skills = raiz / ".agents" / "skills"
     if raiz_skills.is_dir():
         archivos.update(archivo for archivo in raiz_skills.rglob("*") if archivo.is_file())
+    raiz_adaptadores = raiz / ".claude" / "skills"
+    if raiz_adaptadores.is_dir():
+        archivos.update(
+            archivo
+            for archivo in raiz_adaptadores.rglob("SKILL.md")
+            if archivo.is_file()
+            and "<!-- adaptador-generado-por-agent-framework -->"
+            in archivo.read_text(encoding="utf-8")
+        )
     for relativa in cargar_rutas_gestionadas(raiz):
         ruta = raiz / Path(relativa)
         if ruta.is_file():

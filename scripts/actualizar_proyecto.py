@@ -8,6 +8,7 @@ import json
 import os
 import re
 import shutil
+import subprocess
 import sys
 import tempfile
 from datetime import datetime, timezone
@@ -130,6 +131,17 @@ def preparar_fuente(raiz_framework: Path, instaladas: list[str], temporal: Path)
         destino = temporal / Path(relativa)
         destino.parent.mkdir(parents=True, exist_ok=True)
         shutil.copy2(origen, destino)
+    subprocess.run(
+        [
+            sys.executable,
+            str(temporal / "scripts" / "sincronizar_adaptadores_agentes.py"),
+            str(temporal),
+        ],
+        check=True,
+        timeout=30,
+        capture_output=True,
+        text=True,
+    )
     normalizar_permisos_arbol(temporal)
     return temporal, nombres
 

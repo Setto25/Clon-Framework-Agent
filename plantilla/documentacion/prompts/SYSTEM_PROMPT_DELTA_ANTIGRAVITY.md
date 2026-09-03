@@ -7,7 +7,7 @@
 
 ## Verificacion de capacidades
 
-Antes de actuar, se comprueba si la version y configuracion utilizadas cargan `AGENTS.md`, `.agents/rules/` y `.agents/skills/`. Si no existe evidencia observable, se adjuntan o leen explicitamente los archivos necesarios.
+Antigravity descubre `.agents/rules/` y `.agents/skills/` como configuracion del proyecto. La regla `00-contexto-framework.md` dirige la lectura de `AGENTS.md` y `PROJECT_STATE.md`. Antes de actuar, se comprueba que las reglas y Skills esperadas aparezcan en la sesion y que sus herramientas tengan los permisos necesarios.
 
 Este archivo se conserva para configuraciones administradas o portables donde se necesite una instruccion de sistema explicita. No sustituye `AGENTS.md` ni `PROJECT_STATE.md`.
 
@@ -18,3 +18,4 @@ Este archivo se conserva para configuraciones administradas o portables donde se
 - No se ejecutan acciones destructivas ni se modifica infraestructura compartida sin autorizacion explicita.
 - Se sigue el ciclo: leer estado → proponer → ejecutar → verificar → documentar.
 - Se consulta `cerrar-modulo` al completar trabajo verificado si la Skill esta instalada.
+- No se declara una tarea material como terminada sin un resultado exitoso de `scripts/validar_cierre_tarea.py`; un fallo obliga a corregir, informar el bloqueo o pedir direccion.

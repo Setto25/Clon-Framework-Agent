@@ -131,12 +131,19 @@ class PruebasValidacionResultadoAgente(unittest.TestCase):
     def test_indice_publica_la_misma_cobertura_que_exige_la_rubrica(self) -> None:
         """Expone al agente todas las rutas que luego se comprobara que declare."""
         original: dict[str, object] = {"archivos": []}
-        indice = crear_indice_con_requisitos(original, RUTAS_ESENCIALES_MIGRACION)
+        indice = crear_indice_con_requisitos(
+            original, RUTAS_ESENCIALES_MIGRACION, RAIZ_FRAMEWORK
+        )
         self.assertEqual(
             indice["rutas_requeridas_en_rutas_afectadas"],
             sorted(RUTAS_ESENCIALES_MIGRACION),
         )
         self.assertNotIn("rutas_requeridas_en_rutas_afectadas", original)
+        evidencias = indice.get("evidencias_disponibles")
+        self.assertIsInstance(evidencias, list)
+        self.assertTrue(evidencias)
+        if isinstance(evidencias, list):
+            self.assertIn("patron", evidencias[0])
 
     def test_retroalimentacion_conserva_los_fallos_sin_inventar_resultado(self) -> None:
         """Entrega al agente causas exactas y exige una respuesta de reemplazo."""
@@ -144,6 +151,7 @@ class PruebasValidacionResultadoAgente(unittest.TestCase):
         self.assertIn("Falta README.md", mensaje)
         self.assertIn("Comando no comprobable", mensaje)
         self.assertIn("JSON completo de reemplazo", mensaje)
+        self.assertIn("sin explicar que inspeccionaras", mensaje)
         self.assertIn("especificamente a rutas_afectadas", mensaje)
         self.assertIn("subcadena literal exacta", mensaje)
 

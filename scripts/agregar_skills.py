@@ -7,6 +7,7 @@ import argparse
 import json
 import os
 import shutil
+import subprocess
 import sys
 import tempfile
 from datetime import datetime, timezone
@@ -195,8 +196,33 @@ def agregar_skills(proyecto: Path, solicitadas: list[str]) -> list[str]:
         instalar_skills(raiz_origen, temporal, seleccionadas)
         normalizar_permisos_arbol(temporal)
         publicadas = publicar_skills_preparadas(temporal, raiz_destino, seleccionadas)
+        subprocess.run(
+            [
+                sys.executable,
+                str(
+                    raiz_framework
+                    / "plantilla"
+                    / "scripts"
+                    / "sincronizar_adaptadores_agentes.py"
+                ),
+                str(raiz_proyecto),
+                *[
+                    argumento
+                    for nombre in nombres
+                    for argumento in ("--skill", nombre)
+                ],
+            ],
+            check=True,
+            timeout=30,
+            capture_output=True,
+            text=True,
+        )
+        publicadas.extend(
+            raiz_proyecto / ".claude" / "skills" / nombre
+            for nombre in nombres
+        )
         escribir_estado(ruta_estado, estado, nombres, calcular_huellas_gestionadas(raiz_proyecto))
-    except (OSError, ValueError):
+    except (OSError, ValueError, subprocess.SubprocessError):
         for ruta in reversed(publicadas):
             if ruta.is_dir() and ruta.exists():
                 shutil.rmtree(ruta)

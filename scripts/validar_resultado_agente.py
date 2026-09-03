@@ -32,10 +32,26 @@ RUTAS_ESENCIALES_MIGRACION: set[str] = {
 def crear_indice_con_requisitos(
     indice: dict[str, object],
     rutas_requeridas: set[str],
+    raiz: Path | None = None,
 ) -> dict[str, object]:
-    """Agrega al indice la cobertura exacta que la rubrica comprobara."""
+    """Agrega cobertura y evidencia literal utilizable al indice comprobable."""
     enriquecido = dict(indice)
-    enriquecido["rutas_requeridas_en_rutas_afectadas"] = sorted(rutas_requeridas)
+    rutas_ordenadas = sorted(rutas_requeridas)
+    enriquecido["rutas_requeridas_en_rutas_afectadas"] = rutas_ordenadas
+    if raiz is not None:
+        evidencias: list[dict[str, str]] = []
+        for ruta in rutas_ordenadas:
+            archivo = resolver_ruta_regular(raiz, ruta)
+            if archivo is None:
+                continue
+            try:
+                lineas = archivo.read_text(encoding="utf-8").splitlines()
+            except (OSError, UnicodeError):
+                continue
+            patron = next((linea.strip() for linea in lineas if linea.strip()), "")
+            if patron:
+                evidencias.append({"ruta": ruta, "patron": patron[:160]})
+        enriquecido["evidencias_disponibles"] = evidencias
     return enriquecido
 
 
@@ -45,8 +61,10 @@ def crear_retroalimentacion(fallos: list[str]) -> str:
     return (
         "La rubrica local rechazo la respuesta por estos motivos:\n"
         f"{detalle}\n"
-        "Corrige la auditoria. Inspecciona mediante herramientas cualquier ruta que "
-        "aun no haya sido observada y devuelve un objeto JSON completo de reemplazo. "
+        "Corrige la auditoria y devuelve ahora un objeto JSON completo de reemplazo, "
+        "sin explicar que inspeccionaras archivos. Si hay herramientas disponibles, "
+        "usarlas solo para las rutas o patrones rechazados; si no las hay, usar "
+        "exclusivamente la evidencia ya disponible. "
         "Agrega especificamente a rutas_afectadas cada ruta anunciada como faltante, "
         "aunque ya aparezca en evidencias o en el indice. Conserva la evidencia valida, "
         "copia cada patron como una subcadena literal exacta del indice o del archivo y "

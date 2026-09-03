@@ -12,7 +12,38 @@ from typing import Optional, TypedDict, cast
 
 
 MAXIMO_BYTES_ENTRADA = 1024 * 1024
-VARIANTES: tuple[str, ...] = ("control", "skill")
+VARIANTES_HISTORICAS: tuple[str, ...] = ("control", "skill")
+VARIANTES_SISTEMA: tuple[str, ...] = ("control_puro", "indice", "skill")
+VARIANTES_DESARROLLO: tuple[str, ...] = (
+    "control_puro",
+    "indice",
+    "skill_adaptativa",
+    "skill_extendida",
+    "extendido_compacto",
+)
+VARIANTES_DESARROLLO_AUTORITATIVO: tuple[str, ...] = (
+    "control_puro",
+    "indice_autoritativo",
+    "skill_adaptativa",
+    "skill_extendida",
+    "extendido_compacto",
+)
+VARIANTES_SELECTOR_PYTHON: tuple[str, ...] = (
+    "control_puro",
+    "indice_autoritativo",
+    "selector_python_compacto",
+)
+VARIANTES_HERRAMIENTAS_EFICIENTES: tuple[str, ...] = ("herramientas_actuales", "herramientas_eficientes")
+VARIANTES_INDICE_EFICIENTES: tuple[str, ...] = ("herramientas_actuales", "indice_con_herramientas_eficientes")
+VARIANTES_ADMITIDAS: set[str] = set(
+    VARIANTES_HISTORICAS
+    + VARIANTES_SISTEMA
+    + VARIANTES_DESARROLLO
+    + VARIANTES_DESARROLLO_AUTORITATIVO
+    + VARIANTES_SELECTOR_PYTHON
+    + VARIANTES_HERRAMIENTAS_EFICIENTES
+    + VARIANTES_INDICE_EFICIENTES
+)
 
 
 class Ejecucion(TypedDict):
@@ -28,6 +59,8 @@ class Ejecucion(TypedDict):
     llamadas_herramientas: int
     duracion_segundos: float
     reintentos: int
+    mecanismos_activados: bool
+    duracion_anomala: bool
 
 
 class Criterios(TypedDict):
@@ -41,9 +74,11 @@ class Metricas(TypedDict):
     """Resume las metricas agregadas de una variante."""
 
     ejecuciones: int
+    ejecuciones_exitosas: int
     tasa_eficacia: float
     tokens_totales: int
     tokens_promedio: float
+    tokens_por_exito: Optional[float]
     llamadas_herramientas_promedio: float
     duracion_promedio_segundos: float
     reintentos_promedio: float
@@ -57,6 +92,12 @@ class Informe(TypedDict):
     aprobada: bool
     ahorro_tokens: float
     diferencia_eficacia: float
+    comparaciones: dict[str, float]
+    comparacion_ahorro_valida: bool
+    pares_exitosos: int
+    ahorro_tokens_pareados: Optional[float]
+    ahorro_tokens_por_exito: Optional[float]
+    observaciones: list[str]
     razones: list[str]
     variantes: dict[str, Metricas]
 
@@ -96,14 +137,31 @@ def validar_ejecucion(datos: object, posicion: int) -> Ejecucion:
     variante = datos.get("variante")
     if not isinstance(escenario, str) or not escenario.strip():
         raise ValueError(f"ejecuciones[{posicion}].escenario debe contener texto")
-    if variante not in VARIANTES:
-        raise ValueError(f"ejecuciones[{posicion}].variante debe ser control o skill")
+    if variante not in VARIANTES_ADMITIDAS:
+        raise ValueError(
+            f"ejecuciones[{posicion}].variante no pertenece a un experimento soportado"
+        )
     exito = datos.get("exito")
     pruebas = datos.get("pruebas_aprobadas")
     if not isinstance(exito, bool) or not isinstance(pruebas, bool):
         raise ValueError(f"ejecuciones[{posicion}] debe declarar resultados booleanos")
+    escenario_normalizado = escenario.strip()
+    exige_mecanismos = escenario_normalizado in {
+        "desarrollo-web-herramientas-eficientes-v2",
+        "desarrollo-web-indice-eficiente-v1",
+    }
+    mecanismos = datos.get("mecanismos_activados", False)
+    if exige_mecanismos and not isinstance(mecanismos, bool):
+        raise ValueError(
+            f"ejecuciones[{posicion}].mecanismos_activados debe ser booleano en v2"
+        )
+    if not isinstance(mecanismos, bool):
+        mecanismos = False
+    duracion_anomala = datos.get("duracion_anomala", False)
+    if not isinstance(duracion_anomala, bool):
+        duracion_anomala = False
     return Ejecucion(
-        escenario=escenario.strip(),
+        escenario=escenario_normalizado,
         repeticion=exigir_entero_no_negativo(datos.get("repeticion"), "repeticion"),
         variante=cast(str, variante),
         exito=exito,
@@ -117,11 +175,15 @@ def validar_ejecucion(datos: object, posicion: int) -> Ejecucion:
             datos.get("duracion_segundos"), "duracion_segundos"
         ),
         reintentos=exigir_entero_no_negativo(datos.get("reintentos"), "reintentos"),
+        mecanismos_activados=mecanismos,
+        duracion_anomala=duracion_anomala,
     )
 
 
-def cargar_experimento(ruta: Path) -> tuple[str, Criterios, list[Ejecucion]]:
-    """Valida el experimento y exige pares equivalentes entre variantes."""
+def cargar_experimento(
+    ruta: Path,
+) -> tuple[str, Criterios, list[Ejecucion], tuple[str, ...]]:
+    """Valida el experimento y exige observaciones equivalentes entre variantes."""
     datos = cargar_json_acotado(ruta)
     if datos.get("version") != 1:
         raise ValueError("La version de evaluacion soportada es 1")
@@ -146,19 +208,42 @@ def cargar_experimento(ruta: Path) -> tuple[str, Criterios, list[Ejecucion]]:
         validar_ejecucion(ejecucion, posicion)
         for posicion, ejecucion in enumerate(ejecuciones_crudas)
     ]
-    claves_por_variante: dict[str, set[tuple[str, int]]] = {variante: set() for variante in VARIANTES}
+    variantes_presentes = {ejecucion["variante"] for ejecucion in ejecuciones}
+    if variantes_presentes == set(VARIANTES_HISTORICAS):
+        variantes = VARIANTES_HISTORICAS
+    elif variantes_presentes == set(VARIANTES_SISTEMA):
+        variantes = VARIANTES_SISTEMA
+    elif variantes_presentes == set(VARIANTES_DESARROLLO):
+        variantes = VARIANTES_DESARROLLO
+    elif variantes_presentes == set(VARIANTES_DESARROLLO_AUTORITATIVO):
+        variantes = VARIANTES_DESARROLLO_AUTORITATIVO
+    elif variantes_presentes == set(VARIANTES_SELECTOR_PYTHON):
+        variantes = VARIANTES_SELECTOR_PYTHON
+    elif variantes_presentes == set(VARIANTES_HERRAMIENTAS_EFICIENTES):
+        variantes = VARIANTES_HERRAMIENTAS_EFICIENTES
+    elif variantes_presentes == set(VARIANTES_INDICE_EFICIENTES):
+        variantes = VARIANTES_INDICE_EFICIENTES
+    else:
+        raise ValueError(
+            "El experimento debe contener control/skill, control_puro/indice/skill "
+            "o variantes de desarrollo con indice autoritativo y selector Python"
+        )
+    claves_por_variante: dict[str, set[tuple[str, int]]] = {
+        variante: set() for variante in variantes
+    }
     for ejecucion in ejecuciones:
         clave = (ejecucion["escenario"], ejecucion["repeticion"])
         claves = claves_por_variante[ejecucion["variante"]]
         if clave in claves:
             raise ValueError(f"Ejecucion duplicada: {ejecucion['variante']} {clave}")
         claves.add(clave)
-    if claves_por_variante["control"] != claves_por_variante["skill"]:
+    referencia = claves_por_variante[variantes[0]]
+    if any(claves_por_variante[variante] != referencia for variante in variantes[1:]):
         raise ValueError("Las variantes deben contener los mismos escenarios y repeticiones")
     return skill.strip(), Criterios(
         margen_no_inferioridad=margen,
         ahorro_minimo_tokens=ahorro,
-    ), ejecuciones
+    ), ejecuciones, variantes
 
 
 def resumir(ejecuciones: list[Ejecucion], variante: str) -> Metricas:
@@ -171,9 +256,11 @@ def resumir(ejecuciones: list[Ejecucion], variante: str) -> Metricas:
     tokens = [ejecucion["tokens_entrada"] + ejecucion["tokens_salida"] for ejecucion in seleccionadas]
     return Metricas(
         ejecuciones=cantidad,
+        ejecuciones_exitosas=eficaces,
         tasa_eficacia=eficaces / cantidad,
         tokens_totales=sum(tokens),
         tokens_promedio=sum(tokens) / cantidad,
+        tokens_por_exito=(sum(tokens) / eficaces) if eficaces else None,
         llamadas_herramientas_promedio=sum(
             ejecucion["llamadas_herramientas"] for ejecucion in seleccionadas
         ) / cantidad,
@@ -184,31 +271,265 @@ def resumir(ejecuciones: list[Ejecucion], variante: str) -> Metricas:
     )
 
 
-def evaluar(skill: str, criterios: Criterios, ejecuciones: list[Ejecucion]) -> Informe:
-    """Aprueba solo cuando conserva eficacia y alcanza el ahorro exigido."""
-    control = resumir(ejecuciones, "control")
-    con_skill = resumir(ejecuciones, "skill")
-    if control["tokens_totales"] == 0:
-        raise ValueError("El control debe registrar al menos un token")
-    ahorro = 1 - (con_skill["tokens_totales"] / control["tokens_totales"])
-    diferencia = con_skill["tasa_eficacia"] - control["tasa_eficacia"]
+def calcular_ahorro(base: Metricas, tratamiento: Metricas, nombre: str) -> float:
+    """Calcula el ahorro proporcional frente a una base con consumo observado."""
+    if base["tokens_totales"] == 0:
+        raise ValueError(f"{nombre} debe registrar al menos un token")
+    return 1 - (tratamiento["tokens_totales"] / base["tokens_totales"])
+
+
+def es_exitosa(ejecucion: Ejecucion) -> bool:
+    """Determina si una ejecucion completo la tarea y su validacion."""
+    return ejecucion["exito"] and ejecucion["pruebas_aprobadas"]
+
+
+def calcular_metricas_pareadas(
+    ejecuciones: list[Ejecucion],
+    base_variante: str,
+    tratamiento_variante: str,
+) -> tuple[int, Optional[float]]:
+    """Compara tokens solo en pares donde ambas variantes terminaron correctamente."""
+    por_clave = {
+        (ejecucion["escenario"], ejecucion["repeticion"], ejecucion["variante"]): ejecucion
+        for ejecucion in ejecuciones
+    }
+    tokens_base = 0
+    tokens_tratamiento = 0
+    pares_exitosos = 0
+    for escenario, repeticion, variante in por_clave:
+        if variante != base_variante:
+            continue
+        base = por_clave[(escenario, repeticion, base_variante)]
+        tratamiento = por_clave[(escenario, repeticion, tratamiento_variante)]
+        if not es_exitosa(base) or not es_exitosa(tratamiento):
+            continue
+        pares_exitosos += 1
+        tokens_base += base["tokens_entrada"] + base["tokens_salida"]
+        tokens_tratamiento += tratamiento["tokens_entrada"] + tratamiento["tokens_salida"]
+    if not pares_exitosos:
+        return 0, None
+    return pares_exitosos, 1 - (tokens_tratamiento / tokens_base)
+
+
+def calcular_ahorro_por_exito(base: Metricas, tratamiento: Metricas) -> Optional[float]:
+    """Calcula el ahorro observado por resultado exitoso, incluyendo intentos fallidos."""
+    costo_base = base["tokens_por_exito"]
+    costo_tratamiento = tratamiento["tokens_por_exito"]
+    if costo_base is None or costo_tratamiento is None:
+        return None
+    return 1 - (costo_tratamiento / costo_base)
+
+
+def evaluar(
+    skill: str,
+    criterios: Criterios,
+    ejecuciones: list[Ejecucion],
+    variantes: tuple[str, ...],
+) -> Informe:
+    """Aprueba solo cuando el sistema conserva eficacia y alcanza el ahorro exigido."""
+    metricas = {variante: resumir(ejecuciones, variante) for variante in variantes}
+    if variantes == VARIANTES_HERRAMIENTAS_EFICIENTES:
+        control = metricas["herramientas_actuales"]
+        selector = metricas["herramientas_eficientes"]
+        base_variante = "herramientas_actuales"
+        tratamiento_variante = "herramientas_eficientes"
+        ahorro = calcular_ahorro(control, selector, "Las herramientas actuales")
+        diferencia = selector["tasa_eficacia"] - control["tasa_eficacia"]
+        comparaciones = {"ahorro_herramientas_eficientes_frente_actuales": ahorro, "diferencia_eficacia_herramientas_eficientes_frente_actuales": diferencia}
+    elif variantes == VARIANTES_INDICE_EFICIENTES:
+        control = metricas["herramientas_actuales"]
+        tratamiento = metricas["indice_con_herramientas_eficientes"]
+        base_variante = "herramientas_actuales"
+        tratamiento_variante = "indice_con_herramientas_eficientes"
+        ahorro = calcular_ahorro(control, tratamiento, "Las herramientas actuales")
+        diferencia = tratamiento["tasa_eficacia"] - control["tasa_eficacia"]
+        comparaciones = {
+            "ahorro_indice_con_herramientas_eficientes_frente_actuales": ahorro,
+            "diferencia_eficacia_indice_con_herramientas_eficientes_frente_actuales": diferencia,
+        }
+    elif variantes == VARIANTES_SELECTOR_PYTHON:
+        control = metricas["control_puro"]
+        indice = metricas["indice_autoritativo"]
+        selector = metricas["selector_python_compacto"]
+        base_variante = "control_puro"
+        tratamiento_variante = "selector_python_compacto"
+        ahorro = calcular_ahorro(control, selector, "El control puro")
+        diferencia = selector["tasa_eficacia"] - control["tasa_eficacia"]
+        comparaciones = {
+            "ahorro_indice_autoritativo_frente_control_puro": calcular_ahorro(
+                control, indice, "El control puro"
+            ),
+            "ahorro_selector_python_compacto_frente_indice": calcular_ahorro(
+                indice, selector, "El indice autoritativo"
+            ),
+            "ahorro_selector_python_compacto_frente_control_puro": ahorro,
+            "diferencia_eficacia_indice_autoritativo_frente_control_puro": (
+                indice["tasa_eficacia"] - control["tasa_eficacia"]
+            ),
+            "diferencia_eficacia_selector_python_compacto_frente_indice": (
+                selector["tasa_eficacia"] - indice["tasa_eficacia"]
+            ),
+            "diferencia_eficacia_selector_python_compacto_frente_control_puro": diferencia,
+        }
+    elif variantes in (VARIANTES_DESARROLLO, VARIANTES_DESARROLLO_AUTORITATIVO):
+        control = metricas["control_puro"]
+        nombre_indice = (
+            "indice_autoritativo"
+            if variantes == VARIANTES_DESARROLLO_AUTORITATIVO
+            else "indice"
+        )
+        indice = metricas[nombre_indice]
+        adaptativa = metricas["skill_adaptativa"]
+        extendida = metricas["skill_extendida"]
+        compacta = metricas["extendido_compacto"]
+        base_variante = "control_puro"
+        tratamiento_variante = "skill_adaptativa"
+        ahorro = calcular_ahorro(control, adaptativa, "El control puro")
+        diferencia = adaptativa["tasa_eficacia"] - control["tasa_eficacia"]
+        comparaciones = {
+            f"ahorro_{nombre_indice}_frente_control_puro": calcular_ahorro(
+                control, indice, "El control puro"
+            ),
+            "ahorro_skill_adaptativa_frente_indice": calcular_ahorro(
+                indice, adaptativa, f"La variante con {nombre_indice}"
+            ),
+            "ahorro_skill_extendida_frente_indice": calcular_ahorro(
+                indice, extendida, f"La variante con {nombre_indice}"
+            ),
+            "ahorro_extendido_compacto_frente_indice": calcular_ahorro(
+                indice, compacta, f"La variante con {nombre_indice}"
+            ),
+            "ahorro_skill_extendida_frente_adaptativa": calcular_ahorro(
+                adaptativa, extendida, "La Skill adaptativa"
+            ),
+            "ahorro_extendido_compacto_frente_skill_extendida": calcular_ahorro(
+                extendida, compacta, "La Skill extendida"
+            ),
+            "ahorro_sistema_adaptativo_frente_control_puro": ahorro,
+            "ahorro_sistema_compacto_frente_control_puro": calcular_ahorro(
+                control, compacta, "El control puro"
+            ),
+            f"diferencia_eficacia_{nombre_indice}_frente_control_puro": (
+                indice["tasa_eficacia"] - control["tasa_eficacia"]
+            ),
+            "diferencia_eficacia_skill_adaptativa_frente_indice": (
+                adaptativa["tasa_eficacia"] - indice["tasa_eficacia"]
+            ),
+            "diferencia_eficacia_skill_extendida_frente_adaptativa": (
+                extendida["tasa_eficacia"] - adaptativa["tasa_eficacia"]
+            ),
+            "diferencia_eficacia_extendido_compacto_frente_indice": (
+                compacta["tasa_eficacia"] - indice["tasa_eficacia"]
+            ),
+            "diferencia_eficacia_sistema_adaptativo_frente_control_puro": diferencia,
+            "diferencia_eficacia_sistema_compacto_frente_control_puro": (
+                compacta["tasa_eficacia"] - control["tasa_eficacia"]
+            ),
+        }
+    elif variantes == VARIANTES_SISTEMA:
+        control = metricas["control_puro"]
+        indice = metricas["indice"]
+        con_skill = metricas["skill"]
+        base_variante = "control_puro"
+        tratamiento_variante = "skill"
+        ahorro = calcular_ahorro(control, con_skill, "El control puro")
+        diferencia = con_skill["tasa_eficacia"] - control["tasa_eficacia"]
+        comparaciones = {
+            "ahorro_indice_frente_control_puro": calcular_ahorro(
+                control, indice, "El control puro"
+            ),
+            "ahorro_skill_frente_indice": calcular_ahorro(
+                indice, con_skill, "La variante con indice"
+            ),
+            "ahorro_sistema_frente_control_puro": ahorro,
+            "diferencia_eficacia_indice_frente_control_puro": (
+                indice["tasa_eficacia"] - control["tasa_eficacia"]
+            ),
+            "diferencia_eficacia_skill_frente_indice": (
+                con_skill["tasa_eficacia"] - indice["tasa_eficacia"]
+            ),
+            "diferencia_eficacia_sistema_frente_control_puro": diferencia,
+        }
+    else:
+        control = metricas["control"]
+        con_skill = metricas["skill"]
+        base_variante = "control"
+        tratamiento_variante = "skill"
+        ahorro = calcular_ahorro(control, con_skill, "El control")
+        diferencia = con_skill["tasa_eficacia"] - control["tasa_eficacia"]
+        comparaciones = {
+            "ahorro_skill_frente_control": ahorro,
+            "diferencia_eficacia_skill_frente_control": diferencia,
+        }
     razones: list[str] = []
-    if control["tasa_eficacia"] < 1.0:
-        razones.append("El control no satisface el criterio de eficacia en todas sus ejecuciones")
-    if con_skill["tasa_eficacia"] < 1.0:
-        razones.append("La Skill no satisface el criterio de eficacia en todas sus ejecuciones")
+    pares_exitosos, ahorro_pareado = calcular_metricas_pareadas(
+        ejecuciones, base_variante, tratamiento_variante
+    )
+    ahorro_por_exito = calcular_ahorro_por_exito(control, metricas[tratamiento_variante])
+    comparacion_valida = (
+        control["tasa_eficacia"] == 1.0
+        and metricas[tratamiento_variante]["tasa_eficacia"] == 1.0
+    )
+    observaciones: list[str] = []
+    if not comparacion_valida:
+        observaciones.append(
+            "El ahorro agregado incluye ejecuciones incompletas; no constituye una comparacion causal de ahorro."
+        )
+    if pares_exitosos == 0:
+        observaciones.append(
+            "No existen pares exitosos comparables para estimar ahorro condicionado al exito."
+        )
+    nombres = {
+        "control": "El control",
+        "control_puro": "El control puro",
+        "indice": "La variante con indice",
+        "indice_autoritativo": "La variante con indice autoritativo",
+        "selector_python_compacto": "El selector Python compacto",
+        "herramientas_actuales": "Las herramientas actuales",
+        "herramientas_eficientes": "Las herramientas eficientes",
+        "indice_con_herramientas_eficientes": "El indice con herramientas eficientes",
+        "skill": "La Skill",
+        "skill_adaptativa": "La Skill adaptativa",
+        "skill_extendida": "La Skill en modo extendido",
+        "extendido_compacto": "El protocolo extendido compacto",
+    }
+    for variante in variantes:
+        if metricas[variante]["tasa_eficacia"] < 1.0:
+            razones.append(
+                f"{nombres[variante]} no satisface el criterio de eficacia en todas sus ejecuciones"
+            )
     if diferencia < -criterios["margen_no_inferioridad"]:
-        razones.append("La eficacia de la Skill es inferior al margen permitido")
+        razones.append("La eficacia del tratamiento objetivo es inferior al margen permitido")
     if ahorro < criterios["ahorro_minimo_tokens"]:
         razones.append("El ahorro de tokens no alcanza el umbral requerido")
+    if variantes == VARIANTES_HERRAMIENTAS_EFICIENTES and any(
+        not ejecucion["mecanismos_activados"]
+        for ejecucion in ejecuciones
+        if ejecucion["variante"] == "herramientas_eficientes"
+    ):
+        razones.append("Las herramientas eficientes no activaron ningun mecanismo medible")
+    if variantes == VARIANTES_INDICE_EFICIENTES and any(
+        not ejecucion["mecanismos_activados"]
+        for ejecucion in ejecuciones
+        if ejecucion["variante"] == "indice_con_herramientas_eficientes"
+    ):
+        razones.append("El indice con herramientas eficientes no activo ningun mecanismo medible")
+    if any(ejecucion["duracion_anomala"] for ejecucion in ejecuciones):
+        razones.append("La duracion contiene una medicion anomala y no es comparable")
     return Informe(
         version=1,
         skill=skill,
         aprobada=not razones,
         ahorro_tokens=ahorro,
         diferencia_eficacia=diferencia,
+        comparaciones=comparaciones,
+        comparacion_ahorro_valida=comparacion_valida,
+        pares_exitosos=pares_exitosos,
+        ahorro_tokens_pareados=ahorro_pareado,
+        ahorro_tokens_por_exito=ahorro_por_exito,
+        observaciones=observaciones,
         razones=razones,
-        variantes={"control": control, "skill": con_skill},
+        variantes=metricas,
     )
 
 
@@ -244,8 +565,8 @@ def main() -> int:
     """Evalua un experimento y diferencia rechazo de entrada invalida."""
     argumentos = crear_argumentos()
     try:
-        skill, criterios, ejecuciones = cargar_experimento(argumentos.entrada)
-        informe = evaluar(skill, criterios, ejecuciones)
+        skill, criterios, ejecuciones, variantes = cargar_experimento(argumentos.entrada)
+        informe = evaluar(skill, criterios, ejecuciones, variantes)
         escribir_informe(argumentos.salida, informe)
     except (OSError, UnicodeError, ValueError) as error:
         print(f"ERROR: {error}", file=sys.stderr)

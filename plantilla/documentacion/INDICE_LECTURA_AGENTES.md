@@ -1,5 +1,8 @@
 # Indice de lectura para agentes — {{NOMBRE_PROYECTO}}
 
+Claude Code recibe este mapa mediante `CLAUDE.md`; sus Skills visibles en
+`.claude/skills/` remiten a las mismas fuentes canonicas enumeradas abajo.
+
 ## Lectura obligatoria (siempre, al inicio de sesion)
 
 | # | Archivo | Proposito |
@@ -18,6 +21,7 @@
 | Cerrar modulo | `.agents/skills/cerrar-modulo/SKILL.md` |
 | Evaluar un agente, si la Skill esta instalada | `.agents/skills/evaluar-agente/SKILL.md` |
 | Crear otro proyecto, si la Skill esta instalada | `.agents/skills/iniciar-proyecto/SKILL.md` |
+| Rutas desconocidas o exploracion repetida | `.agents/skills/optimizar-contexto/SKILL.md`; un indice fresco sustituye el listado inicial y sus referencias solo se leen al escalar |
 | Cambio de agente, si la Skill opcional esta instalada | `.agents/skills/delegar-entre-agentes/SKILL.md` — protocolo de traspaso entre agentes distintos. |
 
 ## NO leer por defecto
