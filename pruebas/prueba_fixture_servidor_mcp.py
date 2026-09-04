@@ -9,6 +9,7 @@ from pathlib import Path
 
 RAIZ_FRAMEWORK = Path(__file__).resolve().parent.parent
 RAIZ_FIXTURE = RAIZ_FRAMEWORK / "pruebas" / "fixtures" / "servidor-mcp"
+RUTA_CI = RAIZ_FRAMEWORK / ".github" / "workflows" / "validacion.yml"
 
 
 class PruebasFixtureServidorMcp(unittest.TestCase):
@@ -30,6 +31,7 @@ class PruebasFixtureServidorMcp(unittest.TestCase):
             "pruebas/prueba_mcp.py",
             "pruebas/prueba_seguridad.py",
             "pruebas/probar_http_local.py",
+            "pruebas/probar_http_desplegado.py",
         }
         for relativa in rutas:
             with self.subTest(ruta=relativa):
@@ -56,6 +58,14 @@ class PruebasFixtureServidorMcp(unittest.TestCase):
         self.assertIn("stateless_http=True", aplicacion)
         self.assertIn("TokenVerifier", autenticacion)
         self.assertNotIn("Cloud Run", aplicacion)
+
+    def test_ci_valida_dependencias_http_e_imagen_oci(self) -> None:
+        """Exige que la validacion remota reproduzca el artefacto desplegable."""
+        flujo = RUTA_CI.read_text(encoding="utf-8")
+        self.assertIn("servidor-mcp:", flujo)
+        self.assertIn("uv sync --python 3.13 --frozen", flujo)
+        self.assertIn("docker build --tag piloto-servidor-mcp:ci", flujo)
+        self.assertIn("python -m pruebas.probar_http_desplegado", flujo)
 
 
 if __name__ == "__main__":

@@ -57,3 +57,56 @@ jobs:
         run: python scripts/validar_frontend_nextjs.py pruebas/fixtures/frontend-nextjs
       - name: Confirma que el fixture permanece reproducible
         run: git diff --exit-code -- pruebas/fixtures/frontend-nextjs
+
+  servidor-mcp:
+    name: Servidor MCP / Python 3.13 / OCI
+    runs-on: ubuntu-latest
+    env:
+      MCP_TOKEN_PRUEBA: valor-publico-solo-para-pruebas-ci-1234567890
+    steps:
+      - name: Obtiene el repositorio
+        uses: actions/checkout@v4
+      - name: Configura Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - name: Instala uv bloqueado
+        run: python -m pip install uv==0.11.28
+      - name: Instala dependencias del fixture
+        run: uv sync --python 3.13 --frozen
+        working-directory: pruebas/fixtures/servidor-mcp
+      - name: Ejecuta pruebas y recorrido HTTP local
+        run: |
+          uv run python -m unittest discover -s pruebas -p "prueba_*.py"
+          uv run python -m pruebas.probar_http_local
+        working-directory: pruebas/fixtures/servidor-mcp
+      - name: Construye la imagen OCI
+        run: docker build --tag piloto-servidor-mcp:ci pruebas/fixtures/servidor-mcp
+      - name: Ejecuta el contenedor
+        run: >-
+          docker run --detach --rm --name piloto-servidor-mcp-ci
+          --publish 8000:8080
+          --env MCP_TOKEN_BEARER="$MCP_TOKEN_PRUEBA"
+          --env MCP_URL_EMISOR="https://autenticacion.invalid"
+          --env MCP_URL_RECURSO="http://127.0.0.1:8000/mcp"
+          --env MCP_HOSTS_PERMITIDOS="127.0.0.1,127.0.0.1:*,localhost,localhost:*"
+          piloto-servidor-mcp:ci
+      - name: Espera la salud del contenedor
+        shell: bash
+        run: |
+          for intento in {1..30}; do
+            if curl --fail --silent http://127.0.0.1:8000/salud > /dev/null; then
+              exit 0
+            fi
+            sleep 1
+          done
+          docker logs piloto-servidor-mcp-ci
+          exit 1
+      - name: Repite el recorrido contra la imagen
+        env:
+          MCP_URL_PRUEBA: http://127.0.0.1:8000
+        run: uv run python -m pruebas.probar_http_desplegado
+        working-directory: pruebas/fixtures/servidor-mcp
+      - name: Retira el contenedor de prueba
+        if: always()
+        run: docker rm --force piloto-servidor-mcp-ci

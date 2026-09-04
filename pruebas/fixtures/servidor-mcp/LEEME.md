@@ -26,6 +26,14 @@ uv run python -m pruebas.probar_http_local
 
 La prueba HTTP comprueba `/salud`, tokens ausente e invalido, host rechazado, cuerpo excesivo, descubrimiento de ambas Tools, mutacion autenticada y negociacion de protocolo. No crea recursos cloud ni consume APIs externas.
 
+La CI construye la imagen y repite el mismo recorrido contra el contenedor con variables de prueba:
+
+```powershell
+$env:MCP_URL_PRUEBA = "http://127.0.0.1:8000"
+$env:MCP_TOKEN_PRUEBA = "<TOKEN_DE_PRUEBA>"
+uv run python -m pruebas.probar_http_desplegado
+```
+
 Con el servidor manual activo, un segundo cliente se valida mediante MCP Inspector:
 
 ```powershell

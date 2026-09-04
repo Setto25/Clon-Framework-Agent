@@ -611,13 +611,13 @@ Desde la raiz del meta-repositorio:
 python scripts\validar_cierre_cambio.py
 ```
 
-El cierre unico valida el contrato, las dependencias citadas por Skills, los archivos administrados, las referencias documentales, la actualizacion simultanea de README y estado, el formato Git y toda la suite Python. La suite comprueba creacion completa, seleccion exacta de Skills, actualizacion con deteccion de conflictos, evaluaciones pareadas, memoria propia del proyecto, limpieza atomica, proteccion de `.env`, coherencia de limites, gramatica de Python 3.9, vigencia del inventario y ausencia de instrucciones obsoletas o destructivas. La CI ejecuta la misma puerta y tambien instala un fixture Next.js bloqueado para ejecutar test, lint y build. El fixture MCP mantiene su SDK bloqueado y se valida separadamente porque sus dependencias no forman parte del runtime del framework.
+El cierre unico valida el contrato, las dependencias citadas por Skills, los archivos administrados, las referencias documentales, la actualizacion simultanea de README y estado, el formato Git y toda la suite Python. La suite comprueba creacion completa, seleccion exacta de Skills, actualizacion con deteccion de conflictos, evaluaciones pareadas, memoria propia del proyecto, limpieza atomica, proteccion de `.env`, coherencia de limites, gramatica de Python 3.9, vigencia del inventario y ausencia de instrucciones obsoletas o destructivas. La CI ejecuta la misma puerta, valida el fixture Next.js y dispone de un trabajo aislado que instala el lock MCP, ejecuta pruebas y HTTP, construye la imagen OCI y repite el recorrido contra el contenedor.
 
 ---
 
 ## 10. Estado actual y siguiente uso recomendado
 
-El framework se valido en dos pilotos privados y un fixture MCP reproducible. La API de inventario usa FastAPI y PostgreSQL; el panel web usa Next.js y consume esa API local. El fixture MCP usa Python 3.13, el SDK oficial `mcp==2.1.1`, una Tool de lectura, otra mutable idempotente, autenticacion bearer y autorizacion separada. Sus doce pruebas, incluidos timeout y salida acotada ante texto no confiable, y el recorrido Streamable HTTP local aprobaron; el cliente Python negocio MCP 2026-07-28 y MCP Inspector 2.5.0 negocio 2025-11-25 mediante `--server-url`, ambos contra el mismo servidor sin sesion. Docker no esta instalado en el entorno y la imagen aun no se ha construido. La matriz remota `Validacion #14` aprobo la base anterior en Ubuntu y Windows con Python 3.9 y 3.12, ademas del fixture Next.js con Node 24. Ninguna de estas comprobaciones autoriza un despliegue cloud.
+El framework se valido en dos pilotos privados y un fixture MCP reproducible. La API de inventario usa FastAPI y PostgreSQL; el panel web usa Next.js y consume esa API local. El fixture MCP usa Python 3.13, el SDK oficial `mcp==2.1.1`, una Tool de lectura, otra mutable idempotente, autenticacion bearer y autorizacion separada. Sus doce pruebas, incluidos timeout y salida acotada ante texto no confiable, y el recorrido Streamable HTTP local aprobaron; el cliente Python negocio MCP 2026-07-28 y MCP Inspector 2.5.0 negocio 2025-11-25 mediante `--server-url`, ambos contra el mismo servidor sin sesion. Docker no esta instalado localmente; la CI ya contiene el trabajo que construira y probara la imagen cuando se publique la rama. La matriz remota `Validacion #14` aprobo la base anterior, no este cambio. Ninguna de estas comprobaciones autoriza un despliegue cloud.
 
 El piloto MCP vive en `pruebas/fixtures/servidor-mcp/`. Desde esa ruta se verifica con:
 
@@ -757,6 +757,6 @@ Desde la raiz del meta-repositorio tambien existen:
 - `pruebas/prueba_fixture_servidor_mcp.py`: estructura, bloqueo de SDK y fronteras reemplazables del piloto MCP;
 - `pruebas/prueba_compatibilidad_agentes.py`: referencias existentes y capacidades no presupuestas por agente;
 - `pruebas/prueba_compatibilidad_python.py`: gramatica Python 3.9 y coherencia de constantes duplicadas;
-- `.github/workflows/validacion.yml`: matriz Python para Windows y Ubuntu, mas test, lint y build de Next.js;
+- `.github/workflows/validacion.yml`: matriz Python para Windows y Ubuntu, validacion Next.js y trabajo aislado de servidor MCP con imagen OCI;
 - `auditoria/inventario_skills.json`: rutas, tamaños y huellas del contenido auditado;
 - `ATRIBUCIONES.md`: inventario de procedencia y licencias pendientes.

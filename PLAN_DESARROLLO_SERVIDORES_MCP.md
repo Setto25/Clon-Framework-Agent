@@ -1,6 +1,6 @@
 # Plan de desarrollo: Skill para servidores MCP remotos
 
-**Estado:** en implementacion; Hitos 0 a 4 completados localmente, validacion ampliada en curso
+**Estado:** en implementacion; Hitos 0 a 4 completados localmente, validacion OCI preparada en CI
 
 **Linea base:** `3a58064`
 
@@ -10,7 +10,7 @@
 
 **Ubicacion prevista:** `plantilla/.agents/skills/stacks/ia-llm/skills/desarrollar-servidores-mcp/`
 
-**Progreso al 2026-09-03:** la revision vigente del protocolo se fijo en MCP 2026-07-28; la Skill canonica, sus cinco referencias, catalogo, atribuciones, inventario y regresiones deterministas ya fueron incorporados. El fixture del Hito 4 fija `mcp==2.1.1` y `uvicorn==0.52.4` sobre Python 3.13, porque era el runtime disponible. Doce pruebas, incluido el corte de una Tool por timeout y el tratamiento acotado de texto no confiable, y el recorrido Streamable HTTP autenticado aprobaron. El cliente Python negocio MCP 2026-07-28 e Inspector 2.5.0 negocio 2025-11-25 mediante `--server-url`; el servidor atendio ambos sin sesion. Docker no esta instalado, por lo que el build OCI permanece pendiente. No se ha creado ni desplegado ningun recurso cloud.
+**Progreso al 2026-09-03:** la revision vigente del protocolo se fijo en MCP 2026-07-28; la Skill canonica, sus cinco referencias, catalogo, atribuciones, inventario y regresiones deterministas ya fueron incorporados. El fixture del Hito 4 fija `mcp==2.1.1` y `uvicorn==0.52.4` sobre Python 3.13, porque era el runtime disponible. Doce pruebas, incluido el corte de una Tool por timeout y el tratamiento acotado de texto no confiable, y el recorrido Streamable HTTP autenticado aprobaron. El cliente Python negocio MCP 2026-07-28 e Inspector 2.5.0 negocio 2025-11-25 mediante `--server-url`; el servidor atendio ambos sin sesion. Docker no esta instalado localmente; se incorporo un trabajo de CI que construye la imagen OCI y repite el recorrido contra el contenedor, pero su ejecucion remota permanece pendiente. No se ha creado ni desplegado ningun recurso cloud.
 
 ## 1. Proposito
 
