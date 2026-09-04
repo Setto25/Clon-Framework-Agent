@@ -1,6 +1,6 @@
 {
   "version_contrato": 3,
-  "version_framework": "0.2.0-alpha.15",
+  "version_framework": "0.2.0-alpha.16",
   "sintaxis_placeholder": "{{CLAVE}}",
   "rutas_excluidas": [
     ".agents/skills"

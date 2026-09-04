@@ -243,7 +243,7 @@ class PruebasCreacionProyecto(unittest.TestCase):
             (destino / ".agents" / "rules" / "00-contexto-framework.md").is_file()
         )
         registro = (destino / "documentacion" / "REGISTRO_CAMBIOS.md").read_text(encoding="utf-8")
-        self.assertIn("agent-framework 0.2.0-alpha.15", registro)
+        self.assertIn("agent-framework 0.2.0-alpha.16", registro)
         for nombre in CORE_AUTOMATICO:
             with self.subTest(skill_registrada=nombre):
                 self.assertIn(f"- `{nombre}`", registro)

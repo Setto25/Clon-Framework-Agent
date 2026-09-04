@@ -1,87 +1,84 @@
 ---
 name: diseno-ui-web
-description: Reglas estrictas de diseño, anti-AI-slop, tokens semánticos, multi-theming y micro-interacciones para Next.js / Tailwind CSS.
+description: Define o revisa interfaces web con una direccion visual propia, composicion contextual, accesibilidad y movimiento intencional; evita soluciones SaaS genericas y conserva sistemas visuales existentes.
 ---
 
-# Skill: Diseño UI/UX Web (Anti-Slop & Taste)
+# Diseno UI/UX web con identidad
 
-Esta Skill impone estándares de diseño de alta calidad, erradicando las interfaces genéricas ("AI slop") mediante el uso estricto de tokens semánticos, *multi-theming* nativo y micro-interacciones pulidas.
+Construye interfaces reconocibles por su producto y su dominio, no por una receta visual de moda. El impacto puede provenir de expresividad, precision o calma; nunca debe sacrificar comprension, rendimiento ni accesibilidad.
 
-## 1. El Problema (AI Slop a Evitar)
+## Frontera de la Skill
 
-Por defecto, la IA produce interfaces mediocres. **Bajo ninguna circunstancia** debes implementar los siguientes anti-patrones:
-- **Colores planos hardcodeados:** Prohibido usar clases directas de Tailwind (ej. `bg-blue-500` o `text-gray-600`) para estructurar la aplicación.
-- **Degradados genéricos:** Prohibido el típico degradado "morado a azul" (`from-purple-500 to-blue-500`).
-- **Cartas idénticas flotantes:** Prohibido hacer *landings* con tres tarjetas blancas genéricas, un icono circular flotando encima y texto gris aburrido.
-- **Falta de contraste:** Todo texto debe cumplir ratio WCAG 2.1 (4.5:1). Prohibido usar textos grises ilegibles (`text-gray-400` sobre fondos blancos).
-- **Tipografía por defecto:** Prohibido dejar la fuente por defecto del navegador.
+- En un producto existente, conserva su lenguaje visual y sus patrones salvo que el usuario haya autorizado un rediseno.
+- Respeta marca, referencias, contenido y restricciones confirmadas. No inventa una identidad incompatible para "hacerla moderna".
+- No instala dependencias, tipografias remotas ni librerias de animacion sin comprobar el proyecto y el alcance autorizado.
+- Usa tokens semanticos y componentes reutilizables, pero no confunde un sistema de diseno con una identidad visual.
 
-## 2. Sistema de Tokens Semánticos
+## Direccion antes de componentes
 
-Para soportar *multi-theming* (claro, oscuro, paletas dinámicas), todo el diseño debe basarse en variables CSS semánticas inyectadas en la configuración de Tailwind (`tailwind.config.ts`).
+Antes de escribir UI, identifica con la evidencia disponible:
 
-### Clases permitidas (Roles Semánticos)
-Siempre usa los roles semánticos definidos. Ejemplos de uso obligatorio:
-- **Fondos:** `bg-background` (fondo principal), `bg-surface` o `bg-card` (tarjetas y contenedores elevados).
-- **Textos:** `text-foreground` (texto principal), `text-muted-foreground` (texto secundario).
-- **Bordes:** `border-border` o `border-muted` (divisores sutiles).
-- **Marca/Acción:** `bg-primary text-primary-foreground`, `bg-accent text-accent-foreground`.
+1. quien usa la interfaz y que debe resolver;
+2. cual es el objeto central del producto: conversacion, dispositivo, documento, escena, inventario, alerta u otro;
+3. si la experiencia es principalmente operativa, transaccional, editorial, narrativa, inmersiva o intensiva en datos;
+4. que sensacion debe producir y cual debe evitar;
+5. que identidad, recursos y patrones ya existen.
 
-## 3. Multi-Theming (next-themes)
+Si una respuesta faltante cambia materialmente el resultado, consulta al usuario. Si no, declara una hipotesis reversible y continua. Para crear o cambiar una direccion visual, lee [referencias/direccion_visual.md](referencias/direccion_visual.md).
 
-La aplicación debe soportar cambio de temas dinámico y sin parpadeo (*hydration flash*).
+Define antes de implementar un breve concepto rector con:
 
-1. **Instalar dependencias:** `npm install next-themes`
-2. **Configurar el Provider:**
-   Envuelve la aplicación (en `app/layout.tsx` o `providers.tsx`) con `<ThemeProvider attribute="class" defaultTheme="system" enableSystem>` (o `attribute="data-theme"` si se usan múltiples paletas).
-3. **Definir Paletas en `global.css`:**
-   ```css
-   @layer base {
-     :root {
-       --background: 0 0% 100%; /* OKLCH o HSL moderno */
-       --foreground: 240 10% 3.9%;
-       --primary: 240 5.9% 10%;
-       --primary-foreground: 0 0% 98%;
-       /* ...otros tokens... */
-     }
-     .dark {
-       --background: 240 10% 3.9%;
-       --foreground: 0 0% 98%;
-       --primary: 0 0% 98%;
-       --primary-foreground: 240 5.9% 10%;
-     }
-     [data-theme="vibrant"] {
-       /* Configuración de paleta opcional para temas alegres */
-     }
-   }
-   ```
+- una idea visual vinculada al producto;
+- una regla de composicion;
+- una voz tipografica;
+- una logica de color y material;
+- un gesto distintivo que pueda recordarse sin depender del logotipo;
+- limites explicitos para impedir exceso decorativo.
 
-## 4. El "Toque Premium" (Taste)
+No presentes varias direcciones completas salvo que la tarea sea explorar alternativas. En implementacion, elige una y mantenla coherente.
 
-Aplica siempre estos principios para que la interfaz se sienta cara y profesional:
+## Composicion contextual
 
-- **Modo Oscuro Real (Superficies Elevadas):** El modo oscuro no es solo "fondo negro". Usa fondos oscuros (`#0a0a0a`), pero las tarjetas deben tener un gris sutil (`#171717`) con bordes finos semitransparentes (`border-white/10`) y sombras internas ligeras (efecto *glassmorphism*).
-- **Micro-interacciones completas:** TODO elemento interactivo (botones, enlaces, cards clickeables) DEBE tener estados:
-  - `hover:` (cambio sutil de color o leve traslación/escala).
-  - `active:` (escala hacia abajo `active:scale-95`).
-  - `focus-visible:` (anillo de foco accesible `focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2`).
-  - `disabled:` (opacidad reducida `disabled:opacity-50 disabled:cursor-not-allowed`).
-- **Estados de Carga y Vacíos:**
-  - Nunca dejes la pantalla en blanco mientras cargas. Usa *skeleton loaders* (`animate-pulse bg-muted`) o *shimmer effects*.
-  - Los estados vacíos (ej. listas sin elementos) deben tener un icono sutil, un título claro, descripción gris y una acción primaria (botón).
-- **Tipografía Moderna:** Exige el uso de `next/font/google` con tipografías como `Geist`, `Inter`, `Outfit` o `Plus Jakarta Sans`. Usa un tracking sutil (ej. `tracking-tight` para títulos).
-- **Espaciado rítmico:** Usa la escala de espaciado estándar (4, 8, 12, 16, 24, 32, 48px).
+La arquitectura visual debe surgir del objeto y la tarea central. Una flota puede organizarse como territorio; una conversacion, como presencia y turnos; una investigacion, como evidencia y relaciones. No traduzcas automaticamente toda informacion a una cuadricula de tarjetas.
 
-## 5. Iconografía y Animaciones
+Evita como solucion predeterminada:
 
-- **Iconos:** Sugiere el uso de `lucide-react` (`npm install lucide-react`). Es ligero, moderno y *tree-shakeable*. No uses librerías pesadas obsoletas.
-- **Animaciones CSS Nativas:** Usa las transiciones fluidas de Tailwind: `transition-all duration-200 ease-out`.
-- **Framer Motion (Opcional):** Si el proyecto requiere animaciones complejas (aparición en scroll, orquestaciones), sugiere usar `framer-motion` o `motion/react`, pero NO lo instales a menos que el usuario lo confirme explícitamente.
+- encabezado, gran titulo, subtitulo y tres tarjetas intercambiables;
+- mosaicos de metricas sin una decision asociada;
+- panel lateral permanente cuando la jerarquia no lo necesita;
+- degradados morado-azul, resplandores, vidrio y bordes luminosos usados solo para aparentar tecnologia;
+- iconos dentro de circulos repetidos, textos de relleno y datos ficticios decorativos;
+- tipografias, radios y sombras elegidos porque son habituales en plantillas.
 
-## 6. Proceso de Implementación para el Agente
+Puede usar tarjetas, degradados o vidrio cuando expresen una jerarquia o materialidad concreta. La prohibicion es la repeticion sin razon, no la tecnica.
 
-Al aplicar esta Skill en un requerimiento de frontend:
-1. Configura primero la tipografía y los tokens en `tailwind.config.ts` y `global.css`.
-2. Instala y configura `next-themes`.
-3. Al crear componentes, piensa en sus 4 estados (idle, hover, loading, empty).
-4. No intentes reinventar *shadcn/ui*, pero usa sus mismos principios de diseño (tokens de Radix UI o similares).
+## Sistema visual
+
+- Define tokens semanticos para fondo, superficie, texto, borde, acciones, estados y datos. Los valores pueden usar CSS moderno; evita colores utilitarios dispersos como contrato de producto.
+- Selecciona tipografia por voz, legibilidad, idioma, licencia, privacidad y rendimiento. No limita la eleccion a una lista fija de fuentes populares.
+- Usa escala, ritmo, espacio, alineacion y densidad para jerarquizar antes de agregar contenedores.
+- Diferencia acciones primarias, riesgos, estados y contenido mediante mas de una senal; no depende solo del color.
+- Disena estados reales: carga, vacio, error, desconexion, permiso insuficiente, exito y contenido extremo.
+- Mantiene contraste, foco visible, navegacion por teclado, objetivos tactiles adecuados y HTML semantico.
+- Soporta temas solo si el producto lo requiere o ya los ofrece. Un modo oscuro no constituye por si mismo una direccion visual.
+
+## Movimiento con proposito
+
+Usa movimiento para explicar causalidad, mantener continuidad, orientar la atencion o dar respuesta a una accion. Si el desplazamiento debe producir un recorrido visual, una revelacion espacial o una secuencia narrativa, lee [referencias/movimiento_narrativo.md](referencias/movimiento_narrativo.md).
+
+- No bloquea ni secuestra el scroll nativo.
+- Respeta `prefers-reduced-motion` y ofrece una version comprensible sin animacion.
+- Evita animar todas las superficies o usar paralaje como decoracion repetida.
+- Reserva bibliotecas de animacion, canvas o WebGL para efectos que CSS y la plataforma no resuelvan con suficiente calidad.
+- En vistas operativas, prioriza respuesta inmediata, estabilidad espacial y baja carga cognitiva.
+
+## Implementacion y comprobacion
+
+1. Audita primero estilos, componentes y dependencias existentes.
+2. Registra el concepto rector y traduce sus reglas a tokens, layout y componentes.
+3. Implementa una seccion representativa antes de propagar el sistema completo.
+4. Verifica comportamiento responsivo, teclado, contraste, reduccion de movimiento, datos largos y estados adversos.
+5. Revisa la interfaz sin logotipo ni texto promocional. Si podria pertenecer sin cambios a cualquier producto, redefine al menos composicion, voz visual o gesto distintivo.
+6. Comprueba que el impacto refuerce la tarea principal. Si compite con ella, reduce el efecto.
+
+Una interfaz no se considera diferenciada por acumular efectos. Debe expresar una idea coherente, apropiada al dominio y reconocible en sus decisiones estructurales.

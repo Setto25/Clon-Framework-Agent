@@ -6,7 +6,7 @@ Extraido inicialmente del proyecto entrevoces. El creador y los verificadores ti
 
 > **Estado de Skills:** las 24 Skills permanecen en el catalogo fuente y fueron revisadas estructuralmente. Un proyecto nuevo recibe `cerrar-modulo`, `lecciones-aprendidas`, `optimizar-contexto`, `probar-e2e` y las Skills adicionales confirmadas mediante `--skill`. Su procedencia sigue incompleta, por lo que no se recomienda redistribuirlas.
 
-> **Plan activo:** [`PLAN_DESARROLLO_SERVIDORES_MCP.md`](PLAN_DESARROLLO_SERVIDORES_MCP.md) dirige la incorporacion de `desarrollar-servidores-mcp`: una Skill agnostica del agente, remota desde el inicio, portable entre proveedores y preparada para autenticacion reemplazable. La Skill ya forma parte de las 24 disponibles; su piloto y despliegue remoto permanecen pendientes.
+> **Linea MCP:** [`PLAN_DESARROLLO_SERVIDORES_MCP.md`](PLAN_DESARROLLO_SERVIDORES_MCP.md) dirige `desarrollar-servidores-mcp`: una Skill agnostica del agente, remota desde el inicio, portable entre proveedores y preparada para autenticacion reemplazable. La Skill, su piloto local y la imagen OCI ya aprobaron; cualquier despliegue cloud requiere autorizacion explicita.
 
 ---
 
@@ -528,7 +528,7 @@ Estos archivos son los del **proyecto instanciado**, no los de `agent-framework/
 | firmware-esp32 | `desarrollar-firmware` | Implementacion segura en ESP32/MicroPython: confirmar hardware, maquina de estados, limites de memoria | Al implementar logica nueva en microcontrolador |
 | firmware-esp32 | `diagnosticar-hardware` | Protocolo sistematico desde alimentacion hasta perifericos | Cuando fallo podria ser electrico o de conexion fisica |
 | frontend-nextjs | `nextjs-fullstack` | Patrones App Router: Server Components, Server Actions, caching, layouts, error boundaries | Al implementar paginas, mutaciones o API routes en Next.js |
-| frontend-nextjs | `diseno-ui-web` | Sistema visual, tokens semanticos, temas y micro-interacciones | Al definir o revisar una interfaz Next.js/Tailwind CSS |
+| frontend-nextjs | `diseno-ui-web` | Direccion visual contextual, identidad reconocible, sistema accesible y movimiento intencional | Al definir, redisenar o revisar una interfaz web que deba evitar soluciones genericas |
 | frontend-nextjs | `typescript-react` | TypeScript estricto en React/Next: props, generics, hooks custom, inferencia | Al definir tipos o resolver errores de tipos |
 | ia-llm | `rag-local` | Pipeline RAG local: chunking, embeddings, vector store, retrieval, augmentation | Cuando el LLM necesita responder con documentos propios |
 | ia-llm | `fine-tuning-llm` | Fine-tuning con LoRA/QLoRA: preparacion de datos, entrenamiento, evaluacion, export | Al especializar un modelo en dominio o tarea especifica |

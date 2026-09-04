@@ -104,7 +104,7 @@ class PruebasActualizacionProyecto(unittest.TestCase):
         )
         self.assertEqual(archivo.read_bytes(), fuente.read_bytes())
         actualizado = self.cargar_estado()
-        self.assertEqual(actualizado.get("version_framework"), "0.2.0-alpha.15")
+        self.assertEqual(actualizado.get("version_framework"), "0.2.0-alpha.16")
 
     def test_bloquea_cambio_local_sin_mutar_estado(self) -> None:
         """Detiene toda la actualizacion cuando un archivo administrado diverge."""

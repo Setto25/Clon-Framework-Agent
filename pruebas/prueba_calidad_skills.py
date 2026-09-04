@@ -99,6 +99,24 @@ class PruebasCalidadSkills(unittest.TestCase):
         self.assertNotIn("Codex", manifiesto)
         self.assertLess(len(manifiesto.encode("utf-8")), 6500)
 
+    def test_diseno_web_exige_identidad_sin_imponer_una_estetica(self) -> None:
+        """Comprueba direccion contextual, movimiento opcional y ausencia de recetas fijas."""
+        raiz = RAIZ_SKILLS / "stacks" / "frontend-nextjs" / "skills" / "diseno-ui-web"
+        manifiesto = (raiz / "SKILL.md").read_text(encoding="utf-8")
+        referencias = {"direccion_visual.md", "movimiento_narrativo.md"}
+        rutas = {ruta.name for ruta in (raiz / "referencias").glob("*.md")}
+        self.assertEqual(rutas, referencias)
+        for nombre in referencias:
+            with self.subTest(referencia=nombre):
+                self.assertIn(f"referencias/{nombre}", manifiesto)
+        self.assertIn("objeto central", manifiesto)
+        self.assertIn("gesto distintivo", manifiesto)
+        self.assertIn("prefers-reduced-motion", manifiesto)
+        self.assertNotIn("npm install next-themes", manifiesto)
+        self.assertNotIn("Geist", manifiesto)
+        self.assertNotIn("glassmorphism", manifiesto)
+        self.assertLess(len(manifiesto.encode("utf-8")), 8500)
+
 
 if __name__ == "__main__":
     unittest.main()

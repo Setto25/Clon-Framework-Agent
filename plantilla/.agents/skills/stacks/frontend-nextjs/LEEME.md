@@ -17,7 +17,7 @@ Una instancia generada puede contener una o varias Skills, segun la seleccion co
 stacks/frontend-nextjs/
 ├── LEEME.md
 ├── skills/
-│   ├── diseno-ui-web/          # Sistema visual, tokens, temas y micro-interacciones
+│   ├── diseno-ui-web/          # Direccion visual, identidad, sistema y movimiento intencional
 │   ├── nextjs-fullstack/       # App Router, Server Components, Server Actions, API routes
 │   └── typescript-react/       # TypeScript estricto en React/Next: tipos, generics, hooks
 └── domain-packs/               # Extensiones futuras (ej: auth-nextauth, cms-headless)

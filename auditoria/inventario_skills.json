@@ -1,9 +1,9 @@
 {
   "version_inventario": 2,
   "raiz": "plantilla/.agents/skills",
-  "huella_conjunto_sha256": "3fbb0c0df50e1fd49ff3e0cda46d582fedb55153164b483970ec492684ce568c",
+  "huella_conjunto_sha256": "488ea33e5a5f2861e774d038feffcebf1d9d3bffb0f8f0d848277ecaf1a99b2c",
   "resumen": {
-    "archivos": 48,
+    "archivos": 50,
     "skills": 24,
     "declaraciones_procedencia": 2
   },
@@ -88,8 +88,8 @@
     },
     {
       "ruta": "stacks/frontend-nextjs/skills/diseno-ui-web/SKILL.md",
-      "bytes": 5352,
-      "sha256": "723770e7fc4092c0435151b68d74716c796d74fad4befb3ae9cf004510954e87",
+      "bytes": 5659,
+      "sha256": "fb3169d84e1f9eb0d320bd4c3063011b1fae17e8bb585bf2ee63e18807a3ce0d",
       "nombre": "diseno-ui-web"
     },
     {
@@ -236,8 +236,18 @@
     },
     {
       "ruta": "stacks/frontend-nextjs/LEEME.md",
-      "bytes": 4056,
-      "sha256": "7895d0be9cc0112210287a8bd9964e3c7b0855e7172f3eeae17a2f8ccc74b2dd"
+      "bytes": 4066,
+      "sha256": "7fac26b883536c69fce4d323b31e8c6264cacab014fd2c49ecb438a6316e7271"
+    },
+    {
+      "ruta": "stacks/frontend-nextjs/skills/diseno-ui-web/referencias/direccion_visual.md",
+      "bytes": 3995,
+      "sha256": "b41a8e55b9c26b2a91ee5391f6bc234552dda13a33e7afa11600dcc5b84e0ae6"
+    },
+    {
+      "ruta": "stacks/frontend-nextjs/skills/diseno-ui-web/referencias/movimiento_narrativo.md",
+      "bytes": 2785,
+      "sha256": "c43eabe391223b387e21d8d6ab0d19f4de77fb735dfc2bb7679ab85ea05e62a5"
     },
     {
       "ruta": "stacks/ia-llm/LEEME.md",
