@@ -1,8 +1,8 @@
 # Estado del proyecto: agent-framework
 
-**Ultima actualizacion:** 2026-09-03 (rev 101)
-**Estado general:** framework reproducible con 24 Skills; desarrollo de servidores MCP integrado y piloto pendiente
-**Fase activa:** Fase 8 — implementacion y validacion de la Skill para servidores MCP
+**Ultima actualizacion:** 2026-09-03 (rev 102)
+**Estado general:** framework reproducible con 24 Skills; Skill MCP integrada y piloto HTTP local aprobado
+**Fase activa:** Fase 8 — validacion ampliada y portabilidad de la Skill para servidores MCP
 
 ## 1. Objetivo
 
@@ -142,13 +142,14 @@ Cada stack tiene LEEME.md con reglas adicionales, terminos tecnicos y procedimie
 - **Revision 99 de CI remota alpha.15.** La correccion del inventario se publico en `cd00bf5` y `Validacion #14` aprobo en GitHub Actions: las cuatro combinaciones Python (Ubuntu y Windows, 3.9 y 3.12) y el fixture Next.js con Node 24 finalizaron correctamente. Alpha.15 queda validada por las pruebas de humo multiagente y la matriz remota; la siguiente medicion Gemini mantiene un alcance independiente.
 - **Revision 100 de planificacion MCP.** La linea base `3a58064` estaba sincronizada con su rama remota antes de iniciar el diseño. `PLAN_DESARROLLO_SERVIDORES_MCP.md` registra alcance, arquitectura desacoplada, divulgacion progresiva, perfiles de autenticacion, despliegue cloud-first, control de costos, hitos, matriz de impacto, pruebas y criterios de aceptacion para que cualquier agente pueda implementar la nueva Skill. El catalogo permanece en 23 Skills hasta que la implementacion y su piloto aprueben el cierre.
 - **Revision 101 de integracion MCP.** Se incorpora `desarrollar-servidores-mcp` al stack `ia-llm` con cinco referencias progresivas sobre arquitectura, capacidades, seguridad, despliegue portable e interoperabilidad. La Skill usa MCP 2026-07-28 como referencia vigente, conserva compatibilidad negociada, separa autenticacion de autorizacion y trata Streamable HTTP, Cloud Run, bearer y OCI como opciones reemplazables. El catalogo avanza a 24 Skills; creacion, adicion, wrappers Claude, referencias y proteccion de cambios locales quedan cubiertos por regresiones. `quick_validate.py` y 47 pruebas focalizadas aprobaron; el piloto ejecutable y cualquier despliegue cloud permanecen pendientes.
+- **Revision 102 del piloto MCP.** `pruebas/fixtures/servidor-mcp` fija el SDK oficial `mcp==2.1.1`, `uvicorn==0.52.4` y Python 3.13 disponible. Implementa dominio desacoplado, una Tool de lectura, una Tool mutable idempotente, autenticacion bearer mediante `TokenVerifier`, autorizacion por alcance, configuracion externa, proteccion de hosts, ASGI, HTTP heredado sin sesion y `Dockerfile`. Las doce pruebas de dominio, contrato y seguridad aprobaron, incluido el corte de una Tool por timeout y el tratamiento acotado de texto no confiable; el recorrido Streamable HTTP obtuvo salud 200, rechazo de tokens ausente e invalido, host 421, cuerpo excesivo 413, invocacion autenticada y negociacion MCP 2026-07-28. MCP Inspector 2.5.0, usando `--server-url`, negocio MCP 2025-11-25, listo ambas Tools y demostro idempotencia entre conexiones. Docker no esta instalado, por lo que la imagen no se construyo. No se creo infraestructura cloud.
 
 ## 5. Que falta
 
 - **Validacion con proyecto real.** Dos pilotos independientes completaron sus flujos locales, sus fricciones fueron sintetizadas y el validador frontend se ejecuto de extremo a extremo. Falta validar en CI remota.
 - **Stack backend-fastapi.** El piloto uso `fastapi-setup` y valido setup, configuracion tipada, rutas, esquemas, servicio, migraciones, persistencia PostgreSQL y pruebas. Quedan autenticacion y autorizacion fuera de alcance hasta confirmar actores y exposicion.
 - **Procedencia de Skills.** La fuente y licencia deben resolverse antes de cualquier redistribucion. Las correcciones para uso personal quedan permitidas y registradas.
-- **Validacion funcional.** La estructura y las invariantes de seguridad estan probadas, pero cada Skill tecnica necesita un escenario piloto que mida si mejora el resultado frente a trabajar sin ella.
+- **Validacion funcional.** La Skill MCP ya dispone de un piloto funcional local y dos clientes de protocolo; aun falta una comparacion agentica independiente y evidencia de contenedor y endpoint cloud. Las demas Skills tecnicas conservan sus alcances de validacion previos.
 - **CI remota.** La matriz aprobo Windows y Ubuntu con Python 3.9 y 3.12 en la rama de estabilizacion.
 - **Cambios locales posteriores.** Las tres Skills incorporadas despues de `aa55f03` y la sincronizacion documental deben aprobar la CI remota antes de considerarse publicadas.
 - **Medicion agentica negativa inicial.** La captura local usa `GEMINI_API_KEY` solo desde el entorno y guarda resultados ignorados por Git. En el escenario corto de incorporar una Skill externa de stack, `gemini-3.1-flash-lite` uso aproximadamente 20 % mas tokens con `optimizar-contexto` (4.117 frente a 3.431 por repeticion), tres llamadas de lectura frente a una y ninguna variante supero la revision humana. El resultado no aprueba la Skill para ese escenario; una tarea mas larga podra medir si el coste inicial se amortiza.
@@ -156,4 +157,4 @@ Cada stack tiene LEEME.md con reglas adicionales, terminos tecnicos y procedimie
 
 ## 6. Siguiente paso logico
 
-El siguiente paso es ejecutar el Hito 4 de `PLAN_DESARROLLO_SERVIDORES_MCP.md`: construir un piloto aislado con el SDK oficial de Python fijado, una Tool de lectura y otra mutable idempotente, y probar el mismo Streamable HTTP local que se empaquetara. No se desplegara ningun recurso cloud hasta recibir autorizacion explicita. La repeticion de la medicion Gemini 3.8 permanece como linea independiente pendiente; cualquier redistribucion continua condicionada por la procedencia de `mobile-flutter`.
+El siguiente paso es completar la evidencia pendiente del Hito 5 de `PLAN_DESARROLLO_SERVIDORES_MCP.md`: construir y ejecutar la imagen OCI en un entorno con Docker o en CI. Las pruebas de token, entrada, error, timeout, transporte y MCP Inspector ya aprobaron. No se desplegara ningun recurso cloud hasta recibir autorizacion explicita. La repeticion de la medicion Gemini 3.8 permanece como linea independiente pendiente; cualquier redistribucion continua condicionada por la procedencia de `mobile-flutter`.

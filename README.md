@@ -611,13 +611,21 @@ Desde la raiz del meta-repositorio:
 python scripts\validar_cierre_cambio.py
 ```
 
-El cierre unico valida el contrato, las dependencias citadas por Skills, los archivos administrados, las referencias documentales, la actualizacion simultanea de README y estado, el formato Git y toda la suite Python. La suite comprueba creacion completa, seleccion exacta de Skills, actualizacion con deteccion de conflictos, evaluaciones pareadas, memoria propia del proyecto, limpieza atomica, proteccion de `.env`, coherencia de limites, gramatica de Python 3.9, vigencia del inventario y ausencia de instrucciones obsoletas o destructivas. La CI ejecuta la misma puerta y tambien instala un fixture Next.js bloqueado para ejecutar test, lint y build.
+El cierre unico valida el contrato, las dependencias citadas por Skills, los archivos administrados, las referencias documentales, la actualizacion simultanea de README y estado, el formato Git y toda la suite Python. La suite comprueba creacion completa, seleccion exacta de Skills, actualizacion con deteccion de conflictos, evaluaciones pareadas, memoria propia del proyecto, limpieza atomica, proteccion de `.env`, coherencia de limites, gramatica de Python 3.9, vigencia del inventario y ausencia de instrucciones obsoletas o destructivas. La CI ejecuta la misma puerta y tambien instala un fixture Next.js bloqueado para ejecutar test, lint y build. El fixture MCP mantiene su SDK bloqueado y se valida separadamente porque sus dependencias no forman parte del runtime del framework.
 
 ---
 
 ## 10. Estado actual y siguiente uso recomendado
 
-El framework se valido en dos pilotos privados: una API de inventario con FastAPI y PostgreSQL, y un panel web de inventario con Next.js que consume esa API local. El fixture Next.js conserva un `package-lock.json` generado desde un arbol limpio para que `npm ci` resuelva las mismas dependencias transitivas en Linux y Windows. La revision `0.2.0-alpha.15` agrega una puerta distribuible de cierre de tarea; sus pruebas de humo interactivas en Codex, Cursor, Antigravity y Claude Code confirmaron descubrimiento de reglas y Skills, una tarea documental minima y cierre valido. La matriz remota `Validacion #14` aprobo en Ubuntu y Windows con Python 3.9 y 3.12, ademas del fixture Next.js con Node 24. El alcance de humo no mide rendimiento ni calidad del modelo. La proteccion efectiva de `main` permanece condicionada por GitHub: el repositorio privado de la cuenta personal requiere una organizacion Team o Enterprise para aplicar reglas de rama.
+El framework se valido en dos pilotos privados y un fixture MCP reproducible. La API de inventario usa FastAPI y PostgreSQL; el panel web usa Next.js y consume esa API local. El fixture MCP usa Python 3.13, el SDK oficial `mcp==2.1.1`, una Tool de lectura, otra mutable idempotente, autenticacion bearer y autorizacion separada. Sus doce pruebas, incluidos timeout y salida acotada ante texto no confiable, y el recorrido Streamable HTTP local aprobaron; el cliente Python negocio MCP 2026-07-28 y MCP Inspector 2.5.0 negocio 2025-11-25 mediante `--server-url`, ambos contra el mismo servidor sin sesion. Docker no esta instalado en el entorno y la imagen aun no se ha construido. La matriz remota `Validacion #14` aprobo la base anterior en Ubuntu y Windows con Python 3.9 y 3.12, ademas del fixture Next.js con Node 24. Ninguna de estas comprobaciones autoriza un despliegue cloud.
+
+El piloto MCP vive en `pruebas/fixtures/servidor-mcp/`. Desde esa ruta se verifica con:
+
+```powershell
+uv sync --python 3.13 --frozen
+uv run python -m unittest discover -s pruebas -p "prueba_*.py"
+uv run python -m pruebas.probar_http_local
+```
 
 Para el siguiente proyecto privado:
 
@@ -746,6 +754,7 @@ Desde la raiz del meta-repositorio tambien existen:
 - `pruebas/prueba_inventario_skills.py`: control de vigencia del inventario de Skills;
 - `pruebas/prueba_calidad_skills.py`: invariantes estructurales y operativas de las 24 Skills;
 - `pruebas/prueba_catalogo_skills.py`: politica del core y coherencia entre el catalogo, el README y los LEEME de stacks;
+- `pruebas/prueba_fixture_servidor_mcp.py`: estructura, bloqueo de SDK y fronteras reemplazables del piloto MCP;
 - `pruebas/prueba_compatibilidad_agentes.py`: referencias existentes y capacidades no presupuestas por agente;
 - `pruebas/prueba_compatibilidad_python.py`: gramatica Python 3.9 y coherencia de constantes duplicadas;
 - `.github/workflows/validacion.yml`: matriz Python para Windows y Ubuntu, mas test, lint y build de Next.js;

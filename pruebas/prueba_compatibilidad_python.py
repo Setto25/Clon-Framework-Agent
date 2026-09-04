@@ -12,6 +12,9 @@ RAIZ_FRAMEWORK = Path(__file__).resolve().parent.parent
 INICIALIZADOR = RAIZ_FRAMEWORK / "plantilla" / "scripts" / "inicializar_proyecto.py"
 CREADOR = RAIZ_FRAMEWORK / "scripts" / "crear_proyecto.py"
 VALIDADOR = RAIZ_FRAMEWORK / "scripts" / "validar_contrato_plantilla.py"
+DIRECTORIOS_ARTEFACTOS: frozenset[str] = frozenset(
+    {".git", ".venv", "__pycache__", "node_modules", ".next", "dist", "build"}
+)
 
 
 def evaluar_constante(nodo: ast.AST) -> object:
@@ -70,8 +73,15 @@ class PruebasCompatibilidadPython(unittest.TestCase):
 
     def test_todo_el_codigo_acepta_la_gramatica_de_python_39(self) -> None:
         """Analiza cada modulo con la gramatica correspondiente a Python 3.9."""
-        archivos = sorted(RAIZ_FRAMEWORK.rglob("*.py"))
+        archivos = sorted(
+            archivo
+            for archivo in RAIZ_FRAMEWORK.rglob("*.py")
+            if not DIRECTORIOS_ARTEFACTOS.intersection(
+                archivo.relative_to(RAIZ_FRAMEWORK).parts
+            )
+        )
         self.assertTrue(archivos)
+        self.assertFalse(any(".venv" in archivo.parts for archivo in archivos))
         for archivo in archivos:
             with self.subTest(archivo=archivo.relative_to(RAIZ_FRAMEWORK)):
                 contenido = archivo.read_text(encoding="utf-8")

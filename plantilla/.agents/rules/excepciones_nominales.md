@@ -49,6 +49,13 @@ Registra todos los nombres técnicos no configurables que se conservan como exce
 | `layout.tsx`, `page.tsx` | Directorio `app/` | App Router usa estos nombres reservados para resolver rutas | Ninguna |
 | `eslint.config.mjs` | Raiz del paquete | ESLint descubre este nombre de configuracion | Ninguna |
 
+### Python, contenedores y despliegue
+
+| Nombre | Ubicación | Razón | Alternativa |
+|---|---|---|---|
+| `pyproject.toml`, `uv.lock` | Raiz del paquete Python | Los gestores y estandares del ecosistema exigen o descubren estos nombres | Ninguna |
+| `Dockerfile` | Raiz del contexto OCI | Docker y plataformas compatibles descubren este nombre por convencion | Indicar otro nombre explicitamente en cada comando de build |
+
 {{EXCEPCIONES_ADICIONALES}}
 
 ---
