@@ -36,6 +36,8 @@ Estas reglas complementan la seccion "Forma de implementacion" del prompt base:
 - Usar `loading.tsx`, `error.tsx` y `not-found.tsx` del App Router en vez de estados manuales.
 - Preferir `fetch` nativo con cache/revalidacion de Next.js sobre librerias de fetching del lado cliente.
 - Tipar explicitamente props, return types de Server Actions, y schemas de validacion — no usar `any`.
+- Mantener scripts ejecutables `lint` y `build` y declararlos como obligatorios en `contrato_validacion.json` cuando exista. Eliminar un script fallido no reduce la cobertura exigida por el cierre.
+- Declarar `packageManager` y conservar solo el lockfile correspondiente; el diagnostico usa ese gestor al inferir comandos.
 
 ## Terminos tecnicos del stack
 

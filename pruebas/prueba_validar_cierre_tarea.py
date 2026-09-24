@@ -43,6 +43,39 @@ class PruebasValidarCierreTarea(unittest.TestCase):
             destino.parent.mkdir(parents=True, exist_ok=True)
             destino.write_text("Contenido inicializado.\n", encoding="utf-8")
         (self.raiz / "modulo.py").write_text("valor = 1\n", encoding="utf-8")
+        (self.raiz / "pruebas").mkdir()
+        (self.raiz / "pruebas" / "prueba_modulo.py").write_text(
+            "import unittest\n\n"
+            "class PruebaModulo(unittest.TestCase):\n"
+            "    def test_valor(self):\n"
+            "        self.assertEqual(1, 1)\n",
+            encoding="utf-8",
+        )
+        contrato = {
+            "version_contrato": 1,
+            "modulos": [
+                {
+                    "nombre": "raiz",
+                    "directorio": ".",
+                    "verificaciones": [
+                        {
+                            "identificador": "pruebas-proyecto",
+                            "tipo": "unitarias",
+                            "comando": ["python", "-m", "unittest", "discover", "-s", "pruebas", "-p", "prueba_*.py"],
+                            "obligatoria": True,
+                            "bloquea_cierre": True,
+                            "timeout_segundos": 60,
+                        }
+                    ],
+                }
+            ],
+            "documentos_obligatorios": list(DOCUMENTOS_MINIMOS),
+            "criterios_bloqueo": ["FALLIDO", "NO_EJECUTADO", "NO_DISPONIBLE"],
+        }
+        (self.raiz / "contrato_validacion.json").write_text(
+            json.dumps(contrato, ensure_ascii=False, indent=2) + "\n",
+            encoding="utf-8",
+        )
 
     def tearDown(self) -> None:
         """Elimina el proyecto temporal al terminar la comprobacion."""
@@ -98,6 +131,70 @@ class PruebasValidarCierreTarea(unittest.TestCase):
         self.assertEqual(resultado.returncode, 2, resultado.stdout + resultado.stderr)
         informe: object = json.loads(resultado.stdout)
         self.assertIn("documentacion/PLAN_DESARROLLO.md", informe["errores"][0])
+
+    def test_prevalidacion_habilita_documentacion_solo_si_aprueba(self) -> None:
+        """Ejecuta las puertas antes de permitir cambios documentales de cierre."""
+        resultado = subprocess.run(
+            [
+                sys.executable,
+                str(self.raiz / "scripts" / "validar_cierre_tarea.py"),
+                str(self.raiz),
+                "--solo-verificaciones",
+                "--json",
+            ],
+            cwd=self.raiz,
+            check=False,
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+        )
+        self.assertEqual(resultado.returncode, 0, resultado.stdout + resultado.stderr)
+        informe: object = json.loads(resultado.stdout)
+        self.assertTrue(informe["documentacion_habilitada"] if isinstance(informe, dict) else False)
+
+    def test_prevalidacion_rechaza_next_sin_lint_aunque_otra_prueba_apruebe(self) -> None:
+        """Conserva el bloqueo cuando un agente elimina lint del paquete."""
+        (self.raiz / "package.json").write_text(
+            json.dumps({"dependencies": {"next": "16.3.5"}, "scripts": {"build": "next build"}}),
+            encoding="utf-8",
+        )
+        resultado = subprocess.run(
+            [sys.executable, str(self.raiz / "scripts" / "validar_cierre_tarea.py"),
+             str(self.raiz), "--solo-verificaciones", "--json"],
+            cwd=self.raiz, check=False, capture_output=True, text=True, encoding="utf-8",
+        )
+        self.assertEqual(resultado.returncode, 2, resultado.stdout + resultado.stderr)
+        informe: object = json.loads(resultado.stdout)
+        self.assertTrue(any("lint-ausente" in error for error in informe["errores"]))
+
+    def test_rechaza_operadores_de_shell(self) -> None:
+        """Impide ocultar una prueba fallida detras de una cadena compuesta."""
+        resultado = self.ejecutar(f'{sys.executable} -c "print(1)" && echo falso')
+        self.assertEqual(resultado.returncode, 1, resultado.stdout + resultado.stderr)
+        self.assertIn("operadores de shell", resultado.stderr)
+
+    def test_fixture_vertical_bloquea_cierre_y_no_modifica_documentacion(self) -> None:
+        """Conserva documentos abiertos cuando los nueve contratos fallan."""
+        fixture = RAIZ_FRAMEWORK / "pruebas" / "fixtures" / "contratos-verticales"
+        estado = (fixture / "PROJECT_STATE.md").read_bytes()
+        resultado = subprocess.run(
+            [
+                sys.executable,
+                str(self.raiz / "scripts" / "validar_cierre_tarea.py"),
+                str(fixture),
+                "--solo-verificaciones",
+                "--json",
+            ],
+            cwd=self.raiz,
+            check=False,
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+        )
+        self.assertEqual(resultado.returncode, 2, resultado.stdout + resultado.stderr)
+        informe: object = json.loads(resultado.stdout)
+        self.assertFalse(informe["documentacion_habilitada"] if isinstance(informe, dict) else True)
+        self.assertEqual((fixture / "PROJECT_STATE.md").read_bytes(), estado)
 
 
 if __name__ == "__main__":

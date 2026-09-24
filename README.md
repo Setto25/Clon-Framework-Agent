@@ -32,17 +32,29 @@ python scripts\crear_proyecto.py D:\PROYECTOS\mi-proyecto "Mi Proyecto" --skill 
 python D:\PROYECTOS\mi-proyecto\scripts\verificar_memoria_proyecto.py D:\PROYECTOS\mi-proyecto
 ```
 
-Al cerrar una tarea material, el agente debe ejecutar la puerta distribuida con los comandos y rutas reales. Un código distinto de cero significa que la tarea sigue incompleta:
+Al cerrar una tarea material, primero se ejecutan todas las puertas declaradas o inferidas. Solo un codigo cero habilita actualizar documentacion de cierre:
 
 ```powershell
 python D:\PROYECTOS\mi-proyecto\scripts\validar_cierre_tarea.py D:\PROYECTOS\mi-proyecto `
-  --comando-prueba "<prueba pertinente>" `
+  --solo-verificaciones `
+  --salida-evidencia documentacion/EVIDENCIA_CIERRE.json
+```
+
+Despues de aprobar la prevalidacion se actualizan los documentos y se ejecuta el cierre completo. `--comando-prueba` agrega una comprobacion, pero no sustituye ninguna puerta del contrato:
+
+```powershell
+python D:\PROYECTOS\mi-proyecto\scripts\validar_cierre_tarea.py D:\PROYECTOS\mi-proyecto `
   --archivo-modificado "<archivo modificado>" `
   --documento-actualizado "PROJECT_STATE.md" `
   --documento-actualizado "documentacion/PLAN_DESARROLLO.md" `
   --documento-actualizado "documentacion/REGISTRO_CAMBIOS.md" `
-  --guia-operacion-revisada
+  --guia-operacion-revisada `
+  --salida-evidencia documentacion/EVIDENCIA_CIERRE.json
 ```
+
+La evidencia diferencia `APROBADO`, `FALLIDO`, `NO_EJECUTADO` y `NO_DISPONIBLE`, además de comando, directorio, codigo y duracion. Una afirmacion del agente nunca reemplaza esos datos.
+
+La plantilla instala `.github/workflows/validacion-proyecto.yml`. En cada push y pull request, ejecuta `scripts/validar_integridad_proyecto.py`: rechaza memoria con pendientes, puertas `lint` o `build` ausentes en Next.js, gestores o lockfiles contradictorios y cambios de codigo sin actualizacion simultanea de estado, plan y registro. La comprobacion es estatica; las pruebas ejecutables siguen en `validar_cierre_tarea.py`. Fuera de GitHub se integra el mismo script con `--base <revision-git-base>` en la CI elegida.
 
 Para detalles, flujos alternativos y contingencias, ver §3 mas abajo.
 
@@ -251,6 +263,28 @@ Set-Location D:\PROYECTOS\mi-proyecto
 git status
 git add -A
 git commit -m "init: crea la base del proyecto"
+```
+
+### Contrato determinista de validacion
+
+Cada proyecto puede copiar `contrato_validacion.ejemplo.json` como `contrato_validacion.json` y declarar, por modulo, su directorio y verificaciones obligatorias. Cada verificacion contiene un identificador unico, uno de los tipos `unitarias`, `integracion`, `e2e`, `tipos`, `lint`, `build`, `migraciones`, `schema` o `contrato`, un comando como lista de argumentos, timeout y condiciones de bloqueo. Tambien declara documentos obligatorios y los estados que bloquean el cierre.
+
+```powershell
+Copy-Item contrato_validacion.ejemplo.json contrato_validacion.json
+python scripts\diagnosticar_tarea.py . --formato json
+```
+
+El validador rechaza campos, tipos, ejecutables, identificadores y comandos desconocidos o duplicados, y directorios inexistentes. Los comandos se ejecutan sin `shell` desde su modulo. Si el manifiesto no existe, el diagnostico busca configuraciones y pruebas en modulos anidados; esa cobertura se etiqueta como `INFERIDA` y un modulo sin comprobaciones queda `NO_EJECUTADO`, nunca aprobado.
+
+En un modulo Next.js, `lint` y `build` siguen siendo obligatorios aunque se elimine uno de los scripts o se omita del contrato: el diagnostico registra `NO_EJECUTADO`. La inferencia usa `packageManager` o el lockfile para elegir npm, pnpm o yarn, y bloquea lockfiles de gestores distintos o incompatibles con `packageManager`. La puerta estatica comprueba ademas que los scripts citados por el contrato existan.
+El descubrimiento excluye dependencias, artefactos y worktrees internos de `.kilo` para no interpretar copias de otros agentes como modulos propios.
+
+Los contratos verticales de negocio no se adivinan: el proyecto los implementa como pruebas y los registra en el manifiesto. El fixture `pruebas/fixtures/contratos-verticales` conserva nueve ejemplos de propagacion entre capas, refresco, paridad REST/WebSocket, URLs, atomicidad, schema, integridad referencial, plantillas y documentacion prematura.
+
+La rubrica agentica se reproduce sin API ni razonamiento interno:
+
+```powershell
+python scripts\evaluar_cierre_agente.py pruebas\casos_evaluacion_agente
 ```
 
 ### Validacion de un frontend Next.js anidado
@@ -507,7 +541,7 @@ Estos archivos son los del **proyecto instanciado**, no los de `agent-framework/
 
 | Skill | Que hace | Cuando invocar |
 |---|---|---|
-| `cerrar-modulo` | Documenta modulo terminado: actualiza PROJECT_STATE, plan, registro de cambios | Cuando las pruebas pasan o el usuario aprueba un componente |
+| `cerrar-modulo` | Ejecuta la prevalidacion determinista, habilita documentacion solo tras aprobar y repite la puerta completa | Cuando se intenta cerrar un componente con evidencia reproducible |
 | `probar-e2e` | Pruebas end-to-end del MVP entre componentes | Al verificar flujos completos (cliente-servidor-dispositivo) |
 | `lecciones-aprendidas` | Memoria de errores resueltos con dificultad (causa raiz no obvia) | Antes de depurar error complejo / tras resolver uno con 2+ intentos |
 | `optimizar-contexto` | Conserva estado compacto y evidencia verificable en tareas amplias sin reducir cobertura | Solo ante auditoria, exploracion repetida, mas de 10 rutas o dos ciclos fallidos; no se activa por defecto en implementaciones acotadas |
@@ -545,7 +579,7 @@ Estos archivos son los del **proyecto instanciado**, no los de `agent-framework/
 |---|---|---|
 | `delegar-entre-agentes` | Formaliza traspasos entre agentes distintos (Claude, Antigravity, Codex) con protocolo de entrega, recepcion y template rapido | Cuando se cambia de herramienta entre sesiones y hay decisiones activas o razonamiento en curso que PROJECT_STATE.md §8 no alcanza a capturar. Cuando basta actualizar §8, no hace falta esta Skill. |
 | `protocolo-debugging` | Exige evidencia, trazabilidad y una prueba que reproduzca el fallo antes de corregir | Cuando un error requiere diagnostico sistematico y se debe evitar corregir por conjetura. |
-| `diagnosticar-tarea` | Ejecuta un prediagnostico determinista con Python antes del agente. Parsea fallos de pruebas, identifica archivos responsables y genera contexto inicial compacto. | Antes de invocar al agente en tareas con pruebas fallidas o errores reproducibles. Reduce la exploracion y el razonamiento dedicados a descubrir que falla y donde. |
+| `diagnosticar-tarea` | Recorre modulos anidados, ejecuta cada puerta en su directorio y deriva candidatos solo de trazas, imports o cambios relacionados, excluyendo dependencias. | Antes de atribuir una causa o depurar fallos reproducibles; distingue fallo, ausencia de cobertura y herramienta no disponible. |
 
 ---
 
@@ -617,6 +651,8 @@ El cierre unico valida el contrato, las dependencias citadas por Skills, los arc
 
 ## 10. Estado actual y siguiente uso recomendado
 
+La revision local `0.2.0-alpha.18` incorpora la regresion observada en Web Scroll: Next.js exige `lint` y `build` aun si se eliminan scripts, y la CI del proyecto consumidor comprueba memoria, contrato y cambios documentales. La actualizacion de instancias existentes usa `scripts/actualizar_proyecto.py` y conserva conflictos locales para revision; la CI remota de esta revision sigue pendiente.
+
 El framework se valido en dos pilotos privados y un fixture MCP reproducible. La API de inventario usa FastAPI y PostgreSQL; el panel web usa Next.js y consume esa API local. El fixture MCP usa Python 3.13, el SDK oficial `mcp==2.1.1`, una Tool de lectura, otra mutable idempotente, autenticacion bearer y autorizacion separada. Sus doce pruebas, incluidos timeout y salida acotada ante texto no confiable, y el recorrido Streamable HTTP local aprobaron; el cliente Python negocio MCP 2026-07-28 y MCP Inspector 2.5.0 negocio 2025-11-25 mediante `--server-url`, ambos contra el mismo servidor sin sesion. Docker no esta instalado localmente; la CI ya contiene el trabajo que construira y probara la imagen cuando se publique la rama. La matriz remota `Validacion #14` aprobo la base anterior, no este cambio. Ninguna de estas comprobaciones autoriza un despliegue cloud.
 
 El piloto MCP vive en `pruebas/fixtures/servidor-mcp/`. Desde esa ruta se verifica con:
@@ -647,9 +683,13 @@ plantilla/
 ├── .env.ejemplo                                ← Variables de entorno de referencia
 ├── .plantilla-framework                        ← Centinela para el script de init
 ├── configuracion_plantilla.json                 ← Contrato canonico de placeholders
+├── contrato_validacion.ejemplo.json             ← Manifiesto tipado de puertas por modulo
+├── .github/workflows/validacion-proyecto.yml    ← Puerta estatica en push y pull request
 ├── scripts/
 │   ├── inicializar_proyecto.py                 ← Inicializador interno soportado
-│   ├── validar_cierre_tarea.py                  ← Ejecuta pruebas y evidencia de cierre por tarea
+│   ├── contrato_validacion.py                   ← Valida y ejecuta comandos sin shell
+│   ├── validar_cierre_tarea.py                  ← Prevalida y bloquea cierres sin cobertura completa
+│   ├── validar_integridad_proyecto.py            ← Comprueba memoria y cobertura sin dependencias
 │   ├── verificar_memoria_proyecto.py           ← Valida memoria y pendientes
 │   ├── generar_indice_contexto.py              ← Rastreador local determinista para optimizar-contexto
 │   ├── diagnosticar_tarea.py                   ← Prediagnostico de fallos para diagnosticar-tarea
@@ -726,9 +766,12 @@ Desde la raiz del meta-repositorio tambien existen:
 - `scripts/crear_proyecto.py`: creador atomico de una instancia nueva;
 - `scripts/agregar_skills.py`: instalador transaccional de Skills confirmadas en una instancia inicializada;
 - `scripts/actualizar_proyecto.py`: actualizador conservador con huellas, deteccion de conflictos y reversion;
+- `scripts/verificar_memoria_proyecto.py`: copia local del verificador distribuido, consumida por la prueba de integridad del framework;
 - `scripts/catalogo_skills.py`: catalogo tipado para recomendaciones y seleccion explicita;
 - `scripts/evaluar_eficacia_skills.py`: comparador pareado de eficacia, tokens, herramientas, tiempo y reintentos;
-- `plantilla/scripts/validar_cierre_tarea.py`: puerta distribuible que ejecuta pruebas declaradas y exige evidencia de cierre antes de finalizar una tarea;
+- `plantilla/scripts/validar_cierre_tarea.py`: puerta distribuible de dos fases que ejecuta todas las verificaciones declaradas o inferidas antes de habilitar documentacion;
+- `plantilla/scripts/validar_integridad_proyecto.py`: puerta estatica distribuible para CI y revision local, con comparacion documental contra una base Git;
+- `scripts/evaluar_cierre_agente.py`: rubrica determinista para trazas de cierre normales, ambiguas y fallidas sin registrar razonamiento interno;
 - `scripts/medir_tokens_gemini.py`: ejecutor local de una medicion pareada de contexto mediante Gemini API;
 - `scripts/analizar_impacto.py`: indice local compacto de referencias para evitar exploraciones agenticas exhaustivas;
 - `scripts/evaluar_agente_anthropic.py`: evaluador agentico equivalente mediante Claude Sonnet y Anthropic API;

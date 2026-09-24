@@ -1,0 +1,16 @@
+{
+  "version_registro": 1,
+  "caso": "ambiguo-sin-pruebas",
+  "clasificacion": "ambiguo",
+  "hash_prompt_efectivo": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+  "skills_cargadas": ["diagnosticar-tarea"],
+  "herramientas": ["terminal"],
+  "eventos": [],
+  "verificaciones": [{"tipo": "unitarias", "estado": "NO_EJECUTADO", "codigo_salida": null}],
+  "estado_final": "TERMINADO",
+  "atribuciones": [{"componente": "script determinista", "evidencia": "No se descubrieron pruebas."}],
+  "hay_contradicciones": false,
+  "contradicciones_detectadas": [],
+  "instrucciones_decisivas": [{"fuente": "diagnosticar-tarea", "efecto": "Informo ausencia de cobertura."}],
+  "resultado_esperado": "RECHAZADO"
+}

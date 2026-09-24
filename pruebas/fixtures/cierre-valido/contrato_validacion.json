@@ -1,0 +1,27 @@
+{
+  "version_contrato": 1,
+  "modulos": [
+    {
+      "nombre": "nucleo",
+      "directorio": ".",
+      "verificaciones": [
+        {
+          "identificador": "contrato-suma",
+          "tipo": "contrato",
+          "comando": ["python", "comprobar_cierre.py"],
+          "obligatoria": true,
+          "bloquea_cierre": true,
+          "timeout_segundos": 30
+        }
+      ]
+    }
+  ],
+  "documentos_obligatorios": [
+    "PROJECT_STATE.md",
+    "documentacion/PLAN_DESARROLLO.md",
+    "documentacion/DOCUMENTACION_TECNICA.md",
+    "documentacion/GUIA_OPERACION.md",
+    "documentacion/REGISTRO_CAMBIOS.md"
+  ],
+  "criterios_bloqueo": ["FALLIDO", "NO_EJECUTADO", "NO_DISPONIBLE"]
+}

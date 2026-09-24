@@ -1,0 +1,7 @@
+{
+  "name": "frontend-ficticio",
+  "private": true,
+  "scripts": {
+    "lint": "node comprobaciones/lint.mjs"
+  }
+}

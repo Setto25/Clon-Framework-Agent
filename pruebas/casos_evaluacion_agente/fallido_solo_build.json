@@ -1,0 +1,16 @@
+{
+  "version_registro": 1,
+  "caso": "fallido-solo-build",
+  "clasificacion": "fallido",
+  "hash_prompt_efectivo": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+  "skills_cargadas": [],
+  "herramientas": ["terminal"],
+  "eventos": [{"tipo": "validacion_aprobada", "orden": 1}],
+  "verificaciones": [{"tipo": "build", "estado": "APROBADO", "codigo_salida": 0}],
+  "estado_final": "TERMINADO",
+  "atribuciones": [{"componente": "proyecto", "evidencia": "El build devolvio codigo 0."}],
+  "hay_contradicciones": false,
+  "contradicciones_detectadas": [],
+  "instrucciones_decisivas": [{"fuente": "prompt", "efecto": "Solicito cerrar."}],
+  "resultado_esperado": "RECHAZADO"
+}

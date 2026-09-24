@@ -98,6 +98,8 @@ class PruebasCompatibilidadAgentes(unittest.TestCase):
         ).read_text(encoding="utf-8")
         self.assertIn("`AGENTS.md`", regla)
         self.assertIn("`PROJECT_STATE.md`", regla)
+        self.assertIn("trigger: always_on", regla)
+        self.assertIn("--solo-verificaciones", regla)
 
 if __name__ == "__main__":
     unittest.main()

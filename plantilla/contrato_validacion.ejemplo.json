@@ -1,0 +1,72 @@
+{
+  "version_contrato": 1,
+  "modulos": [
+    {
+      "nombre": "backend",
+      "directorio": "backend",
+      "verificaciones": [
+        {
+          "identificador": "pruebas-backend",
+          "tipo": "unitarias",
+          "comando": ["python", "-m", "pytest", "-q"],
+          "obligatoria": true,
+          "bloquea_cierre": true,
+          "timeout_segundos": 300
+        },
+        {
+          "identificador": "tipos-backend",
+          "tipo": "tipos",
+          "comando": ["python", "-m", "mypy", "."],
+          "obligatoria": true,
+          "bloquea_cierre": true,
+          "timeout_segundos": 300
+        },
+        {
+          "identificador": "migraciones-backend",
+          "tipo": "migraciones",
+          "comando": ["alembic", "check"],
+          "obligatoria": true,
+          "bloquea_cierre": true,
+          "timeout_segundos": 120
+        }
+      ]
+    },
+    {
+      "nombre": "frontend",
+      "directorio": "frontend",
+      "verificaciones": [
+        {
+          "identificador": "pruebas-frontend",
+          "tipo": "unitarias",
+          "comando": ["npm", "run", "test"],
+          "obligatoria": true,
+          "bloquea_cierre": true,
+          "timeout_segundos": 300
+        },
+        {
+          "identificador": "lint-frontend",
+          "tipo": "lint",
+          "comando": ["npm", "run", "lint"],
+          "obligatoria": true,
+          "bloquea_cierre": true,
+          "timeout_segundos": 300
+        },
+        {
+          "identificador": "build-frontend",
+          "tipo": "build",
+          "comando": ["npm", "run", "build"],
+          "obligatoria": true,
+          "bloquea_cierre": true,
+          "timeout_segundos": 600
+        }
+      ]
+    }
+  ],
+  "documentos_obligatorios": [
+    "PROJECT_STATE.md",
+    "documentacion/PLAN_DESARROLLO.md",
+    "documentacion/DOCUMENTACION_TECNICA.md",
+    "documentacion/REGISTRO_CAMBIOS.md"
+  ],
+  "criterios_bloqueo": ["FALLIDO", "NO_EJECUTADO", "NO_DISPONIBLE"]
+}

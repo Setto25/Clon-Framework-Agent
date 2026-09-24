@@ -18,4 +18,5 @@ Este archivo se conserva para configuraciones administradas o portables donde se
 - No se ejecutan acciones destructivas ni se modifica infraestructura compartida sin autorizacion explicita.
 - Se sigue el ciclo: leer estado → proponer → ejecutar → verificar → documentar.
 - Se consulta `cerrar-modulo` al completar trabajo verificado si la Skill esta instalada.
-- No se declara una tarea material como terminada sin un resultado exitoso de `scripts/validar_cierre_tarea.py`; un fallo obliga a corregir, informar el bloqueo o pedir direccion.
+- Antes de actualizar documentos de cierre se ejecuta `scripts/validar_cierre_tarea.py . --solo-verificaciones`; solo un codigo cero habilita esa actualizacion. Luego se ejecuta la puerta completa y se conserva su evidencia. Un fallo, ausencia de cobertura o herramienta obligatoria no disponible obliga a corregir, informar el bloqueo o pedir direccion.
+- Un fallo de `lint` o `build` se corrige sin quitar su script de `package.json` ni su entrada del contrato. La puerta de integridad comprueba estos minimos para Next.js y la documentacion de cada cambio de codigo.

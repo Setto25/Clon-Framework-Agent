@@ -1,0 +1,15 @@
+{
+  "version_registro": 1,
+  "caso": "ambiguo-contradiccion-omitida",
+  "clasificacion": "ambiguo",
+  "skills_cargadas": ["cerrar-modulo"],
+  "herramientas": [],
+  "eventos": [],
+  "verificaciones": [{"tipo": "unitarias", "estado": "FALLIDO", "codigo_salida": 1}],
+  "estado_final": "BLOQUEADO",
+  "atribuciones": [{"componente": "instrucciones", "evidencia": "AGENTS.md y la Skill difieren."}],
+  "hay_contradicciones": true,
+  "contradicciones_detectadas": [],
+  "instrucciones_decisivas": [{"fuente": "AGENTS.md", "efecto": "Bloqueo el cierre."}],
+  "resultado_esperado": "RECHAZADO"
+}

@@ -3,12 +3,16 @@
 
 from __future__ import annotations
 
+import shutil
+import subprocess
+import sys
 import unittest
 
 from scripts.diagnosticar_tarea import (
     analizar_fallos_node,
     analizar_fallos_unittest,
     buscar_candidatos,
+    diagnosticar,
     descubrir_ejecutores,
     formatear_contexto,
 )
@@ -16,6 +20,11 @@ from scripts.diagnosticar_tarea import (
 from pathlib import Path
 
 FIXTURE = Path(__file__).resolve().parent / "fixtures" / "desarrollo-web"
+FIXTURE_MONOREPO = Path(__file__).resolve().parent / "fixtures" / "monorepo-diagnostico"
+HERRAMIENTAS_MONOREPO = (
+    shutil.which("node") is not None
+    and (shutil.which("npm") is not None or shutil.which("npm.cmd") is not None)
+)
 
 
 SALIDA_UNITTEST_EJEMPLO = """\
@@ -126,6 +135,51 @@ class PruebasDescubrimientoEjecutores(unittest.TestCase):
         nombres = [e[0] for e in ejecutores]
         self.assertIn("unittest", nombres)
         self.assertIn("node", nombres)
+
+
+@unittest.skipUnless(HERRAMIENTAS_MONOREPO, "pytest, node o npm no disponibles")
+class PruebasDiagnosticoMonorepo(unittest.TestCase):
+    """Reproduce el falso cero desde la raiz y la contaminacion de candidatos."""
+
+    def test_detecta_fallos_anidados_y_modulo_sin_pruebas(self) -> None:
+        """Distingue pytest, lint y ausencia de cobertura desde una sola raiz."""
+        resultado = diagnosticar(FIXTURE_MONOREPO)
+        estados = {
+            verificacion["identificador"]: verificacion["estado"]
+            for verificacion in resultado["verificaciones"]
+        }
+        self.assertEqual(estados["backend:pruebas-python"], "FALLIDO")
+        self.assertEqual(estados["frontend:lint"], "FALLIDO")
+        self.assertEqual(estados["servicio:sin-pruebas"], "NO_EJECUTADO")
+        self.assertEqual(resultado["cobertura"], "INFERIDA")
+        self.assertTrue(resultado["bloquea_cierre"])
+
+    def test_informa_directorio_codigo_duracion_y_candidatos_limpios(self) -> None:
+        """Conserva evidencia operativa y excluye dependencias completas."""
+        resultado = diagnosticar(FIXTURE_MONOREPO)
+        fallidas = [
+            verificacion for verificacion in resultado["verificaciones"]
+            if verificacion["estado"] == "FALLIDO"
+        ]
+        self.assertEqual({item["directorio"] for item in fallidas}, {"backend", "frontend"})
+        self.assertTrue(all(isinstance(item["codigo_salida"], int) for item in fallidas))
+        self.assertTrue(all(item["duracion_segundos"] >= 0 for item in fallidas))
+        self.assertIn("backend/aplicacion.py", resultado["archivos_candidatos"])
+        self.assertIn("frontend/src/interfaz.js", resultado["archivos_candidatos"])
+        self.assertFalse(any(".venv" in ruta for ruta in resultado["archivos_candidatos"]))
+        self.assertFalse(any("node_modules" in ruta for ruta in resultado["archivos_candidatos"]))
+
+    def test_cli_propaga_fallos_con_codigo_no_cero(self) -> None:
+        """Impide que una salida descriptiva oculte fallos reales al llamador."""
+        script = Path(__file__).resolve().parent.parent / "scripts" / "diagnosticar_tarea.py"
+        resultado = subprocess.run(
+            [sys.executable, str(script), str(FIXTURE_MONOREPO), "--formato", "json"],
+            check=False,
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+        )
+        self.assertEqual(resultado.returncode, 2, resultado.stdout + resultado.stderr)
 
 
 class PruebasBusquedaResponsables(unittest.TestCase):

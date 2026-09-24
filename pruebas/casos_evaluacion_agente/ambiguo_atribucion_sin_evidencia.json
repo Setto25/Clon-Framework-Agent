@@ -1,0 +1,15 @@
+{
+  "version_registro": 1,
+  "caso": "ambiguo-atribucion-sin-evidencia",
+  "clasificacion": "ambiguo",
+  "skills_cargadas": ["diagnosticar-tarea"],
+  "herramientas": [],
+  "eventos": [],
+  "verificaciones": [{"tipo": "unitarias", "estado": "FALLIDO", "codigo_salida": 1}],
+  "estado_final": "BLOQUEADO",
+  "atribuciones": [{"componente": "backend", "evidencia": ""}],
+  "hay_contradicciones": false,
+  "contradicciones_detectadas": [],
+  "instrucciones_decisivas": [{"fuente": "diagnosticar-tarea", "efecto": "Exigio confirmar la causa."}],
+  "resultado_esperado": "RECHAZADO"
+}

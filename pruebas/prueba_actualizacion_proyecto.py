@@ -104,7 +104,7 @@ class PruebasActualizacionProyecto(unittest.TestCase):
         )
         self.assertEqual(archivo.read_bytes(), fuente.read_bytes())
         actualizado = self.cargar_estado()
-        self.assertEqual(actualizado.get("version_framework"), "0.2.0-alpha.16")
+        self.assertEqual(actualizado.get("version_framework"), "0.2.0-alpha.18")
 
     def test_bloquea_cambio_local_sin_mutar_estado(self) -> None:
         """Detiene toda la actualizacion cuando un archivo administrado diverge."""
@@ -171,6 +171,31 @@ class PruebasActualizacionProyecto(unittest.TestCase):
         self.assertIsInstance(huellas_actualizadas, dict)
         if isinstance(huellas_actualizadas, dict):
             self.assertIn(relativa, huellas_actualizadas)
+
+    def test_agrega_puerta_ci_y_script_sin_sobrescribir_el_proyecto(self) -> None:
+        """Actualiza una instancia anterior con la puerta estatica administrada."""
+        rutas = (
+            "scripts/validar_integridad_proyecto.py",
+            ".github/workflows/validacion-proyecto.yml",
+        )
+        estado = self.cargar_estado()
+        huellas = estado.get("huellas_gestionadas")
+        self.assertIsInstance(huellas, dict)
+        for relativa in rutas:
+            (self.proyecto / Path(relativa)).unlink()
+            if isinstance(huellas, dict):
+                huellas.pop(relativa, None)
+        estado["version_framework"] = "0.2.0-alpha.17"
+        self.guardar_estado(estado)
+
+        resultado = ejecutar([sys.executable, str(ACTUALIZADOR), str(self.proyecto)])
+        self.assertEqual(resultado.returncode, 0, resultado.stdout + resultado.stderr)
+        huellas_actualizadas = self.cargar_estado().get("huellas_gestionadas")
+        self.assertIsInstance(huellas_actualizadas, dict)
+        for relativa in rutas:
+            self.assertTrue((self.proyecto / Path(relativa)).is_file())
+            if isinstance(huellas_actualizadas, dict):
+                self.assertIn(relativa, huellas_actualizadas)
 
     def test_agrega_puente_claude_ausente_y_sus_adaptadores(self) -> None:
         """Migra una instancia anterior hacia el descubrimiento nativo de Claude."""

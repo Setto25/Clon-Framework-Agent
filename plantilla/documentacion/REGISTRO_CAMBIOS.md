@@ -12,6 +12,7 @@ Se agrega una entrada por sesion de trabajo y se conserva el historial propio de
 
 - Se inicializo la memoria operativa y la documentacion base.
 - Se creo `.env` desde `.env.ejemplo` con proteccion de Git.
+- Se incorporo la puerta estatica `scripts/validar_integridad_proyecto.py` y su flujo de GitHub.
 - Se instalaron estas Skills:
 
 {{LISTA_SKILLS_INSTALADAS}}
@@ -43,7 +44,11 @@ Se agrega una entrada por sesion de trabajo y se conserva el historial propio de
 
 **Pruebas:**
 
-- Comando y resultado
+- Comando, directorio, codigo de salida y resultado. Una afirmacion textual no se registra como evidencia.
+
+**Cobertura:**
+
+- Declarada mediante `contrato_validacion.json` o inferida conservadoramente.
 
 **Pendiente para la siguiente sesion:**
 

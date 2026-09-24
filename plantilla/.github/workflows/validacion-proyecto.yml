@@ -1,0 +1,25 @@
+name: Integridad del proyecto
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  integridad:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Obtiene el repositorio
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Configura Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Comprueba memoria, contrato y documentos del cambio
+        env:
+          BASE_CAMBIO: ${{ github.event.pull_request.base.sha || github.event.before }}
+        run: python scripts/validar_integridad_proyecto.py .

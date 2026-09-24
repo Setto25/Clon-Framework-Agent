@@ -40,7 +40,9 @@
 
 ## 5. Definición de terminado
 
-Un módulo solo se considera terminado cuando el código está implementado, las pruebas pertinentes pasan, existe una forma reproducible de ejecutarlo y la documentación de estado, funcionamiento y cambios se encuentra actualizada. Antes de declararlo terminado se debe ejecutar `scripts/validar_cierre_tarea.py` con las pruebas y archivos reales de la tarea; un código distinto de cero significa que el trabajo permanece incompleto.
+Un módulo solo se considera terminado cuando el código está implementado, todas las verificaciones obligatorias pasan y existe una forma reproducible de ejecutarlo. Primero se debe ejecutar `scripts/validar_cierre_tarea.py . --solo-verificaciones`; solo un código cero habilita actualizar documentación de cierre. Después se ejecuta la puerta completa con los archivos y documentos reales. Un código distinto de cero, `FALLIDO`, `NO_EJECUTADO` o `NO_DISPONIBLE` bloqueante significa que el trabajo permanece incompleto y no puede reinterpretarse mediante una afirmación textual.
+
+En Next.js, `lint` y `build` son puertas minimas aunque se borren sus scripts de `package.json` o se omitan del contrato. Se declara un solo gestor de paquetes y se conserva solo su lockfile. La verificacion estatica de CI ejecuta `scripts/validar_integridad_proyecto.py` para comprobar memoria, puertas y documentos de cada cambio de codigo; no sustituye las pruebas ejecutables del cierre.
 
 ## 6. Skills del proyecto
 
@@ -51,7 +53,7 @@ Un módulo solo se considera terminado cuando el código está implementado, las
 - Se debe usar `$lecciones-aprendidas` antes de repetir una depuración difícil ya registrada.
 - Se debe considerar `$optimizar-contexto` solo ante auditoría solicitada, exploración repetida, más de diez rutas relevantes, dos ciclos fallidos o presión observable de contexto. No se activa por defecto en una implementación acotada, aunque cruce frontend y backend. El índice local se usa solo cuando la exploración ya es necesaria; si es fresco, reemplaza el listado inicial y se actualiza solo ante ausencia, contradicción o cambio externo.
 - Se debe usar `$probar-e2e` cuando corresponda comprobar un flujo completo entre componentes.
-- Se debe considerar `$diagnosticar-tarea` antes de invocar al agente en tareas con pruebas fallidas o errores reproducibles. Ejecutar `python scripts/diagnosticar_tarea.py <directorio>` y entregar el diagnostico como contexto inicial si la confianza es alta o media.
+- Se debe considerar `$diagnosticar-tarea` antes de invocar al agente en tareas con pruebas fallidas o errores reproducibles. Ejecutar `python scripts/diagnosticar_tarea.py <raiz>` y respetar su codigo de salida. El diagnostico distingue cobertura declarada o inferida y nunca convierte ausencia de pruebas en aprobacion.
 - Solo se pueden invocar Skills cuyo `SKILL.md` exista en esta instancia. Las recomendaciones de otras Skills requieren confirmación antes de incorporarlas desde el framework fuente.
 
 ## 7. Operación con diferentes agentes

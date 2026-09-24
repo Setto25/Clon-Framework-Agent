@@ -1,7 +1,7 @@
 {
   "version_inventario": 2,
   "raiz": "plantilla/.agents/skills",
-  "huella_conjunto_sha256": "488ea33e5a5f2861e774d038feffcebf1d9d3bffb0f8f0d848277ecaf1a99b2c",
+  "huella_conjunto_sha256": "453a677b9af4a01939f3c6d2f73cbd920e015b8f670c2130246e037f6859a946",
   "resumen": {
     "archivos": 50,
     "skills": 24,
@@ -10,8 +10,8 @@
   "skills": [
     {
       "ruta": "cerrar-modulo/SKILL.md",
-      "bytes": 2424,
-      "sha256": "ec08aab7347b846d48c96e61d32262db19a3c4e2fa5fcb0197190db3e361cc57",
+      "bytes": 3478,
+      "sha256": "89e36887c166058bf6d665b3523d239b1010ed12fb0fcdbc7a90554f51cd290d",
       "nombre": "cerrar-modulo"
     },
     {
@@ -40,8 +40,8 @@
     },
     {
       "ruta": "opcional/diagnosticar-tarea/SKILL.md",
-      "bytes": 2985,
-      "sha256": "7316fb12e9f36651221bef6f2e1e9c15d8d26f5b077abcba4960ab3b176fcff0",
+      "bytes": 3504,
+      "sha256": "6e4f8c04936f290d78bf6f02319bcebc38d2d4fd78fbbddfb186466b92ca64dc",
       "nombre": "diagnosticar-tarea"
     },
     {
@@ -191,8 +191,8 @@
     },
     {
       "ruta": "opcional/LEEME.md",
-      "bytes": 622,
-      "sha256": "77c9b77e95d94aee7c1fec16d8868350ac52595d60cb1039cc270120a31acf48"
+      "bytes": 832,
+      "sha256": "fcc5cc719297eb7777d71c83750a3a78776fb3d9af5b895fe1c2e7b67405b0c0"
     },
     {
       "ruta": "optimizar-contexto/referencias/modo_arquitectonico.md",
@@ -236,8 +236,8 @@
     },
     {
       "ruta": "stacks/frontend-nextjs/LEEME.md",
-      "bytes": 4066,
-      "sha256": "7fac26b883536c69fce4d323b31e8c6264cacab014fd2c49ecb438a6316e7271"
+      "bytes": 4389,
+      "sha256": "121b24f36532543adf77ed3d5defb30633f050ce546201461e5796e3d0037fa4"
     },
     {
       "ruta": "stacks/frontend-nextjs/skills/diseno-ui-web/referencias/direccion_visual.md",

@@ -16,3 +16,5 @@ cp -r .agents/skills/opcional/<nombre-skill> .agents/skills/
 ```
 
 Luego verificar que `AGENTS.md` lo referencia si es necesario.
+
+`diagnosticar-tarea` usa el contrato distribuido por `scripts/contrato_validacion.py`. Su ausencia no convierte la cobertura inferida en aprobada y sus candidatos excluyen dependencias y artefactos generados.

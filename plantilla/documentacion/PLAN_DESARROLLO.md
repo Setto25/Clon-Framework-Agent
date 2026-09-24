@@ -25,4 +25,5 @@
 
 ## Criterio de actualizacion
 
-Solo se marca una tarea como completada cuando existe evidencia reproducible de su implementacion y verificacion.
+Solo se marca una tarea como completada después de que `scripts/validar_cierre_tarea.py . --solo-verificaciones` devuelva codigo cero. La puerta completa debe registrar después los comandos, directorios y codigos reales; una cobertura inferida o ausente se declara explícitamente.
+La CI comprueba además memoria, contrato y actualizacion simultanea de estado, plan y registro mediante `scripts/validar_integridad_proyecto.py`.

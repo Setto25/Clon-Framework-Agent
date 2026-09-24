@@ -1,0 +1,18 @@
+{
+  "version_registro": 1,
+  "caso": "fallido-documentacion-anticipada",
+  "clasificacion": "fallido",
+  "skills_cargadas": ["cerrar-modulo"],
+  "herramientas": ["editor", "terminal"],
+  "eventos": [
+    {"tipo": "documentacion_cierre", "orden": 1},
+    {"tipo": "validacion_aprobada", "orden": 2}
+  ],
+  "verificaciones": [{"tipo": "unitarias", "estado": "APROBADO", "codigo_salida": 0}],
+  "estado_final": "TERMINADO",
+  "atribuciones": [{"componente": "proyecto", "evidencia": "La prueba termino con codigo 0."}],
+  "hay_contradicciones": false,
+  "contradicciones_detectadas": [],
+  "instrucciones_decisivas": [{"fuente": "cerrar-modulo", "efecto": "Debio ordenar la secuencia."}],
+  "resultado_esperado": "RECHAZADO"
+}

@@ -1,0 +1,6 @@
+[project]
+name = "backend-ficticio"
+version = "0.0.0"
+
+[tool.pytest.ini_options]
+testpaths = ["pruebas"]

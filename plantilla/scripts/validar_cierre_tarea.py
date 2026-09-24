@@ -1,78 +1,91 @@
 #!/usr/bin/env python3
-"""Verifica evidencia reproducible antes de declarar terminada una tarea material."""
+"""Impide cierres sin ejecutar todas las verificaciones deterministas aplicables."""
 
 from __future__ import annotations
 
 import argparse
 import json
-import subprocess
+import os
+import shlex
 import sys
 from pathlib import Path
 from typing import Optional, TypedDict
 
-from verificar_memoria_proyecto import ResultadoVerificacion, verificar
+from contrato_validacion import (
+    NOMBRE_CONTRATO,
+    Comprobacion,
+    EstadoVerificacion,
+    ResultadoVerificacion,
+    ejecutar_comprobacion,
+    validar_comando,
+)
+from diagnosticar_tarea import diagnosticar
+from verificar_memoria_proyecto import ResultadoVerificacion as ResultadoMemoria, verificar
 
 
-LIMITE_SALIDA = 6000
 DOCUMENTOS_MINIMOS: tuple[str, ...] = (
     "PROJECT_STATE.md",
     "documentacion/PLAN_DESARROLLO.md",
     "documentacion/REGISTRO_CAMBIOS.md",
 )
 DOCUMENTO_TECNICO = "documentacion/DOCUMENTACION_TECNICA.md"
+CRITERIOS_CONSERVADORES: list[EstadoVerificacion] = [
+    "FALLIDO", "NO_EJECUTADO", "NO_DISPONIBLE"
+]
 
 
-class ResultadoComando(TypedDict):
-    """Representa una prueba ejecutada durante el cierre."""
+class EvidenciaComando(TypedDict):
+    """Conserva compatibilidad con el formato historico de pruebas."""
 
     comando: str
-    codigo: int
+    directorio: str
+    codigo: Optional[int]
+    estado: str
+    duracion_segundos: float
     salida: str
 
 
 class ResultadoCierre(TypedDict):
-    """Representa la evidencia comprobable de una tarea cerrada."""
+    """Representa toda la evidencia objetiva de una puerta de cierre."""
 
     valido: bool
-    memoria: ResultadoVerificacion
+    solo_verificaciones: bool
+    cobertura: str
+    contrato: str | None
+    memoria: ResultadoMemoria | None
     archivos_modificados: list[str]
     documentos_declarados: list[str]
     guia_operacion_revisada: bool
-    pruebas: list[ResultadoComando]
+    verificaciones: list[ResultadoVerificacion]
+    pruebas: list[EvidenciaComando]
+    documentacion_habilitada: bool
     errores: list[str]
 
 
 def crear_argumentos() -> argparse.Namespace:
-    """Define la interfaz de cierre aplicable a proyectos generados."""
+    """Define una interfaz compatible que prioriza el contrato versionado."""
     analizador = argparse.ArgumentParser(description=__doc__)
     analizador.add_argument("raiz", nargs="?", type=Path, default=Path.cwd())
     analizador.add_argument(
         "--comando-prueba",
         action="append",
         default=[],
-        help="Comando de prueba que se ejecutara desde la raiz; se puede repetir.",
+        help="Comando adicional ejecutado sin shell desde la raiz; se puede repetir.",
     )
+    analizador.add_argument("--archivo-modificado", action="append", default=[])
+    analizador.add_argument("--documento-actualizado", action="append", default=[])
+    analizador.add_argument("--documentacion-tecnica-aplica", action="store_true")
+    analizador.add_argument("--guia-operacion-revisada", action="store_true")
     analizador.add_argument(
-        "--archivo-modificado",
-        action="append",
-        default=[],
-        help="Ruta relativa de un archivo modificado durante la tarea; se puede repetir.",
-    )
-    analizador.add_argument(
-        "--documento-actualizado",
-        action="append",
-        default=[],
-        help="Ruta relativa de un documento actualizado; se puede repetir.",
-    )
-    analizador.add_argument(
-        "--documentacion-tecnica-aplica",
+        "--solo-verificaciones",
         action="store_true",
-        help="Exige declarar la actualizacion de DOCUMENTACION_TECNICA.md.",
+        help="Ejecuta la precondicion antes de permitir declaraciones documentales de cierre.",
     )
     analizador.add_argument(
-        "--guia-operacion-revisada",
-        action="store_true",
-        help="Confirma que GUIA_OPERACION.md fue actualizada o evaluada como no aplicable.",
+        "--salida-evidencia",
+        type=Path,
+        default=None,
+        help="Guarda el JSON comprobable dentro del proyecto, incluso cuando el cierre falla.",
     )
     analizador.add_argument("--json", action="store_true", dest="salida_json")
     return analizador.parse_args()
@@ -103,30 +116,60 @@ def validar_rutas(raiz: Path, rutas: list[str], nombre: str) -> list[str]:
     return normalizadas
 
 
-def ejecutar_prueba(comando: str, raiz: Path) -> ResultadoComando:
-    """Ejecuta una prueba declarada y conserva una salida acotada."""
+def separar_comando(comando: str) -> list[str]:
+    """Convierte una entrada heredada en argv y rechaza sintaxis de shell."""
     if not comando.strip():
-        return ResultadoComando(comando=comando, codigo=1, salida="El comando de prueba esta vacio")
-    try:
-        resultado = subprocess.run(
-            comando,
-            shell=True,
-            cwd=raiz,
-            check=False,
-            capture_output=True,
-            text=True,
-            encoding="utf-8",
-            errors="replace",
-            timeout=300,
+        raise ValueError("El comando de prueba esta vacio")
+    partes = shlex.split(comando, posix=os.name != "nt")
+    partes = [parte.strip('"') for parte in partes]
+    return validar_comando(partes, "--comando-prueba")
+
+
+def ejecutar_comandos_manuales(raiz: Path, comandos: list[str]) -> list[ResultadoVerificacion]:
+    """Ejecuta comprobaciones adicionales sin permitir que sustituyan el contrato."""
+    resultados: list[ResultadoVerificacion] = []
+    for indice, comando in enumerate(comandos, start=1):
+        comprobacion = Comprobacion(
+            identificador=f"manual-{indice}",
+            tipo="contrato",
+            modulo="raiz",
+            directorio=".",
+            comando=separar_comando(comando),
+            obligatoria=True,
+            bloquea_cierre=True,
+            timeout_segundos=300,
+            origen="MANUAL",
         )
-    except subprocess.TimeoutExpired:
-        return ResultadoComando(
-            comando=comando,
-            codigo=1,
-            salida="La prueba supero el limite de 300 segundos",
+        resultados.append(ejecutar_comprobacion(raiz, comprobacion))
+    return resultados
+
+
+def convertir_pruebas(resultados: list[ResultadoVerificacion]) -> list[EvidenciaComando]:
+    """Expone codigo, directorio y duracion en el campo de compatibilidad."""
+    return [
+        EvidenciaComando(
+            comando=resultado["comando_texto"],
+            directorio=resultado["directorio"],
+            codigo=resultado["codigo_salida"],
+            estado=resultado["estado"],
+            duracion_segundos=resultado["duracion_segundos"],
+            salida=resultado["evidencia"],
         )
-    salida = (resultado.stdout + resultado.stderr).strip()
-    return ResultadoComando(comando=comando, codigo=resultado.returncode, salida=salida[-LIMITE_SALIDA:])
+        for resultado in resultados
+    ]
+
+
+def documentos_del_contrato(raiz: Path) -> set[str]:
+    """Obtiene documentos obligatorios ya validados por el diagnostico."""
+    ruta = raiz / NOMBRE_CONTRATO
+    if not ruta.is_file():
+        return set(DOCUMENTOS_MINIMOS)
+    datos: object = json.loads(ruta.read_text(encoding="utf-8"))
+    if not isinstance(datos, dict) or not isinstance(datos.get("documentos_obligatorios"), list):
+        raise ValueError("El contrato no expone documentos_obligatorios validos")
+    return set(DOCUMENTOS_MINIMOS) | {
+        str(item) for item in datos["documentos_obligatorios"] if isinstance(item, str)
+    }
 
 
 def validar_cierre(
@@ -136,50 +179,90 @@ def validar_cierre(
     documentos: list[str],
     documentacion_tecnica_aplica: bool,
     guia_operacion_revisada: bool,
+    solo_verificaciones: bool = False,
 ) -> ResultadoCierre:
-    """Reune memoria, pruebas y registros para una puerta de cierre objetiva."""
+    """Ejecuta todas las puertas antes de habilitar el cierre documental."""
     raiz_resuelta = raiz.expanduser().resolve()
     if not raiz_resuelta.is_dir():
         raise ValueError("La raiz del proyecto no existe o no es un directorio")
-    if not comandos:
-        raise ValueError("Se requiere al menos una opcion --comando-prueba")
-    archivos_normalizados = validar_rutas(raiz_resuelta, archivos, "--archivo-modificado")
-    documentos_normalizados = validar_rutas(
-        raiz_resuelta, documentos, "--documento-actualizado"
-    )
-    faltantes = set(DOCUMENTOS_MINIMOS) - set(documentos_normalizados)
-    if documentacion_tecnica_aplica and DOCUMENTO_TECNICO not in documentos_normalizados:
-        faltantes.add(DOCUMENTO_TECNICO)
-    memoria = verificar(raiz_resuelta)
-    pruebas = [ejecutar_prueba(comando, raiz_resuelta) for comando in comandos]
+    diagnostico = diagnosticar(raiz_resuelta)
+    verificaciones = list(diagnostico["verificaciones"])
+    verificaciones.extend(ejecutar_comandos_manuales(raiz_resuelta, comandos))
     errores: list[str] = []
-    if not memoria["valido"]:
-        errores.append("La memoria del proyecto no es valida")
-    if faltantes:
-        errores.append("Faltan documentos declarados: " + ", ".join(sorted(faltantes)))
-    if not guia_operacion_revisada:
-        errores.append("Debe declararse la revision de GUIA_OPERACION.md")
-    for prueba in pruebas:
-        if prueba["codigo"] != 0:
-            errores.append(f"Fallo la prueba: {prueba['comando']}")
+    for resultado in verificaciones:
+        if resultado["estado"] in CRITERIOS_CONSERVADORES and (
+            resultado["obligatoria"]
+            or resultado["bloquea_cierre"]
+            or resultado["estado"] == "NO_EJECUTADO"
+        ):
+            prefijo = "Fallo la prueba" if resultado["estado"] == "FALLIDO" else resultado["estado"]
+            errores.append(
+                f"{prefijo}: {resultado['identificador']} "
+                f"({resultado['directorio']}, codigo={resultado['codigo_salida']})"
+            )
+    if not any(resultado["estado"] == "APROBADO" for resultado in verificaciones):
+        errores.append("No existe ninguna verificacion ejecutada y aprobada")
+
+    memoria: ResultadoMemoria | None = None
+    archivos_normalizados: list[str] = []
+    documentos_normalizados: list[str] = []
+    if not solo_verificaciones:
+        archivos_normalizados = validar_rutas(raiz_resuelta, archivos, "--archivo-modificado")
+        documentos_normalizados = validar_rutas(
+            raiz_resuelta, documentos, "--documento-actualizado"
+        )
+        faltantes = documentos_del_contrato(raiz_resuelta) - set(documentos_normalizados)
+        if documentacion_tecnica_aplica and DOCUMENTO_TECNICO not in documentos_normalizados:
+            faltantes.add(DOCUMENTO_TECNICO)
+        memoria = verificar(raiz_resuelta)
+        if not memoria["valido"]:
+            errores.append("La memoria del proyecto no es valida")
+        if faltantes:
+            errores.append("Faltan documentos declarados: " + ", ".join(sorted(faltantes)))
+        if not guia_operacion_revisada:
+            errores.append("Debe declararse la revision de GUIA_OPERACION.md")
     return ResultadoCierre(
         valido=not errores,
+        solo_verificaciones=solo_verificaciones,
+        cobertura=diagnostico["cobertura"],
+        contrato=diagnostico["contrato"],
         memoria=memoria,
         archivos_modificados=archivos_normalizados,
         documentos_declarados=documentos_normalizados,
         guia_operacion_revisada=guia_operacion_revisada,
-        pruebas=pruebas,
-        errores=errores,
+        verificaciones=verificaciones,
+        pruebas=convertir_pruebas(verificaciones),
+        documentacion_habilitada=not errores,
+        errores=list(dict.fromkeys(errores)),
     )
 
 
+def escribir_evidencia(raiz: Path, ruta: Path, resultado: ResultadoCierre) -> Path:
+    """Publica evidencia JSON atomicamente dentro del proyecto."""
+    raiz_resuelta = raiz.resolve()
+    destino = ruta if ruta.is_absolute() else raiz_resuelta / ruta
+    destino = destino.resolve()
+    try:
+        destino.relative_to(raiz_resuelta)
+    except ValueError as error:
+        raise ValueError("La salida de evidencia debe quedar dentro del proyecto") from error
+    destino.parent.mkdir(parents=True, exist_ok=True)
+    temporal = destino.with_name(f".{destino.name}.temporal")
+    temporal.write_text(json.dumps(resultado, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    os.replace(temporal, destino)
+    return destino
+
+
 def imprimir_texto(resultado: ResultadoCierre) -> None:
-    """Presenta un resumen apto para revisar el cierre en la terminal."""
+    """Presenta estados sin convertir ausencia de cobertura en aprobacion."""
+    print(f"Cobertura: {resultado['cobertura']}")
     for prueba in resultado["pruebas"]:
-        estado = "OK" if prueba["codigo"] == 0 else "FALLO"
-        print(f"[{estado}] {prueba['comando']}")
+        print(
+            f"[{prueba['estado']}] {prueba['directorio']} | {prueba['comando'] or 'sin comando'} "
+            f"| codigo={prueba['codigo']} | {prueba['duracion_segundos']:.3f}s"
+        )
     if resultado["valido"]:
-        print("Cierre de tarea valido.")
+        print("Prevalidacion aprobada." if resultado["solo_verificaciones"] else "Cierre de tarea valido.")
         return
     print("Cierre de tarea invalido:")
     for error in resultado["errores"]:
@@ -187,7 +270,7 @@ def imprimir_texto(resultado: ResultadoCierre) -> None:
 
 
 def main() -> int:
-    """Ejecuta la puerta y diferencia una entrada invalida de un cierre rechazado."""
+    """Ejecuta la puerta y persiste evidencia cuando se solicita."""
     argumentos = crear_argumentos()
     try:
         resultado = validar_cierre(
@@ -197,8 +280,11 @@ def main() -> int:
             argumentos.documento_actualizado,
             argumentos.documentacion_tecnica_aplica,
             argumentos.guia_operacion_revisada,
+            argumentos.solo_verificaciones,
         )
-    except (OSError, UnicodeError, ValueError) as error:
+        if argumentos.salida_evidencia:
+            escribir_evidencia(argumentos.raiz, argumentos.salida_evidencia, resultado)
+    except (OSError, UnicodeError, ValueError, json.JSONDecodeError) as error:
         print(f"ERROR: {error}", file=sys.stderr)
         return 1
     if argumentos.salida_json:

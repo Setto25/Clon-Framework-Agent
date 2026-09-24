@@ -42,6 +42,10 @@
 - `documentacion/DOCUMENTACION_TECNICA.md`: arquitectura, flujos, ubicación y contratos.
 - `documentacion/REGISTRO_CAMBIOS.md`: historial cronológico inmutable.
 - `documentacion/GUIA_OPERACION.md`: referencia integral de operación y diagnóstico.
+- `contrato_validacion.json`: manifiesto opcional y versionado de modulos, comandos y puertas obligatorias; se crea desde `contrato_validacion.ejemplo.json`.
+- `documentacion/EVIDENCIA_CIERRE.json`: ultima evidencia objetiva de cierre cuando se solicita su persistencia.
+- `scripts/validar_integridad_proyecto.py`: puerta estatica para memoria, gestor, contrato y documentos del cambio.
+- `.github/workflows/validacion-proyecto.yml`: ejecuta la puerta estatica en push y pull request cuando el proyecto usa GitHub.
 
 ## 6. Implementado hasta ahora
 
@@ -63,7 +67,7 @@ Después de completar cada módulo se actualiza este archivo con:
 2. qué tecnologías y versiones se utilizaron;
 3. dónde quedó cada componente;
 4. cómo se ejecuta y cómo se verifica;
-5. qué pruebas pasaron o fallaron;
+5. qué verificaciones pasaron, fallaron, no se ejecutaron o no estuvieron disponibles, con comando, directorio y codigo;
 6. qué decisión cambió y por qué;
 7. cuál es el siguiente paso lógico.
 

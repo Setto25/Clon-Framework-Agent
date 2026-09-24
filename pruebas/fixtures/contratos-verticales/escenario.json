@@ -1,0 +1,41 @@
+{
+  "propagacion_campo": {
+    "frontend": ["titulo", "prioridad"],
+    "schema": ["titulo", "prioridad"],
+    "endpoint_servicio": ["titulo"]
+  },
+  "actualizacion_frontend": {
+    "persistencia_confirmada": true,
+    "refresco": false,
+    "notificacion": false
+  },
+  "paridad_transportes": {
+    "rest": ["id", "titulo", "estado"],
+    "websocket": ["id", "titulo"]
+  },
+  "urls": {
+    "configurable": "https://api.example.test",
+    "llamadas": ["https://api.example.test/tareas", "http://localhost:8000/importar"]
+  },
+  "importacion": {
+    "atomica": false,
+    "eventos": ["confirmacion_lote_1", "fallo_lote_2"]
+  },
+  "schema": {
+    "migracion_en_head": true,
+    "campos_modelo": ["id", "titulo", "prioridad"],
+    "campos_reales": ["id", "titulo"]
+  },
+  "integridad": {
+    "claves_foraneas_activas": false,
+    "registros_huerfanos": 2
+  },
+  "plantilla": {
+    "campos_visibles": ["titulo", "prioridad"],
+    "campos_mapeados": ["titulo"]
+  },
+  "cierre": {
+    "estado_documentado": "terminado",
+    "puertas": {"pruebas": 0, "lint": 1, "tipos": 0, "build": 0, "migraciones": 0}
+  }
+}

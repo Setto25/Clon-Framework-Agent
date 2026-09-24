@@ -221,8 +221,12 @@ class PruebasCreacionProyecto(unittest.TestCase):
         self.assertIsInstance(huellas_gestionadas, dict)
         if isinstance(huellas_gestionadas, dict):
             self.assertIn("scripts/diagnosticar_tarea.py", huellas_gestionadas)
+            self.assertIn("scripts/contrato_validacion.py", huellas_gestionadas)
+            self.assertIn("contrato_validacion.ejemplo.json", huellas_gestionadas)
             self.assertIn("scripts/verificar_memoria_proyecto.py", huellas_gestionadas)
             self.assertIn("scripts/validar_cierre_tarea.py", huellas_gestionadas)
+            self.assertIn("scripts/validar_integridad_proyecto.py", huellas_gestionadas)
+            self.assertIn(".github/workflows/validacion-proyecto.yml", huellas_gestionadas)
             self.assertIn("scripts/generar_indice_contexto.py", huellas_gestionadas)
             self.assertIn("scripts/sincronizar_adaptadores_agentes.py", huellas_gestionadas)
             self.assertIn(".claude/skills/optimizar-contexto/SKILL.md", huellas_gestionadas)
@@ -238,12 +242,16 @@ class PruebasCreacionProyecto(unittest.TestCase):
         self.assertTrue((destino / "scripts" / "generar_indice_contexto.py").is_file())
         self.assertTrue((destino / "scripts" / "diagnosticar_tarea.py").is_file())
         self.assertTrue((destino / "scripts" / "validar_cierre_tarea.py").is_file())
+        self.assertTrue((destino / "scripts" / "validar_integridad_proyecto.py").is_file())
+        self.assertTrue((destino / ".github" / "workflows" / "validacion-proyecto.yml").is_file())
+        self.assertTrue((destino / "scripts" / "contrato_validacion.py").is_file())
+        self.assertTrue((destino / "contrato_validacion.ejemplo.json").is_file())
         self.assertTrue((destino / "CLAUDE.md").is_file())
         self.assertTrue(
             (destino / ".agents" / "rules" / "00-contexto-framework.md").is_file()
         )
         registro = (destino / "documentacion" / "REGISTRO_CAMBIOS.md").read_text(encoding="utf-8")
-        self.assertIn("agent-framework 0.2.0-alpha.16", registro)
+        self.assertIn("agent-framework 0.2.0-alpha.18", registro)
         for nombre in CORE_AUTOMATICO:
             with self.subTest(skill_registrada=nombre):
                 self.assertIn(f"- `{nombre}`", registro)
