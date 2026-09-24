@@ -42,5 +42,8 @@ Thumbs.db
 # Excluye pruebas secas generadas localmente.
 _dryrun*/
 
+# Excluye artefactos accidentales de redireccion en la raiz.
+/--salida
+
 # Excluye mediciones locales que pueden incluir respuestas de proveedores externos.
 resultados/
