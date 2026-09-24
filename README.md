@@ -466,6 +466,7 @@ sesion siempre se comprueban de forma observable.
 | Cursor | `AGENTS.md` | `.agents/skills/` | Nativa |
 | Antigravity | `.agents/rules/` | `.agents/skills/` | Nativa mediante regla puente |
 | Claude Code | `CLAUDE.md` | `.claude/skills/` | Adaptadores generados hacia `.agents/skills/` |
+| opencode | `AGENTS.md` | `.agents/skills/` | Nativa mediante `opencode.json` |
 
 ### Claude Code
 
@@ -499,6 +500,13 @@ sesion siempre se comprueban de forma observable.
 - Reconoce `AGENTS.md` y descubre las Skills de `.agents/skills/`.
 - `SYSTEM_PROMPT_DELTA_CURSOR.md` documenta el delta de operacion.
 - En agentes remotos, las Skills deben estar versionadas dentro del proyecto.
+
+### opencode
+
+- `opencode.json` declara `.agents/skills` en `skills.paths`; opencode descubre alli las Skills instaladas sin duplicar sus instrucciones.
+- `AGENTS.md` se lee como reglas permanentes del proyecto.
+- Los cambios en `opencode.json` o la incorporacion de Skills nuevas requieren reiniciar opencode para recargar la configuracion.
+- En este meta-repositorio, el `opencode.json` de la raiz apunta a `plantilla/.agents/skills`.
 
 ### VS Code con extension de agente (Copilot, Continue, etc.)
 
@@ -651,7 +659,7 @@ El cierre unico valida el contrato, las dependencias citadas por Skills, los arc
 
 ## 10. Estado actual y siguiente uso recomendado
 
-La revision local `0.2.0-alpha.18` incorpora la regresion observada en Web Scroll: Next.js exige `lint` y `build` aun si se eliminan scripts, y la CI del proyecto consumidor comprueba memoria, contrato y cambios documentales. La actualizacion de instancias existentes usa `scripts/actualizar_proyecto.py` y conserva conflictos locales para revision; la CI remota de esta revision sigue pendiente.
+La revision local `0.2.0-alpha.19` incorpora el puente nativo de opencode (`opencode.json` declara `skills.paths` sobre `.agents/skills`) ademas de la regresion observada en Web Scroll: Next.js exige `lint` y `build` aun si se eliminan scripts, y la CI del proyecto consumidor comprueba memoria, contrato y cambios documentales. La actualizacion de instancias existentes usa `scripts/actualizar_proyecto.py` y conserva conflictos locales para revision; la CI remota de esta revision sigue pendiente.
 
 El framework se valido en dos pilotos privados y un fixture MCP reproducible. La API de inventario usa FastAPI y PostgreSQL; el panel web usa Next.js y consume esa API local. El fixture MCP usa Python 3.13, el SDK oficial `mcp==2.1.1`, una Tool de lectura, otra mutable idempotente, autenticacion bearer y autorizacion separada. Sus doce pruebas, incluidos timeout y salida acotada ante texto no confiable, y el recorrido Streamable HTTP local aprobaron; el cliente Python negocio MCP 2026-07-28 y MCP Inspector 2.5.0 negocio 2025-11-25 mediante `--server-url`, ambos contra el mismo servidor sin sesion. Docker no esta instalado localmente; la CI ya contiene el trabajo que construira y probara la imagen cuando se publique la rama. La matriz remota `Validacion #14` aprobo la base anterior, no este cambio. Ninguna de estas comprobaciones autoriza un despliegue cloud.
 

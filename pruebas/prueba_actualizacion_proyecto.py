@@ -20,6 +20,13 @@ CREADOR = RAIZ_FRAMEWORK / "scripts" / "crear_proyecto.py"
 AGREGADOR_SKILLS = RAIZ_FRAMEWORK / "scripts" / "agregar_skills.py"
 ACTUALIZADOR = RAIZ_FRAMEWORK / "scripts" / "actualizar_proyecto.py"
 CONFIGURACION = RAIZ_FRAMEWORK / "ejemplos" / "configuracion_proyecto.ejemplo.json"
+VERSION_PLANTILLA: str = str(
+    json.loads(
+        (RAIZ_FRAMEWORK / "plantilla" / "configuracion_plantilla.json").read_text(
+            encoding="utf-8"
+        )
+    ).get("version_framework")
+)
 
 
 def ejecutar(argumentos: list[str]) -> subprocess.CompletedProcess[str]:
@@ -104,7 +111,7 @@ class PruebasActualizacionProyecto(unittest.TestCase):
         )
         self.assertEqual(archivo.read_bytes(), fuente.read_bytes())
         actualizado = self.cargar_estado()
-        self.assertEqual(actualizado.get("version_framework"), "0.2.0-alpha.18")
+        self.assertEqual(actualizado.get("version_framework"), VERSION_PLANTILLA)
 
     def test_bloquea_cambio_local_sin_mutar_estado(self) -> None:
         """Detiene toda la actualizacion cuando un archivo administrado diverge."""
@@ -231,6 +238,28 @@ class PruebasActualizacionProyecto(unittest.TestCase):
                 ".claude/skills/optimizar-contexto/SKILL.md",
                 huellas_actualizadas,
             )
+
+    def test_agrega_puente_opencode_ausente_y_registra_su_huella(self) -> None:
+        """Migra una instancia anterior hacia el descubrimiento nativo de opencode."""
+        relativa = "opencode.json"
+        (self.proyecto / relativa).unlink()
+        estado = self.cargar_estado()
+        huellas = estado.get("huellas_gestionadas")
+        self.assertIsInstance(huellas, dict)
+        if isinstance(huellas, dict):
+            huellas.pop(relativa, None)
+        estado["version_framework"] = "0.2.0-alpha.18"
+        self.guardar_estado(estado)
+
+        resultado = ejecutar([sys.executable, str(ACTUALIZADOR), str(self.proyecto)])
+        self.assertEqual(resultado.returncode, 0, resultado.stdout + resultado.stderr)
+        self.assertTrue((self.proyecto / relativa).is_file())
+        puente = json.loads((self.proyecto / relativa).read_text(encoding="utf-8"))
+        self.assertEqual(puente.get("skills", {}).get("paths"), [".agents/skills"])
+        huellas_actualizadas = self.cargar_estado().get("huellas_gestionadas")
+        self.assertIsInstance(huellas_actualizadas, dict)
+        if isinstance(huellas_actualizadas, dict):
+            self.assertIn(relativa, huellas_actualizadas)
 
     def test_agrega_referencia_nueva_de_skill_y_registra_su_huella(self) -> None:
         """Incorpora archivos progresivos sin sobrescribir contenido local."""

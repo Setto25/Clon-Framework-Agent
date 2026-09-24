@@ -32,6 +32,11 @@ CORE_AUTOMATICO: set[str] = {
     "optimizar-contexto",
     "probar-e2e",
 }
+VERSION_PLANTILLA: str = str(
+    json.loads((PLANTILLA / "configuracion_plantilla.json").read_text(encoding="utf-8")).get(
+        "version_framework"
+    )
+)
 PATRON_NOMBRE_SKILL = re.compile(r"^name:\s*(.+?)\s*$", re.MULTILINE)
 
 
@@ -227,6 +232,7 @@ class PruebasCreacionProyecto(unittest.TestCase):
             self.assertIn("scripts/validar_cierre_tarea.py", huellas_gestionadas)
             self.assertIn("scripts/validar_integridad_proyecto.py", huellas_gestionadas)
             self.assertIn(".github/workflows/validacion-proyecto.yml", huellas_gestionadas)
+            self.assertIn("opencode.json", huellas_gestionadas)
             self.assertIn("scripts/generar_indice_contexto.py", huellas_gestionadas)
             self.assertIn("scripts/sincronizar_adaptadores_agentes.py", huellas_gestionadas)
             self.assertIn(".claude/skills/optimizar-contexto/SKILL.md", huellas_gestionadas)
@@ -247,11 +253,18 @@ class PruebasCreacionProyecto(unittest.TestCase):
         self.assertTrue((destino / "scripts" / "contrato_validacion.py").is_file())
         self.assertTrue((destino / "contrato_validacion.ejemplo.json").is_file())
         self.assertTrue((destino / "CLAUDE.md").is_file())
+        puente_opencode = json.loads(
+            (destino / "opencode.json").read_text(encoding="utf-8")
+        )
+        self.assertEqual(
+            puente_opencode.get("skills", {}).get("paths"),
+            [".agents/skills"],
+        )
         self.assertTrue(
             (destino / ".agents" / "rules" / "00-contexto-framework.md").is_file()
         )
         registro = (destino / "documentacion" / "REGISTRO_CAMBIOS.md").read_text(encoding="utf-8")
-        self.assertIn("agent-framework 0.2.0-alpha.18", registro)
+        self.assertIn(f"agent-framework {VERSION_PLANTILLA}", registro)
         for nombre in CORE_AUTOMATICO:
             with self.subTest(skill_registrada=nombre):
                 self.assertIn(f"- `{nombre}`", registro)

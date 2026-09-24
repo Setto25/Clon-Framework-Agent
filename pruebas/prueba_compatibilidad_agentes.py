@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+import json
 import unittest
 from pathlib import Path
 
@@ -86,6 +87,14 @@ class PruebasCompatibilidadAgentes(unittest.TestCase):
             with self.subTest(stack=stack.name):
                 self.assertTrue((stack / "LEEME.md").is_file())
                 self.assertTrue((raiz_lecciones / f"{stack.name}.md").is_file())
+
+    def test_puente_opencode_usa_la_fuente_canonica(self) -> None:
+        """Comprueba que opencode descubra las Skills sin duplicar sus instrucciones."""
+        puente = json.loads(
+            (RAIZ_PLANTILLA / "opencode.json").read_text(encoding="utf-8")
+        )
+        self.assertEqual(puente.get("$schema"), "https://opencode.ai/config.json")
+        self.assertEqual(puente.get("skills", {}).get("paths"), [".agents/skills"])
 
     def test_los_puentes_conservan_una_fuente_canonica(self) -> None:
         """Comprueba imports de Claude y reglas base sin duplicar las Skills."""

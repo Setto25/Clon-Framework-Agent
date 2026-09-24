@@ -84,6 +84,13 @@ En Next.js, `lint` y `build` son puertas minimas aunque se borren sus scripts de
 - Se deben aplicar todas las reglas de `AGENTS.md` y consultar la documentacion pertinente.
 - Se deben usar solamente las Skills instaladas y expuestas en la sesion.
 
+### Con opencode
+
+- `opencode.json` declara `.agents/skills` en `skills.paths`; opencode descubre alli las Skills instaladas sin duplicar sus instrucciones.
+- Se deben comprobar el modelo, los permisos y los plugins activos de la sesion antes de asumir acceso a archivos o terminal.
+- Los cambios en `opencode.json` o la incorporacion de Skills nuevas requieren reiniciar opencode para recargar la configuracion.
+- `AGENTS.md` y `PROJECT_STATE.md` se leen al inicio de cada sesion, igual que en los demas agentes.
+
 ### Nota de compatibilidad
 
 Estas reglas son agnosticas del agente. Si una capacidad declarada por la plataforma contradice este documento, prevalece la capacidad observable y se actualiza la documentacion del proyecto.

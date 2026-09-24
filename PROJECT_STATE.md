@@ -1,7 +1,7 @@
 # Estado del proyecto: agent-framework
 
-**Ultima actualizacion:** 2026-09-23 (rev 106)
-**Estado general:** framework reproducible con 24 Skills; cierre de Next.js protegido contra reduccion de cobertura y puerta estatica de integridad en CI
+**Ultima actualizacion:** 2026-09-24 (rev 107)
+**Estado general:** framework reproducible con 24 Skills; puente nativo de opencode y cierre de Next.js protegido contra reduccion de cobertura
 **Fase activa:** Fase 9 — validacion de Skills en proyectos consumidores reales
 
 ## 1. Objetivo
@@ -22,6 +22,7 @@ agent-framework/
 └── plantilla/                ← La plantilla consumible por proyectos nuevos
     ├── AGENTS.md             (template con {{placeholders}})
     ├── PROJECT_STATE.md      (template vacio — NO es el estado de este repo)
+    ├── opencode.json         (puente nativo de opencode hacia .agents/skills)
     ├── .agents/
     │   ├── skills/
     │   │   ├── cerrar-modulo/
@@ -91,7 +92,7 @@ Cada stack tiene LEEME.md con reglas adicionales, terminos tecnicos y procedimie
 - **Protecciones Git.** `.gitignore` y `.gitattributes` en raiz y `plantilla/`; `.env` ignorado; finales LF.
 - **Convenciones sin proveedor supuesto.** Cada agente comprueba herramientas, sandbox y permisos observables en vez de asumir capacidades por marca.
 - **Capacidades verificables por agente.** Los deltas de Antigravity, Claude y Codex no atribuyen acceso ni descubrimiento por suposicion.
-- **Interoperabilidad con fuente unica.** Codex, Cursor y Antigravity consumen las Skills canonicas desde `.agents/skills/`. Claude Code recibe `CLAUDE.md` y wrappers generados en `.claude/skills/` que remiten a esa fuente sin duplicar instrucciones. La creacion, adicion y actualizacion mantienen los wrappers y sus huellas.
+- **Interoperabilidad con fuente unica.** Codex, Cursor y Antigravity consumen las Skills canonicas desde `.agents/skills/`. Claude Code recibe `CLAUDE.md` y wrappers generados en `.claude/skills/` que remiten a esa fuente sin duplicar instrucciones. opencode recibe `opencode.json` con `.agents/skills` en `skills.paths`; tambien apunta a su fuente canonica sin wrappers. La creacion, adicion y actualizacion mantienen los wrappers, el puente y sus huellas.
 
 ### Procedencia y licencia
 
@@ -101,7 +102,7 @@ Cada stack tiene LEEME.md con reglas adicionales, terminos tecnicos y procedimie
 
 ### Validacion
 
-- **CI de MCP e imagen OCI aprobada.** `Validacion #16` aprobo Windows y Ubuntu con Python 3.9 y 3.12, el fixture Next.js y el servidor MCP en Python 3.13 dentro de su imagen OCI. Las revisiones 105 y 106 avanzan localmente a `0.2.0-alpha.18` y requieren una nueva CI remota.
+- **CI de MCP e imagen OCI aprobada.** `Validacion #16` aprobo Windows y Ubuntu con Python 3.9 y 3.12, el fixture Next.js y el servidor MCP en Python 3.13 dentro de su imagen OCI. Las revisiones 105 a 107 avanzan localmente a `0.2.0-alpha.19` y requieren una nueva CI remota.
 - **Dos pilotos cerrados.** `piloto-inventario-api` (FastAPI + PostgreSQL) y `piloto-inventario-web` (Next.js). Fricciones sintetizadas en `auditoria/sintesis_pilotos.md`.
 - **Base publicada.** `origin/main` llega hasta `e1ffc8a` e incluye la Skill MCP, su piloto y la validacion OCI.
 - **Regresion documental local.** La suite comprueba que la cantidad y los nombres del catalogo aparezcan en README y que cada Skill de stack figure en su `LEEME.md`.
@@ -149,6 +150,7 @@ Cada stack tiene LEEME.md con reglas adicionales, terminos tecnicos y procedimie
 - **Revision 104 de direccion visual contextual.** `diseno-ui-web` deja de imponer la receta de modo oscuro, glassmorphism, fuentes populares y microinteracciones uniformes. La Skill exige identificar usuario, tarea, objeto central y tipo de experiencia; deriva un concepto rector, una composicion propia y un gesto distintivo, y rechaza interfaces intercambiables entre productos. Dos referencias progresivas cubren direccion visual y scrollytelling con accesibilidad, rendimiento, movimiento reducido y alternativas para vistas operativas. La plantilla avanza a `0.2.0-alpha.16`; una regresion conserva esas fronteras y evita reintroducir las recetas eliminadas.
 - **Revision 105 de cierre determinista.** El falso cierre se atribuye a dos capas combinadas: las instrucciones permitian que el agente eligiera comandos incompletos y el ejecutor no tenia un contrato independiente para detectar omisiones. `diagnosticar_tarea.py` descubre modulos anidados desde la raiz, respeta su directorio de ejecucion, excluye dependencias y artefactos, distingue `APROBADO`, `FALLIDO`, `NO_EJECUTADO` y `NO_DISPONIBLE`, propaga codigos no cero y deriva candidatos solo desde trazas, imports o cambios relacionados. `validar_cierre_tarea.py` aplica un manifiesto tipado y versionado, ejecuta sin shell y separa la prevalidacion de la actualizacion documental. Nueve fixtures verticales conservan como regresion errores de propagacion, mutacion, REST/WebSocket, URL, importacion parcial, migracion, integridad referencial, mapeo de plantilla y cierre documental prematuro. Una rubrica determinista cubre cierres normales, ambiguos y fallidos sin registrar razonamiento interno ni secretos. Las dos Skills aprobaron `quick_validate.py`, la puerta distribuida aprobo sus dos fases con un comando real y la suite local aprobo 153 pruebas.
 - **Revision 106 del caso Web Scroll.** La transcripcion real de Antigravity mostro una prevalidacion `lint` fallida, seguida de la eliminacion del script y dos prevalidaciones aprobadas solo con `build`, sin cierre documental completo. El diagnostico de Next.js ahora exige `lint` y `build` aun sin scripts o sin entradas del contrato, usa el gestor declarado o su lockfile, bloquea lockfiles contradictorios y excluye worktrees internos de `.kilo`. `validar_integridad_proyecto.py` agrega una puerta estatica para memoria, contrato, gestor y actualizacion conjunta de estado, plan y registro; `.github/workflows/validacion-proyecto.yml` la ejecuta en push y pull request sin dependencias del producto. Los archivos nuevos estan gestionados por el contrato para creacion y actualizacion conservadora. La version local pasa a `0.2.0-alpha.18`; las pruebas focalizadas, creacion/actualizacion, `validar_cierre_cambio.py` y la comprobacion de integridad sobre Web Scroll aprobaron. La CI remota sigue pendiente.
+- **Revision 107 del puente nativo de opencode.** opencode no descubre `.agents/skills/` del proyecto: solo lee rutas declaradas en `skills.paths` o sus ubicaciones globales. La plantilla incorpora `opencode.json` con `.agents/skills` en `skills.paths`, administrado por el contrato para creacion, huella y actualizacion conservadora; el meta-repositorio usa un `opencode.json` raiz que apunta a `plantilla/.agents/skills`. `AGENTS.md`, el indice de lectura y el README documentan la integracion; las pruebas cubren el contrato, la creacion, la migracion de instancias sin el puente y la fuente canonica. La version local pasa a `0.2.0-alpha.19`; la CI remota sigue pendiente.
 
 ## 5. Que falta
 
@@ -156,11 +158,11 @@ Cada stack tiene LEEME.md con reglas adicionales, terminos tecnicos y procedimie
 - **Stack backend-fastapi.** El piloto uso `fastapi-setup` y valido setup, configuracion tipada, rutas, esquemas, servicio, migraciones, persistencia PostgreSQL y pruebas. Quedan autenticacion y autorizacion fuera de alcance hasta confirmar actores y exposicion.
 - **Procedencia de Skills.** La fuente y licencia deben resolverse antes de cualquier redistribucion. Las correcciones para uso personal quedan permitidas y registradas.
 - **Validacion funcional.** La Skill MCP dispone de piloto local, dos clientes de protocolo y evidencia OCI remota; aun faltan una comparacion agentica independiente y un endpoint cloud autorizado. Las demas Skills tecnicas conservan sus alcances de validacion previos.
-- **CI remota.** `Validacion #16` aprobo la matriz publicada; los cambios locales de `0.2.0-alpha.18` todavia deben publicarse y aprobar una nueva ejecucion.
+- **CI remota.** `Validacion #16` aprobo la matriz publicada; los cambios locales de `0.2.0-alpha.19` todavia deben publicarse y aprobar una nueva ejecucion.
 - **Evaluacion interactiva pendiente.** La rubrica nueva es determinista y conserva ocho casos de regresion, pero todavia no compara ejecuciones reales repetidas de Antigravity con y sin el endurecimiento. No se habilita multiagente ni se atribuye una mejora causal hasta medirla.
 - **Medicion agentica negativa inicial.** La captura local usa `GEMINI_API_KEY` solo desde el entorno y guarda resultados ignorados por Git. En el escenario corto de incorporar una Skill externa de stack, `gemini-3.1-flash-lite` uso aproximadamente 20 % mas tokens con `optimizar-contexto` (4.117 frente a 3.431 por repeticion), tres llamadas de lectura frente a una y ninguna variante supero la revision humana. El resultado no aprueba la Skill para ese escenario; una tarea mas larga podra medir si el coste inicial se amortiza.
 - **Medicion agentica larga negativa.** En la auditoria de migrar `optimizar-contexto` de core a opcional, tres repeticiones con `gemini-3.1-flash-lite` consumieron 11.163 tokens por tratamiento frente a 8.499 por control: 31,3 % mas, con tres llamadas de herramienta frente a dos. Ninguna respuesta se aprobo: ambas variantes inventaron rutas y comandos inexistentes. La duracion del control quedo contaminada por dos reintentos de cuota en una repeticion, por lo que no se usa como comparacion de rendimiento. La Skill no se considera eficaz ni ahorradora para este escenario.
 
 ## 6. Siguiente paso logico
 
-El siguiente paso es actualizar Web Scroll de `0.2.0-alpha.17` a `0.2.0-alpha.18` mediante el actualizador conservador, resolver cualquier conflicto local antes de escribir, y comprobar su CI con una regresion donde se quite `lint`. Despues se repiten tareas controladas en Antigravity con casos normales, ambiguos y fallidos para medir obediencia y falsos cierres. La CI remota de esta revision, la validacion visual de `diseno-ui-web`, el endpoint MCP cloud y la procedencia de `mobile-flutter` permanecen como lineas independientes.
+El siguiente paso es comprobar que opencode descubre las 24 Skills desde `plantilla/.agents/skills` tras reiniciar, y actualizar Web Scroll de `0.2.0-alpha.18` a `0.2.0-alpha.19` mediante el actualizador conservador, resolver cualquier conflicto local antes de escribir, y comprobar su CI con una regresion donde se quite `lint`. Despues se repiten tareas controladas en Antigravity con casos normales, ambiguos y fallidos para medir obediencia y falsos cierres. La CI remota de esta revision, la validacion visual de `diseno-ui-web`, el endpoint MCP cloud y la procedencia de `mobile-flutter` permanecen como lineas independientes.

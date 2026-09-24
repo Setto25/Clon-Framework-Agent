@@ -2,6 +2,7 @@
 
 Claude Code recibe este mapa mediante `CLAUDE.md`; sus Skills visibles en
 `.claude/skills/` remiten a las mismas fuentes canonicas enumeradas abajo.
+opencode descubre esas fuentes canonicas mediante `skills.paths` en `opencode.json`.
 
 ## Lectura obligatoria (siempre, al inicio de sesion)
 
